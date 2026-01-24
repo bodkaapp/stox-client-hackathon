@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../config/app_colors.dart';
 import '../viewmodels/recipe_book_viewmodel.dart';
+import 'recipe_search_results_screen.dart';
+import 'recipe_webview_screen.dart';
 
 class RecipeBookScreen extends ConsumerWidget {
   const RecipeBookScreen({super.key});
@@ -62,13 +64,39 @@ class RecipeBookScreen extends ConsumerWidget {
                       ],
                     ),
                     const SizedBox(height: 16),
-                    // Search Bar
+                      // Search Bar
                     Container(
                       decoration: BoxDecoration(
                         color: const Color(0xFFF5F5F4), // bg-stone-100
                         borderRadius: BorderRadius.circular(16),
                       ),
                       child: TextField(
+                        onSubmitted: (value) {
+                          final trimmedValue = value.trim();
+                          if (trimmedValue.isEmpty) return;
+
+                          final uri = Uri.tryParse(trimmedValue);
+                          final isUrl = uri != null && (uri.scheme == 'http' || uri.scheme == 'https') && uri.host.isNotEmpty;
+
+                          if (isUrl) {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => RecipeWebViewScreen(
+                                  url: trimmedValue,
+                                  title: '読み込み中...',
+                                ),
+                              ),
+                            ).then((_) => ref.refresh(recipeBookViewModelProvider));
+                          } else {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => RecipeSearchResultsScreen(searchQuery: trimmedValue),
+                              ),
+                            ).then((_) => ref.refresh(recipeBookViewModelProvider));
+                          }
+                        },
                         decoration: InputDecoration(
                           hintText: 'レシピを検索またはURLを入力',
                           hintStyle: const TextStyle(color: Color(0xFF78716C), fontSize: 14), // text-stone-500
@@ -144,10 +172,9 @@ class RecipeBookScreen extends ConsumerWidget {
                               children: [
                                 Expanded(
                                   flex: 1,
-                                  child: Image.network(
-                                    'https://via.placeholder.com/300?text=Main',
-                                    fit: BoxFit.cover,
-                                    height: double.infinity,
+                                  child: Container(
+                                    color: Colors.grey.shade200,
+                                    child: const Center(child: Icon(Icons.broken_image, color: Colors.grey)),
                                   ),
                                 ),
                                 const SizedBox(width: 2), // gap-0.5 approx
@@ -156,18 +183,16 @@ class RecipeBookScreen extends ConsumerWidget {
                                   child: Column(
                                     children: [
                                       Expanded(
-                                        child: Image.network(
-                                          'https://via.placeholder.com/300?text=Side1',
-                                          fit: BoxFit.cover,
-                                          width: double.infinity,
+                                        child: Container(
+                                          color: Colors.grey.shade200,
+                                          child: const Center(child: Icon(Icons.broken_image, size: 16, color: Colors.grey)),
                                         ),
                                       ),
                                       const SizedBox(height: 2),
                                       Expanded(
-                                        child: Image.network(
-                                          'https://via.placeholder.com/300?text=Side2',
-                                          fit: BoxFit.cover,
-                                          width: double.infinity,
+                                        child: Container(
+                                          color: Colors.grey.shade200,
+                                          child: const Center(child: Icon(Icons.broken_image, size: 16, color: Colors.grey)),
                                         ),
                                       ),
                                     ],
@@ -239,6 +264,60 @@ class RecipeBookScreen extends ConsumerWidget {
               ),
             ),
 
+            // Recently Viewed Recipes Section
+            if (stateAsync.hasValue && stateAsync.value!.isNotEmpty) ...[
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+                  child: Column(
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Row(
+                            children: [
+                              Icon(Icons.history, color: AppColors.stoxPrimary, size: 20),
+                              SizedBox(width: 6),
+                              Text(
+                                '最近見たレシピ',
+                                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF292524)),
+                              ),
+                            ],
+                          ),
+                          TextButton(
+                            onPressed: () {},
+                            child: const Text(
+                              'すべて見る',
+                              style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF78716C)),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                    ],
+                  ),
+                ),
+              ),
+              SliverPadding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                sliver: SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) {
+                      final recipes = stateAsync.value!;
+                      // Sort by createdAt desc
+                      final sortedRecipes = recipes.toList()..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+                      final recipe = sortedRecipes[index];
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: _buildRecentRecipeItem(context, recipe),
+                      );
+                    },
+                    childCount: (stateAsync.value!.length > 3) ? 3 : stateAsync.value!.length,
+                  ),
+                ),
+              ),
+            ],
+
             // Past Menus Section
             SliverPadding(
               padding: const EdgeInsets.all(20),
@@ -249,7 +328,8 @@ class RecipeBookScreen extends ConsumerWidget {
                     children: [
                       const Row(
                         children: [
-                          Icon(Icons.history, color: Color(0xFFA8A29E), size: 20),
+                          Icon(Icons.calendar_month, color: Color(0xFFA8A29E), size: 20),
+
                           SizedBox(width: 6),
                           Text(
                             '過去の献立',
@@ -370,6 +450,76 @@ class RecipeBookScreen extends ConsumerWidget {
           ),
           const Icon(Icons.chevron_right, color: Color(0xFFD6D3D1)),
         ],
+      ),
+    );
+  }
+
+  Widget _buildRecentRecipeItem(BuildContext context, dynamic recipe) { 
+    return GestureDetector(
+      onTap: () {
+        if (recipe.pageUrl.isNotEmpty) {
+           Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => RecipeWebViewScreen(
+                url: recipe.pageUrl, 
+                title: recipe.title, 
+                imageUrl: recipe.ogpImageUrl
+              )
+            )
+           );
+        }
+      },
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: AppColors.stoxBorder),
+          boxShadow: [
+             BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 2, offset: const Offset(0, 1)),
+          ],
+        ),
+        child: Row(
+          children: [
+             ClipRRect(
+               borderRadius: BorderRadius.circular(8),
+               child: Container(
+                width: 60,
+                height: 60,
+                color: const Color(0xFFFFF7ED),
+                child: (recipe.ogpImageUrl != null && recipe.ogpImageUrl!.isNotEmpty)
+                  ? Image.network(recipe.ogpImageUrl!, fit: BoxFit.cover, errorBuilder: (_,__,___) => const Icon(Icons.broken_image, color: AppColors.stoxPrimary))
+                  : const Icon(Icons.restaurant, color: AppColors.stoxPrimary),
+              ),
+             ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    recipe.title,
+                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF292524)),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      if (recipe.createdAt != null)
+                        Text(
+                          '${recipe.createdAt.month}/${recipe.createdAt.day} 追加',
+                          style: const TextStyle(fontSize: 10, color: Color(0xFF78716C)),
+                        ),
+                    ],
+                  )
+                ],
+              ),
+            ),
+            const Icon(Icons.chevron_right, color: Color(0xFFD6D3D1)),
+          ],
+        ),
       ),
     );
   }

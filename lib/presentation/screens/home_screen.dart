@@ -31,13 +31,10 @@ class HomeScreen extends ConsumerWidget {
                           Container(
                             width: 32,
                             height: 32,
+                            child: const Icon(Icons.person, color: AppColors.stoxPrimary, size: 20),
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               border: Border.all(color: AppColors.stoxPrimary),
-                              image: const DecorationImage(
-                                image: NetworkImage('https://via.placeholder.com/150'), // User profile
-                                fit: BoxFit.cover,
-                              ),
                             ),
                           ),
                           const SizedBox(width: 8),
@@ -128,11 +125,9 @@ class HomeScreen extends ConsumerWidget {
                               width: 128,
                               height: double.infinity,
                               decoration: const BoxDecoration(
-                                image: DecorationImage(
-                                  image: NetworkImage('https://via.placeholder.com/300'), // Replace with actual meal image
-                                  fit: BoxFit.cover,
-                                ),
+                                color: Color(0xFFFFF7ED), // Orange-50
                               ),
+                              child: const Center(child: Icon(Icons.restaurant_menu, size: 48, color: AppColors.stoxPrimary)),
                             ),
                             Expanded(
                               child: Padding(
