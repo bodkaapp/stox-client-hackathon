@@ -19,6 +19,31 @@ subprojects {
     project.evaluationDependsOn(":app")
 }
 
+subprojects {
+    if (name == "isar_flutter_libs") {
+        val applyNamespace = {
+            try {
+                val android = extensions.findByName("android")
+                if (android != null) {
+                    val setNamespace = android.javaClass.getMethod("setNamespace", String::class.java)
+                    setNamespace.invoke(android, "dev.isar.isar_flutter_libs")
+                    println("Injected namespace for isar_flutter_libs")
+                }
+            } catch (e: Exception) {
+                println("Failed to inject namespace for isar_flutter_libs: ${e.message}")
+            }
+        }
+
+        if (state.executed) {
+            applyNamespace()
+        } else {
+            afterEvaluate {
+                applyNamespace()
+            }
+        }
+    }
+}
+
 tasks.register<Delete>("clean") {
     delete(rootProject.layout.buildDirectory)
 }
