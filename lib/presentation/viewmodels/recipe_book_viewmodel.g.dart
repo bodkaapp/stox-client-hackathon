@@ -6,6 +6,20 @@ part of 'recipe_book_viewmodel.dart';
 // RiverpodGenerator
 // **************************************************************************
 
+String _$todaysMenuHash() => r'c44572e266394ba0878f8b944c4231213cb716a0';
+
+/// See also [todaysMenu].
+@ProviderFor(todaysMenu)
+final todaysMenuProvider = AutoDisposeStreamProvider<List<Recipe>>.internal(
+  todaysMenu,
+  name: r'todaysMenuProvider',
+  debugGetCreateSourceHash:
+      const bool.fromEnvironment('dart.vm.product') ? null : _$todaysMenuHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+typedef TodaysMenuRef = AutoDisposeStreamProviderRef<List<Recipe>>;
 String _$recipeBookViewModelHash() =>
     r'87a3898c69af24c39ab76e7f61f24495d04de663';
 

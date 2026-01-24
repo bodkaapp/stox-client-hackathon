@@ -116,128 +116,201 @@ class RecipeBookScreen extends ConsumerWidget {
 
             // Today's Menu Section
             SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Row(
+              child: Consumer(
+                builder: (context, ref, child) {
+                  final todaysMenuAsync = ref.watch(todaysMenuProvider);
+                  
+                  return todaysMenuAsync.when(
+                    data: (recipes) {
+                       final now = DateTime.now();
+                       final weekDays = ['月', '火', '水', '木', '金', '土', '日'];
+                       final weekDayStr = weekDays[now.weekday - 1];
+                       final dateStr = '${now.month}月${now.day}日 ($weekDayStr)';
+
+                       return Padding(
+                        padding: const EdgeInsets.all(20.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Icon(Icons.calendar_today, color: AppColors.stoxPrimary, size: 20),
-                            SizedBox(width: 6),
-                            Text(
-                              '今日の献立',
-                              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF292524)),
-                            ),
-                          ],
-                        ),
-                        TextButton(
-                          onPressed: () {},
-                          style: TextButton.styleFrom(
-                            foregroundColor: const Color(0xFFD97706), // amber-600
-                            textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-                          ),
-                          child: const Row(
-                            children: [
-                              Text('編集する'),
-                              Icon(Icons.chevron_right, size: 16),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                  // Main Card
-                    Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(32),
-                        border: Border.all(color: AppColors.stoxBorder), // border-orange-100 -> stoxBorder
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.05),
-                            blurRadius: 2,
-                            offset: const Offset(0, 1),
-                          ),
-                        ],
-                      ),
-                      clipBehavior: Clip.antiAlias,
-                      child: Column(
-                        children: [
-                          SizedBox(
-                            height: 224, // h-56
-                            child: Row(
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Expanded(
-                                  flex: 1,
-                                  child: Container(
-                                    color: Colors.grey.shade200,
-                                    child: const Center(child: Icon(Icons.broken_image, color: Colors.grey)),
-                                  ),
+                                const Row(
+                                  children: [
+                                    Icon(Icons.calendar_today, color: AppColors.stoxPrimary, size: 20),
+                                    SizedBox(width: 6),
+                                    Text(
+                                      '今日の献立',
+                                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF292524)),
+                                    ),
+                                  ],
                                 ),
-                                const SizedBox(width: 2), // gap-0.5 approx
-                                Expanded(
-                                  flex: 1,
+                                if (recipes.isNotEmpty)
+                                  TextButton(
+                                    onPressed: () {},
+                                    style: TextButton.styleFrom(
+                                      foregroundColor: const Color(0xFFD97706), // amber-600
+                                      textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                                    ),
+                                    child: const Row(
+                                      children: [
+                                        Text('編集する'),
+                                        Icon(Icons.chevron_right, size: 16),
+                                      ],
+                                    ),
+                                  ),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+                            if (recipes.isEmpty)
+                              GestureDetector(
+                                onTap: () {
+                                  // Navigate to MenuPlanScreen or add logic
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => const MenuPlanScreen(),
+                                    ),
+                                  );
+                                },
+                                child: Container(
+                                  width: double.infinity,
+                                  padding: const EdgeInsets.symmetric(vertical: 24),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFF5F5F4), // bg-stone-100
+                                    borderRadius: BorderRadius.circular(16),
+                                    border: Border.all(color: AppColors.stoxBorder, style: BorderStyle.none), // specific request for gray area, maybe no border or subtle
+                                  ),
                                   child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
-                                      Expanded(
-                                        child: Container(
-                                          color: Colors.grey.shade200,
-                                          child: const Center(child: Icon(Icons.broken_image, size: 16, color: Colors.grey)),
-                                        ),
+                                      const Icon(Icons.add_circle_outline, color: Color(0xFFA8A29E), size: 32),
+                                      const SizedBox(height: 8),
+                                      const Text(
+                                        'まだ今日の献立がありません',
+                                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF78716C)),
                                       ),
-                                      const SizedBox(height: 2),
-                                      Expanded(
-                                        child: Container(
-                                          color: Colors.grey.shade200,
-                                          child: const Center(child: Icon(Icons.broken_image, size: 16, color: Colors.grey)),
-                                        ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        '追加する',
+                                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.stoxPrimary.withOpacity(0.8)),
                                       ),
                                     ],
                                   ),
                                 ),
-                              ],
-                            ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.all(16.0),
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                const Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      '10月24日 (木)',
-                                      style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFFD97706)),
+                              )
+                            else ...[
+                              Builder(
+                                builder: (context) {
+                                  final title = recipes.map((r) => r.title).join('・');
+                                  final count = recipes.length;
+                                  return Container(
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(32),
+                                      border: Border.all(color: AppColors.stoxBorder), // border-orange-100 -> stoxBorder
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black.withOpacity(0.05),
+                                          blurRadius: 2,
+                                          offset: const Offset(0, 1),
+                                        ),
+                                      ],
                                     ),
-                                    SizedBox(height: 4),
-                                    Text(
-                                      '特製カツ丼・無限キャベツ・ぶり大根',
-                                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF292524), height: 1.25),
+                                    clipBehavior: Clip.antiAlias,
+                                    child: Column(
+                                      children: [
+                                        SizedBox(
+                                          height: 224, // h-56
+                                          child: Row(
+                                            children: [
+                                              Expanded(
+                                                flex: 1,
+                                                child: Container(
+                                                  color: const Color(0xFFFFF7ED),
+                                                  child: (recipes.isNotEmpty && recipes[0].ogpImageUrl != null && recipes[0].ogpImageUrl!.isNotEmpty)
+                                                    ? Image.network(recipes[0].ogpImageUrl!, fit: BoxFit.cover, errorBuilder: (_,__,___) => const Icon(Icons.broken_image, color: AppColors.stoxPrimary))
+                                                    : const Center(child: Icon(Icons.restaurant, color: AppColors.stoxPrimary, size: 40)),
+                                                ),
+                                              ),
+                                              const SizedBox(width: 2), // gap-0.5 approx
+                                              Expanded(
+                                                flex: 1,
+                                                child: Column(
+                                                  children: [
+                                                    Expanded(
+                                                      child: Container(
+                                                        color: const Color(0xFFFFF7ED),
+                                                          child: (recipes.length > 1 && recipes[1].ogpImageUrl != null && recipes[1].ogpImageUrl!.isNotEmpty)
+                                                            ? Image.network(recipes[1].ogpImageUrl!, fit: BoxFit.cover, errorBuilder: (_,__,___) => const Icon(Icons.broken_image, color: AppColors.stoxPrimary))
+                                                            : Center(child: Icon(Icons.restaurant, size: 24, color: AppColors.stoxPrimary.withOpacity(0.5))),
+                                                      ),
+                                                    ),
+                                                    const SizedBox(height: 2),
+                                                    Expanded(
+                                                      child: Container(
+                                                        color: const Color(0xFFFFF7ED),
+                                                          child: (recipes.length > 2 && recipes[2].ogpImageUrl != null && recipes[2].ogpImageUrl!.isNotEmpty)
+                                                            ? Image.network(recipes[2].ogpImageUrl!, fit: BoxFit.cover, errorBuilder: (_,__,___) => const Icon(Icons.broken_image, color: AppColors.stoxPrimary))
+                                                            : Center(child: Icon(Icons.restaurant, size: 24, color: AppColors.stoxPrimary.withOpacity(0.5))),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        Padding(
+                                          padding: const EdgeInsets.all(16.0),
+                                          child: Row(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              Expanded(
+                                                child: Column(
+                                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                                  children: [
+                                                    Text(
+                                                      dateStr,
+                                                      style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFFD97706)),
+                                                    ),
+                                                    const SizedBox(height: 4),
+                                                    Text(
+                                                      title,
+                                                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF292524), height: 1.25),
+                                                      maxLines: 2,
+                                                      overflow: TextOverflow.ellipsis,
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                              const SizedBox(width: 8),
+                                              Container(
+                                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                                decoration: BoxDecoration(
+                                                  color: const Color(0xFFFEF3C7), // bg-amber-100
+                                                  borderRadius: BorderRadius.circular(12),
+                                                ),
+                                                child: Text('$count品', style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFFB45309))),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
                                     ),
-                                  ],
-                                ),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFFFEF3C7), // bg-amber-100
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: const Text('3品', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFFB45309))),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
+                                  );
+                                },
+                              ),
+                            ]
+                          ],
+                        ),
+                      );
+                    },
+                    loading: () => const SizedBox(height: 300, child: Center(child: CircularProgressIndicator())),
+                    error: (err, stack) => Padding(padding: const EdgeInsets.all(20), child: Text('Error: $err')),
+                  );
+                }
               ),
             ),
 
