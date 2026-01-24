@@ -8,6 +8,7 @@ import '../../config/app_colors.dart';
 import '../../domain/models/recipe.dart';
 import '../../infrastructure/repositories/isar_recipe_repository.dart';
 import 'ai_ingredient_list_screen.dart';
+import 'recipe_schedule_screen.dart';
 
 class RecipeWebViewScreen extends ConsumerStatefulWidget {
   final String url;
@@ -202,7 +203,16 @@ class _RecipeWebViewScreenState extends ConsumerState<RecipeWebViewScreen> {
           TextButton(
             onPressed: () {
               Navigator.pop(context);
-              _saveRecipeOnly();
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => RecipeScheduleScreen(
+                    url: currentUrl ?? widget.url,
+                    title: _currentTitle,
+                    imageUrl: finalImageUrl,
+                  ),
+                ),
+              );
             },
             child: const Text('マイレシピ帳に登録する', style: TextStyle(color: AppColors.stoxText)),
           ),
