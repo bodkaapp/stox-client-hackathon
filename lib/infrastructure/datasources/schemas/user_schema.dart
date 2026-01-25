@@ -12,4 +12,6 @@ class UserCollection {
   int points = 0;
   int adRights = 0;
   bool contentWifiOnly = false;
+  double? myAreaLat;
+  double? myAreaLng;
 }

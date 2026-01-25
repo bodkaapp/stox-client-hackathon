@@ -24,6 +24,8 @@ mixin _$UserSettings {
   int get points => throw _privateConstructorUsedError;
   int get adRights => throw _privateConstructorUsedError;
   bool get contentWifiOnly => throw _privateConstructorUsedError;
+  double? get myAreaLat => throw _privateConstructorUsedError;
+  double? get myAreaLng => throw _privateConstructorUsedError;
 
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
   @JsonKey(ignore: true)
@@ -37,7 +39,13 @@ abstract class $UserSettingsCopyWith<$Res> {
           UserSettings value, $Res Function(UserSettings) then) =
       _$UserSettingsCopyWithImpl<$Res, UserSettings>;
   @useResult
-  $Res call({String id, int points, int adRights, bool contentWifiOnly});
+  $Res call(
+      {String id,
+      int points,
+      int adRights,
+      bool contentWifiOnly,
+      double? myAreaLat,
+      double? myAreaLng});
 }
 
 /// @nodoc
@@ -57,6 +65,8 @@ class _$UserSettingsCopyWithImpl<$Res, $Val extends UserSettings>
     Object? points = null,
     Object? adRights = null,
     Object? contentWifiOnly = null,
+    Object? myAreaLat = freezed,
+    Object? myAreaLng = freezed,
   }) {
     return _then(_value.copyWith(
       id: null == id
@@ -75,6 +85,14 @@ class _$UserSettingsCopyWithImpl<$Res, $Val extends UserSettings>
           ? _value.contentWifiOnly
           : contentWifiOnly // ignore: cast_nullable_to_non_nullable
               as bool,
+      myAreaLat: freezed == myAreaLat
+          ? _value.myAreaLat
+          : myAreaLat // ignore: cast_nullable_to_non_nullable
+              as double?,
+      myAreaLng: freezed == myAreaLng
+          ? _value.myAreaLng
+          : myAreaLng // ignore: cast_nullable_to_non_nullable
+              as double?,
     ) as $Val);
   }
 }
@@ -87,7 +105,13 @@ abstract class _$$UserSettingsImplCopyWith<$Res>
       __$$UserSettingsImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({String id, int points, int adRights, bool contentWifiOnly});
+  $Res call(
+      {String id,
+      int points,
+      int adRights,
+      bool contentWifiOnly,
+      double? myAreaLat,
+      double? myAreaLng});
 }
 
 /// @nodoc
@@ -105,6 +129,8 @@ class __$$UserSettingsImplCopyWithImpl<$Res>
     Object? points = null,
     Object? adRights = null,
     Object? contentWifiOnly = null,
+    Object? myAreaLat = freezed,
+    Object? myAreaLng = freezed,
   }) {
     return _then(_$UserSettingsImpl(
       id: null == id
@@ -123,6 +149,14 @@ class __$$UserSettingsImplCopyWithImpl<$Res>
           ? _value.contentWifiOnly
           : contentWifiOnly // ignore: cast_nullable_to_non_nullable
               as bool,
+      myAreaLat: freezed == myAreaLat
+          ? _value.myAreaLat
+          : myAreaLat // ignore: cast_nullable_to_non_nullable
+              as double?,
+      myAreaLng: freezed == myAreaLng
+          ? _value.myAreaLng
+          : myAreaLng // ignore: cast_nullable_to_non_nullable
+              as double?,
     ));
   }
 }
@@ -134,7 +168,9 @@ class _$UserSettingsImpl implements _UserSettings {
       {required this.id,
       this.points = 0,
       this.adRights = 0,
-      this.contentWifiOnly = false});
+      this.contentWifiOnly = false,
+      this.myAreaLat,
+      this.myAreaLng});
 
   factory _$UserSettingsImpl.fromJson(Map<String, dynamic> json) =>
       _$$UserSettingsImplFromJson(json);
@@ -150,10 +186,14 @@ class _$UserSettingsImpl implements _UserSettings {
   @override
   @JsonKey()
   final bool contentWifiOnly;
+  @override
+  final double? myAreaLat;
+  @override
+  final double? myAreaLng;
 
   @override
   String toString() {
-    return 'UserSettings(id: $id, points: $points, adRights: $adRights, contentWifiOnly: $contentWifiOnly)';
+    return 'UserSettings(id: $id, points: $points, adRights: $adRights, contentWifiOnly: $contentWifiOnly, myAreaLat: $myAreaLat, myAreaLng: $myAreaLng)';
   }
 
   @override
@@ -166,13 +206,17 @@ class _$UserSettingsImpl implements _UserSettings {
             (identical(other.adRights, adRights) ||
                 other.adRights == adRights) &&
             (identical(other.contentWifiOnly, contentWifiOnly) ||
-                other.contentWifiOnly == contentWifiOnly));
+                other.contentWifiOnly == contentWifiOnly) &&
+            (identical(other.myAreaLat, myAreaLat) ||
+                other.myAreaLat == myAreaLat) &&
+            (identical(other.myAreaLng, myAreaLng) ||
+                other.myAreaLng == myAreaLng));
   }
 
   @JsonKey(ignore: true)
   @override
-  int get hashCode =>
-      Object.hash(runtimeType, id, points, adRights, contentWifiOnly);
+  int get hashCode => Object.hash(
+      runtimeType, id, points, adRights, contentWifiOnly, myAreaLat, myAreaLng);
 
   @JsonKey(ignore: true)
   @override
@@ -193,7 +237,9 @@ abstract class _UserSettings implements UserSettings {
       {required final String id,
       final int points,
       final int adRights,
-      final bool contentWifiOnly}) = _$UserSettingsImpl;
+      final bool contentWifiOnly,
+      final double? myAreaLat,
+      final double? myAreaLng}) = _$UserSettingsImpl;
 
   factory _UserSettings.fromJson(Map<String, dynamic> json) =
       _$UserSettingsImpl.fromJson;
@@ -206,6 +252,10 @@ abstract class _UserSettings implements UserSettings {
   int get adRights;
   @override
   bool get contentWifiOnly;
+  @override
+  double? get myAreaLat;
+  @override
+  double? get myAreaLng;
   @override
   @JsonKey(ignore: true)
   _$$UserSettingsImplCopyWith<_$UserSettingsImpl> get copyWith =>

@@ -10,6 +10,8 @@ class UserSettings with _$UserSettings {
     @Default(0) int points,
     @Default(0) int adRights,
     @Default(false) bool contentWifiOnly,
+    double? myAreaLat,
+    double? myAreaLng,
   }) = _UserSettings;
 
   factory UserSettings.fromJson(Map<String, dynamic> json) => _$UserSettingsFromJson(json);

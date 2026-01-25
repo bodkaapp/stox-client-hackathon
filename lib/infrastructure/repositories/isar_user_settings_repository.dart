@@ -49,6 +49,8 @@ extension UserSettingsMapper on UserCollection {
       points: points,
       adRights: adRights,
       contentWifiOnly: contentWifiOnly,
+      myAreaLat: myAreaLat,
+      myAreaLng: myAreaLng,
     );
   }
 }
@@ -59,7 +61,9 @@ extension UserSettingsDomainMapper on UserSettings {
       ..originalId = settings.id
       ..points = settings.points
       ..adRights = settings.adRights
-      ..contentWifiOnly = settings.contentWifiOnly;
+      ..contentWifiOnly = settings.contentWifiOnly
+      ..myAreaLat = settings.myAreaLat
+      ..myAreaLng = settings.myAreaLng;
   }
 }
 

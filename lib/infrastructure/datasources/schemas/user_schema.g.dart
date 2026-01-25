@@ -27,13 +27,23 @@ const UserCollectionSchema = CollectionSchema(
       name: r'contentWifiOnly',
       type: IsarType.bool,
     ),
-    r'originalId': PropertySchema(
+    r'myAreaLat': PropertySchema(
       id: 2,
+      name: r'myAreaLat',
+      type: IsarType.double,
+    ),
+    r'myAreaLng': PropertySchema(
+      id: 3,
+      name: r'myAreaLng',
+      type: IsarType.double,
+    ),
+    r'originalId': PropertySchema(
+      id: 4,
       name: r'originalId',
       type: IsarType.string,
     ),
     r'points': PropertySchema(
-      id: 3,
+      id: 5,
       name: r'points',
       type: IsarType.long,
     )
@@ -84,8 +94,10 @@ void _userCollectionSerialize(
 ) {
   writer.writeLong(offsets[0], object.adRights);
   writer.writeBool(offsets[1], object.contentWifiOnly);
-  writer.writeString(offsets[2], object.originalId);
-  writer.writeLong(offsets[3], object.points);
+  writer.writeDouble(offsets[2], object.myAreaLat);
+  writer.writeDouble(offsets[3], object.myAreaLng);
+  writer.writeString(offsets[4], object.originalId);
+  writer.writeLong(offsets[5], object.points);
 }
 
 UserCollection _userCollectionDeserialize(
@@ -98,8 +110,10 @@ UserCollection _userCollectionDeserialize(
   object.adRights = reader.readLong(offsets[0]);
   object.contentWifiOnly = reader.readBool(offsets[1]);
   object.id = id;
-  object.originalId = reader.readString(offsets[2]);
-  object.points = reader.readLong(offsets[3]);
+  object.myAreaLat = reader.readDoubleOrNull(offsets[2]);
+  object.myAreaLng = reader.readDoubleOrNull(offsets[3]);
+  object.originalId = reader.readString(offsets[4]);
+  object.points = reader.readLong(offsets[5]);
   return object;
 }
 
@@ -115,8 +129,12 @@ P _userCollectionDeserializeProp<P>(
     case 1:
       return (reader.readBool(offset)) as P;
     case 2:
-      return (reader.readString(offset)) as P;
+      return (reader.readDoubleOrNull(offset)) as P;
     case 3:
+      return (reader.readDoubleOrNull(offset)) as P;
+    case 4:
+      return (reader.readString(offset)) as P;
+    case 5:
       return (reader.readLong(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -386,6 +404,174 @@ extension UserCollectionQueryFilter
   }
 
   QueryBuilder<UserCollection, UserCollection, QAfterFilterCondition>
+      myAreaLatIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'myAreaLat',
+      ));
+    });
+  }
+
+  QueryBuilder<UserCollection, UserCollection, QAfterFilterCondition>
+      myAreaLatIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'myAreaLat',
+      ));
+    });
+  }
+
+  QueryBuilder<UserCollection, UserCollection, QAfterFilterCondition>
+      myAreaLatEqualTo(
+    double? value, {
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'myAreaLat',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<UserCollection, UserCollection, QAfterFilterCondition>
+      myAreaLatGreaterThan(
+    double? value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'myAreaLat',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<UserCollection, UserCollection, QAfterFilterCondition>
+      myAreaLatLessThan(
+    double? value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'myAreaLat',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<UserCollection, UserCollection, QAfterFilterCondition>
+      myAreaLatBetween(
+    double? lower,
+    double? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'myAreaLat',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<UserCollection, UserCollection, QAfterFilterCondition>
+      myAreaLngIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'myAreaLng',
+      ));
+    });
+  }
+
+  QueryBuilder<UserCollection, UserCollection, QAfterFilterCondition>
+      myAreaLngIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'myAreaLng',
+      ));
+    });
+  }
+
+  QueryBuilder<UserCollection, UserCollection, QAfterFilterCondition>
+      myAreaLngEqualTo(
+    double? value, {
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'myAreaLng',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<UserCollection, UserCollection, QAfterFilterCondition>
+      myAreaLngGreaterThan(
+    double? value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'myAreaLng',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<UserCollection, UserCollection, QAfterFilterCondition>
+      myAreaLngLessThan(
+    double? value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'myAreaLng',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<UserCollection, UserCollection, QAfterFilterCondition>
+      myAreaLngBetween(
+    double? lower,
+    double? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'myAreaLng',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<UserCollection, UserCollection, QAfterFilterCondition>
       originalIdEqualTo(
     String value, {
     bool caseSensitive = true,
@@ -613,6 +799,32 @@ extension UserCollectionQuerySortBy
     });
   }
 
+  QueryBuilder<UserCollection, UserCollection, QAfterSortBy> sortByMyAreaLat() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'myAreaLat', Sort.asc);
+    });
+  }
+
+  QueryBuilder<UserCollection, UserCollection, QAfterSortBy>
+      sortByMyAreaLatDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'myAreaLat', Sort.desc);
+    });
+  }
+
+  QueryBuilder<UserCollection, UserCollection, QAfterSortBy> sortByMyAreaLng() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'myAreaLng', Sort.asc);
+    });
+  }
+
+  QueryBuilder<UserCollection, UserCollection, QAfterSortBy>
+      sortByMyAreaLngDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'myAreaLng', Sort.desc);
+    });
+  }
+
   QueryBuilder<UserCollection, UserCollection, QAfterSortBy>
       sortByOriginalId() {
     return QueryBuilder.apply(this, (query) {
@@ -682,6 +894,32 @@ extension UserCollectionQuerySortThenBy
     });
   }
 
+  QueryBuilder<UserCollection, UserCollection, QAfterSortBy> thenByMyAreaLat() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'myAreaLat', Sort.asc);
+    });
+  }
+
+  QueryBuilder<UserCollection, UserCollection, QAfterSortBy>
+      thenByMyAreaLatDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'myAreaLat', Sort.desc);
+    });
+  }
+
+  QueryBuilder<UserCollection, UserCollection, QAfterSortBy> thenByMyAreaLng() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'myAreaLng', Sort.asc);
+    });
+  }
+
+  QueryBuilder<UserCollection, UserCollection, QAfterSortBy>
+      thenByMyAreaLngDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'myAreaLng', Sort.desc);
+    });
+  }
+
   QueryBuilder<UserCollection, UserCollection, QAfterSortBy>
       thenByOriginalId() {
     return QueryBuilder.apply(this, (query) {
@@ -725,6 +963,20 @@ extension UserCollectionQueryWhereDistinct
     });
   }
 
+  QueryBuilder<UserCollection, UserCollection, QDistinct>
+      distinctByMyAreaLat() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'myAreaLat');
+    });
+  }
+
+  QueryBuilder<UserCollection, UserCollection, QDistinct>
+      distinctByMyAreaLng() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'myAreaLng');
+    });
+  }
+
   QueryBuilder<UserCollection, UserCollection, QDistinct> distinctByOriginalId(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
@@ -757,6 +1009,18 @@ extension UserCollectionQueryProperty
       contentWifiOnlyProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'contentWifiOnly');
+    });
+  }
+
+  QueryBuilder<UserCollection, double?, QQueryOperations> myAreaLatProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'myAreaLat');
+    });
+  }
+
+  QueryBuilder<UserCollection, double?, QQueryOperations> myAreaLngProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'myAreaLng');
     });
   }
 
