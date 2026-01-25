@@ -8,6 +8,7 @@ import '../../infrastructure/repositories/ai_recipe_repository.dart';
 import '../../domain/models/ingredient.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'ai_analyzed_stock_screen.dart';
+import '../mixins/ad_manager_mixin.dart';
 
 class PhotoStockLocationScreen extends ConsumerStatefulWidget {
   final XFile imageFile;
@@ -21,16 +22,13 @@ class PhotoStockLocationScreen extends ConsumerStatefulWidget {
   ConsumerState<PhotoStockLocationScreen> createState() => _PhotoStockLocationScreenState();
 }
 
-class _PhotoStockLocationScreenState extends ConsumerState<PhotoStockLocationScreen> {
+class _PhotoStockLocationScreenState extends ConsumerState<PhotoStockLocationScreen> with AdManagerMixin {
   final TextEditingController _locationController = TextEditingController();
   String _selectedPreset = '';
   bool _isAnalyzing = false;
 
   Uint8List? _imageBytes;
   
-  RewardedAd? _rewardedAd;
-  bool _isAdLoaded = false;
-
   final List<String> _presets = [
     '冷蔵庫', '冷凍庫', '野菜室', 'シンク下', 'パントリー', '納戸', '常温保存'
   ];
@@ -39,6 +37,7 @@ class _PhotoStockLocationScreenState extends ConsumerState<PhotoStockLocationScr
   void initState() {
     super.initState();
     _loadImage();
+    loadRewardedAd(); // Preload ad
   }
 
   Future<void> _loadImage() async {
@@ -55,122 +54,46 @@ class _PhotoStockLocationScreenState extends ConsumerState<PhotoStockLocationScr
     });
   }
 
-  Future<void> _loadRewardedAd() {
-     return RewardedAd.load(
-      adUnitId: 'ca-app-pub-3940256099942544/5224354917', // Test Rewarded Ad Unit ID
-      request: const AdRequest(),
-      rewardedAdLoadCallback: RewardedAdLoadCallback(
-        onAdLoaded: (ad) {
-          debugPrint('$ad loaded.');
-          _rewardedAd = ad;
-          _isAdLoaded = true;
-        },
-        onAdFailedToLoad: (LoadAdError error) {
-          debugPrint('RewardedAd failed to load: $error');
-          _isAdLoaded = false;
-        },
-      ),
-    );
-  }
-
   Future<void> _analyze() async {
     if (_locationController.text.isEmpty || _imageBytes == null) return;
 
-    // Show Pre-Ad Dialog
-    final shouldProceed = await showDialog<bool>(
+    final success = await showAdAndExecute(
       context: context,
-      barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        title: const Text('AI解析を開始', style: TextStyle(fontWeight: FontWeight.bold)),
-        content: const Text('AIがあなたの冷蔵庫を分析します。\n広告を再生することで、この機能を無料でご利用いただけます。'),
-        actions: [
-          TextButton(
-             onPressed: () => Navigator.pop(context, false),
-             child: const Text('キャンセル', style: TextStyle(color: Colors.grey)),
-          ),
-          ElevatedButton(
-             onPressed: () => Navigator.pop(context, true),
-             style: ElevatedButton.styleFrom(backgroundColor: AppColors.stoxPrimary),
-             child: const Text('広告を見て解析する', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-          ),
-        ],
-      ),
+      preAdTitle: 'AI解析を開始',
+      preAdContent: 'AIがあなたの冷蔵庫を分析します。\n広告を再生することで、この機能を無料でご利用いただけます。',
+      confirmButtonText: '広告を見て解析する',
+      postAdMessage: 'AIの解析がおわりました。\n広告の視聴ありがとうございました。',
+      onConsent: () {
+        setState(() {
+          _isAnalyzing = true;
+        });
+      },
     );
 
-    if (shouldProceed != true) return;
+    if (!success) {
+      setState(() {
+        _isAnalyzing = false;
+      });
+      return;
+    } 
+    // _isAnalyzing is already true from onConsent, keep it true for analysis
+    // Actually if success is true, we proceed. If false (ad fail), we already set it false in the check above?
+    // Wait, if showAdAndExecute returns false (ad failed), we need to make sure _isAnalyzing is set back to false if we set it to true in onConsent.
+    // Yes, added setState check.
 
-    setState(() {
-      _isAnalyzing = true;
-    });
+    // setState(() {
+    //   _isAnalyzing = true; 
+    // }); // Already done in onConsent
 
     try {
       final aiRepo = ref.read(aiRecipeRepositoryProvider);
       
-      // Start loading ad and analysis concurrently
-      _loadRewardedAd();
       final analysisFuture = aiRepo.analyzeStockImage(
         _imageBytes!, 
         _locationController.text,
         mimeType: widget.imageFile.mimeType,
       );
 
-      // Wait for ad to load (with a small delay to ensure callback fires if fast) or timeout
-      // In a real app we might want to ensure ad is loaded before showing, or show loading UI.
-      // Here we check periodically.
-      int retries = 0;
-      while (!_isAdLoaded && retries < 20) { // Wait up to ~10s
-        await Future.delayed(const Duration(milliseconds: 500));
-        retries++;
-      }
-
-      if (_isAdLoaded && _rewardedAd != null) {
-          _rewardedAd!.show(
-            onUserEarnedReward: (AdWithoutView ad, RewardItem rewardItem) {
-               // Reward earned, proceed to show results (handled below)
-            }
-          );
-          
-          // We need to wait for the ad to close to proceed. 
-          // Since show returns void, we use FullScreenContentCallback.
-          final completer = Completer<void>();
-          _rewardedAd!.fullScreenContentCallback = FullScreenContentCallback(
-            onAdDismissedFullScreenContent: (ad) {
-               ad.dispose();
-               completer.complete();
-            },
-            onAdFailedToShowFullScreenContent: (ad, error) {
-               ad.dispose();
-               completer.complete();
-            }
-          );
-          await completer.future;
-      }
-      
-      // Post-Ad Message
-      if (mounted) {
-        await showDialog(
-          context: context,
-          barrierDismissible: false,
-          builder: (context) => AlertDialog(
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: const [
-                 Icon(Icons.check_circle, color: Colors.green, size: 48),
-                 SizedBox(height: 16),
-                 Text('AIの解析がおわりました。\n広告の視聴ありがとうございました。', textAlign: TextAlign.center),
-              ],
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('結果を見る'),
-              )
-            ],
-          ),
-        );
-      }
-
-      // Ensure analysis is complete
       final ingredients = await analysisFuture;
     
       if (!mounted) return;
@@ -191,8 +114,6 @@ class _PhotoStockLocationScreenState extends ConsumerState<PhotoStockLocationScr
       } else {
          setState(() {
            _isAnalyzing = false;
-           _isAdLoaded = false;
-           _rewardedAd = null;
          });
       }
 

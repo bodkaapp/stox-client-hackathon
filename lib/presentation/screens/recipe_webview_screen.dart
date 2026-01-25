@@ -9,6 +9,7 @@ import '../../domain/models/recipe.dart';
 import '../../infrastructure/repositories/isar_recipe_repository.dart';
 import 'ai_ingredient_list_screen.dart';
 import 'recipe_schedule_screen.dart';
+import '../mixins/ad_manager_mixin.dart';
 
 class RecipeWebViewScreen extends ConsumerStatefulWidget {
   final String url;
@@ -26,17 +27,18 @@ class RecipeWebViewScreen extends ConsumerStatefulWidget {
   ConsumerState<RecipeWebViewScreen> createState() => _RecipeWebViewScreenState();
 }
 
-class _RecipeWebViewScreenState extends ConsumerState<RecipeWebViewScreen> {
+class _RecipeWebViewScreenState extends ConsumerState<RecipeWebViewScreen> with AdManagerMixin {
   late final WebViewController _controller;
   bool _isLoading = true;
   String _currentTitle = '';
-  bool _isAlreadySaved = false;
-  // bool _isFavorite = false; // Isar integration for existing items logic skipped for brevity, can implement if needed
+  // bool _isAlreadySaved = false;
+  bool _isAnalyzing = false; // Added for overlay
 
   @override
   void initState() {
     super.initState();
     _currentTitle = widget.title;
+    loadRewardedAd(); // Preload ad
     _controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setBackgroundColor(const Color(0x00000000))
@@ -49,7 +51,6 @@ class _RecipeWebViewScreenState extends ConsumerState<RecipeWebViewScreen> {
             if (!mounted) return;
             setState(() { _isLoading = false; });
             final String? webPageTitle = await _controller.getTitle();
-            // Check if saved (omitted for speed, can add back)
             
             if (mounted && webPageTitle != null && webPageTitle.isNotEmpty) {
               setState(() { _currentTitle = webPageTitle; });
@@ -111,6 +112,25 @@ class _RecipeWebViewScreenState extends ConsumerState<RecipeWebViewScreen> {
           WebViewWidget(controller: _controller),
           if (_isLoading)
             const Center(child: CircularProgressIndicator(color: AppColors.stoxPrimary)),
+          
+          // Ad/Analysis Overlay
+          if (_isAnalyzing)
+            Container(
+              color: Colors.black87,
+              padding: const EdgeInsets.symmetric(horizontal: 32),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: const [
+                  CircularProgressIndicator(color: AppColors.stoxPrimary),
+                  SizedBox(height: 24),
+                  Text(
+                    'AIがレシピの材料を分析しています。\n解析が終わるまで広告をご覧ください。',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                ],
+              ),
+            ),
         ],
       ),
       floatingActionButton: _isLoading 
@@ -184,27 +204,30 @@ class _RecipeWebViewScreenState extends ConsumerState<RecipeWebViewScreen> {
 
   void _showSaveConfirmDialog() async {
     final String? currentUrl = await _controller.currentUrl();
-    
-    // Attempt to fetch OG Image via JS (optional/advanced, keeping simple for now or reusing passed image)
     final finalImageUrl = widget.imageUrl; 
 
     if (!mounted) return;
 
+    // Capture the screen context to avoid using dialog context
+    final screenContext = context;
+
     showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
+      context: screenContext,
+      builder: (dialogContext) => AlertDialog(
         title: const Text('レシピの保存'),
         content: const Text('このレシピをどうしますか？'),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(dialogContext),
             child: const Text('何もしない', style: TextStyle(color: Colors.grey)),
           ),
           TextButton(
             onPressed: () {
-              Navigator.pop(context);
+              Navigator.pop(dialogContext);
+              // Use screenContext, checking moved to ensure safety
+              if (!mounted) return;
               Navigator.push(
-                context,
+                screenContext,
                 MaterialPageRoute(
                   builder: (context) => RecipeScheduleScreen(
                     url: currentUrl ?? widget.url,
@@ -218,9 +241,34 @@ class _RecipeWebViewScreenState extends ConsumerState<RecipeWebViewScreen> {
           ),
           ElevatedButton(
             onPressed: () async {
-              Navigator.pop(context);
+              Navigator.pop(dialogContext);
+              
+              if (!mounted) return;
+
+               final success = await showAdAndExecute(
+                context: screenContext, // Use VALID screen context
+                preAdTitle: 'AI解析を開始',
+                preAdContent: 'AIがレシピの材料を分析します。\n広告を再生することで、この機能を無料でご利用いただけます。',
+                confirmButtonText: '広告を見て解析する',
+                postAdMessage: 'AIの解析がおわりました。\n広告の視聴ありがとうございました。',
+                onConsent: () {
+                  if (mounted) {
+                    setState(() { _isAnalyzing = true; });
+                  }
+                }
+             );
+
+             // Whether success or fail, turn off analyzing overlay
+             if (mounted) {
+               setState(() { _isAnalyzing = false; });
+             }
+
+             if (!success) return;
+
+             if (!mounted) return;
+
               final result = await Navigator.push(
-                context,
+                screenContext, // Use VALID screen context
                 MaterialPageRoute(
                   builder: (context) => AiIngredientListScreen(
                     initialText: currentUrl ?? widget.url,
@@ -231,8 +279,8 @@ class _RecipeWebViewScreenState extends ConsumerState<RecipeWebViewScreen> {
                 ),
               );
               
-              if (result == true && mounted) {
-                // Success
+              if ((result == true || result is String) && mounted) {
+                 // Success
               }
             },
             style: ElevatedButton.styleFrom(backgroundColor: AppColors.stoxPrimary),

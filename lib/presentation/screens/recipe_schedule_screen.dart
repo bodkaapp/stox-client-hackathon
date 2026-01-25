@@ -94,16 +94,14 @@ class _RecipeScheduleScreenState extends ConsumerState<RecipeScheduleScreen> {
         pageUrl: widget.url,
         ogpImageUrl: widget.imageUrl ?? '',
         createdAt: DateTime.now(),
-        memo: _memoController.text, // Recipe-level memo? Design has "Memo (optional)" for the schedule. Assuming it's for the recipe mostly, but label is ambiguous. Let's put it in recipe for now as before. Or maybe it should be unused if it's meal plan memo? The MealPlan enum doesn't have memo. Recipe has memo.
-        // Wait, design says "Memo (optional)". The new UI has it. Recipe model has 'memo'. MealPlan doesn't.
-        // I will save it to Recipe.memo.
+        memo: _memoController.text, 
       );
       await recipeRepo.save(recipe);
 
       if (_selectedDate != null && _selectedTimeSlot != null) {
           final mealType = _getMealType(_selectedTimeSlot!);
           final mealPlan = MealPlan(
-            id: DateTime.now().microsecondsSinceEpoch.toString(), // new ID for meal plan
+            id: DateTime.now().microsecondsSinceEpoch.toString(), 
             recipeId: recipeId,
             date: _selectedDate!,
             mealType: mealType,

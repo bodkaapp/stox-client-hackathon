@@ -195,9 +195,13 @@ class _AiIngredientListScreenState extends ConsumerState<AiIngredientListScreen>
       final recipeRepo = await ref.read(recipeRepositoryProvider.future);
       final ingredientRepo = await ref.read(ingredientRepositoryProvider.future);
 
+      String recipeId = '';
       if (widget.sourceUrl != null && _recipeTitle.isNotEmpty) {
+        recipeId = DateTime.now().microsecondsSinceEpoch.toString();
+        // Check if ID already exists? Assuming unique for now based entirely on timestamp for new entry.
+        // Actually this screen is for new saves usually.
         final recipe = Recipe(
-          id: DateTime.now().microsecondsSinceEpoch.toString(), // Generating ID
+          id: recipeId,
           title: _recipeTitle,
           pageUrl: widget.sourceUrl ?? '', // Using url field for sourceUrl
           ogpImageUrl: widget.imageUrl ?? '',
@@ -216,7 +220,7 @@ class _AiIngredientListScreenState extends ConsumerState<AiIngredientListScreen>
       }
 
       if (mounted) {
-        Navigator.pop(context, true);
+        Navigator.pop(context, recipeId.isNotEmpty ? recipeId : true); // Return ID if available
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
