@@ -1,0 +1,228 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'dart:typed_data';
+import '../../config/app_colors.dart';
+import '../../domain/models/ingredient.dart';
+import '../../infrastructure/repositories/isar_ingredient_repository.dart';
+
+class AiAnalyzedStockScreen extends ConsumerStatefulWidget {
+  final List<Ingredient> initialIngredients;
+  final String location;
+  final Uint8List? imageBytes;
+
+  const AiAnalyzedStockScreen({
+    super.key,
+    required this.initialIngredients,
+    required this.location,
+    this.imageBytes,
+  });
+
+  @override
+  ConsumerState<AiAnalyzedStockScreen> createState() => _AiAnalyzedStockScreenState();
+}
+
+class _AiAnalyzedStockScreenState extends ConsumerState<AiAnalyzedStockScreen> {
+  late List<Ingredient> _ingredients;
+  bool _isSaving = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _ingredients = List.from(widget.initialIngredients);
+  }
+
+  Future<void> _saveToStock() async {
+    setState(() {
+      _isSaving = true;
+    });
+
+    try {
+      final ingredientRepo = await ref.read(ingredientRepositoryProvider.future);
+
+      for (final ingredient in _ingredients) {
+        // Ensure status is stock and id is unique
+        await ingredientRepo.save(ingredient.copyWith(
+          id: DateTime.now().microsecondsSinceEpoch.toString() + ingredient.name,
+          status: IngredientStatus.stock,
+        ));
+      }
+
+      if (mounted) {
+        Navigator.pop(context, true); // Return true to indicate success
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('${_ingredients.length}件の在庫を追加しました！')),
+        );
+      }
+    } catch (e) {
+      setState(() {
+        _isSaving = false;
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('保存に失敗しました。')),
+        );
+      }
+    }
+  }
+
+  void _removeIngredient(int index) {
+    setState(() {
+      _ingredients.removeAt(index);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppColors.stoxBackground,
+      appBar: AppBar(title: const Text('解析結果'), centerTitle: true),
+      body: SafeArea(
+        child: Stack(
+          children: [
+            Column(
+              children: [
+                _buildHeader(),
+                Expanded(
+                  child: _ingredients.isEmpty
+                      ? const Center(child: Text('商品が見つかりませんでした'))
+                      : ListView.separated(
+                          itemCount: _ingredients.length,
+                          separatorBuilder: (context, index) => const Divider(height: 1, color: Color(0xFFF0E7DE)),
+                          itemBuilder: (context, index) {
+                            final item = _ingredients[index];
+                            return _buildIngredientRow(index, item);
+                          },
+                        ),
+                ),
+                _buildFooter(),
+              ],
+            ),
+             if (_isSaving) _buildLoadingOverlay(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHeader() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: AppColors.stoxBackground.withOpacity(0.95),
+        border: const Border(bottom: BorderSide(color: Color(0xFFFFEBD5))),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          if (widget.imageBytes != null)
+            Padding(
+              padding: const EdgeInsets.only(right: 12.0),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: Image.memory(
+                  widget.imageBytes!,
+                  width: 48,
+                  height: 48,
+                  fit: BoxFit.cover,
+                ),
+              ),
+            ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                '撮影場所: ${widget.location}',
+                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.stoxText),
+              ),
+              const SizedBox(height: 4),
+              const Text(
+                '以下の商品が見つかりました',
+                style: TextStyle(fontSize: 12, color: AppColors.stoxSubText),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildIngredientRow(int index, Ingredient item) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      color: Colors.white,
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  item.name,
+                  style: const TextStyle(
+                    color: AppColors.stoxText,
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Text(
+                  '${item.amount}${item.unit} / ${item.category}',
+                  style: const TextStyle(
+                    color: AppColors.stoxSubText,
+                    fontSize: 11,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          IconButton(
+            icon: const Icon(Icons.close, color: Colors.grey),
+            onPressed: () => _removeIngredient(index),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFooter() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: const Border(top: BorderSide(color: AppColors.stoxBorder)),
+      ),
+      child: Column(
+        children: [
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: _ingredients.isEmpty ? null : _saveToStock,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.stoxPrimary,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              child: const Text('在庫に追加する', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            ),
+          ),
+          const SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            child: TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('やっぱり辞めた', style: TextStyle(color: AppColors.stoxSubText)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+   Widget _buildLoadingOverlay() {
+    return Container(
+      color: Colors.black26,
+      child: const Center(child: CircularProgressIndicator(color: AppColors.stoxPrimary)),
+    );
+  }
+
+}

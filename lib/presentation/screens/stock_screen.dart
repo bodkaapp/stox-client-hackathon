@@ -4,6 +4,11 @@ import 'package:intl/intl.dart';
 import '../../config/app_colors.dart';
 import '../../domain/models/ingredient.dart';
 import '../viewmodels/stock_viewmodel.dart';
+import 'package:image_picker/image_picker.dart';
+import '../../infrastructure/repositories/ai_recipe_repository.dart';
+import 'ai_analyzed_stock_screen.dart';
+import 'photo_stock_location_screen.dart';
+import 'dart:typed_data';
 
 class StockScreen extends ConsumerStatefulWidget {
   const StockScreen({super.key});
@@ -14,6 +19,16 @@ class StockScreen extends ConsumerStatefulWidget {
 
 class _StockScreenState extends ConsumerState<StockScreen> {
   String _selectedCategory = 'すべて';
+  bool _isMenuOpen = false;
+  bool _isAnalyzing = false;
+  final ImagePicker _picker = ImagePicker();
+
+  void _toggleMenu() {
+    setState(() {
+      _isMenuOpen = !_isMenuOpen;
+    });
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -23,34 +38,144 @@ class _StockScreenState extends ConsumerState<StockScreen> {
       backgroundColor: AppColors.stoxBackground,
       body: SafeArea(
         bottom: false,
-        child: Column(
+        child: Stack(
           children: [
-            _buildHeader(),
-            _buildFilterBar(),
-            Expanded(
-              child: stateAvg.when(
-                data: (items) {
-                  final filteredItems = _filterItems(items);
-                  
-                  return Column(
-                    children: [
-                      _buildListHeader(),
-                      Expanded(
-                        child: ListView.separated(
-                          padding: const EdgeInsets.fromLTRB(16, 0, 16, 80),
-                          itemCount: filteredItems.length,
-                          separatorBuilder: (context, index) => const Divider(height: 1, color: AppColors.stoxBorder),
-                          itemBuilder: (context, index) {
-                            return _buildListItem(filteredItems[index]);
-                          },
+            Column(
+              children: [
+                _buildHeader(),
+                _buildFilterBar(),
+                Expanded(
+                  child: stateAvg.when(
+                    data: (items) {
+                      final filteredItems = _filterItems(items);
+                      
+                      return Column(
+                        children: [
+                          _buildListHeader(),
+                          Expanded(
+                            child: ListView.separated(
+                              padding: const EdgeInsets.fromLTRB(16, 0, 16, 160), // Increased padding for FAB
+                              itemCount: filteredItems.length,
+                              separatorBuilder: (context, index) => const Divider(height: 1, color: AppColors.stoxBorder),
+                              itemBuilder: (context, index) {
+                                return _buildListItem(filteredItems[index]);
+                              },
+                            ),
+                          ),
+                          _buildFooter(items),
+                        ],
+                      );
+                    },
+                    error: (err, st) => Center(child: Text('Error: $err')),
+                    loading: () => const Center(child: CircularProgressIndicator()),
+                  ),
+                ),
+              ],
+            ),
+            
+            // Dimmed Background Overlay
+            if (_isMenuOpen)
+              Positioned.fill(
+                child: GestureDetector(
+                  onTap: _toggleMenu,
+                  child: AnimatedOpacity(
+                    opacity: _isMenuOpen ? 1.0 : 0.0,
+                    duration: const Duration(milliseconds: 200),
+                    child: Container(
+                      color: const Color(0xB3000000), // Darker overlay like X or design
+                    ),
+                  ),
+                ),
+              ),
+
+            if (_isAnalyzing)
+               Positioned.fill(
+                 child: Container(
+                   color: Colors.black45,
+                   child: const Center(
+                     child: CircularProgressIndicator(color: AppColors.stoxPrimary),
+                   ),
+                 ),
+               ),
+
+
+             // Menu Items
+              AnimatedPositioned(
+                duration: const Duration(milliseconds: 250),
+                curve: Curves.easeOutBack,
+                bottom: _isMenuOpen ? 90 : 20, // Moves up when open
+                left: 0,
+                right: 0,
+                child: AnimatedOpacity(
+                  opacity: _isMenuOpen ? 1.0 : 0.0,
+                  duration: const Duration(milliseconds: 200),
+                  child: IgnorePointer(
+                    ignoring: !_isMenuOpen,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        _buildMenuButton(
+                          Icons.shopping_cart, 
+                          '買い物リストへ追加する', 
+                          onTap: () {
+                            print('Add to shopping list');
+                            _toggleMenu();
+                          }
                         ),
-                      ),
-                      _buildFooter(items),
-                    ],
-                  );
-                },
-                error: (err, st) => Center(child: Text('Error: $err')),
-                loading: () => const Center(child: CircularProgressIndicator()),
+                        const SizedBox(height: 12),
+                        _buildMenuButton(
+                          Icons.edit, 
+                          '文字を入力して在庫を追加', 
+                          onTap: () {
+                            print('Add text inventory');
+                            _toggleMenu();
+                          }
+                        ),
+                        const SizedBox(height: 12),
+                        _buildMenuButton(
+                          Icons.photo_camera, 
+                          '写真を撮影して在庫を追加', 
+                          onTap: () {
+                             _toggleMenu();
+                             _onPhotoBtnTap();
+                          }
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+
+            // FAB
+            Positioned(
+              bottom: 24, // Adjust based on footer height or desired position
+              left: 0,
+              right: 0,
+              child: Center(
+                child: GestureDetector(
+                  onTap: _toggleMenu,
+                  child: Container(
+                    width: 64,
+                    height: 64,
+                    decoration: BoxDecoration(
+                      color: AppColors.stoxPrimary,
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.stoxPrimary.withOpacity(0.3),
+                          blurRadius: 24,
+                          offset: const Offset(0, 8),
+                        )
+                      ],
+                    ),
+                    child: AnimatedRotation(
+                       turns: _isMenuOpen ? 0.125 : 0, // 45 degrees rotation
+                       duration: const Duration(milliseconds: 200),
+                       child: const Icon(Icons.add, color: Colors.white, size: 32),
+                    ),
+                  ),
+                ),
               ),
             ),
           ],
@@ -94,9 +219,21 @@ class _StockScreenState extends ConsumerState<StockScreen> {
           Row(
             children: [
               _buildCircleButton(Icons.search, Colors.white, AppColors.stoxSubText, border: AppColors.stoxBorder),
-              const SizedBox(width: 8),
-              // Updated to Orange as requested (stoxPrimary)
-              _buildCircleButton(Icons.add, AppColors.stoxPrimary, Colors.white, isAdd: true), 
+               // Second button 'Menu' from design code.html is actually a 'Menu' icon, not search. 
+               // In original code it was "search" and "add". 
+               // In code.html it is "search" (left) and "menu" (right). 
+               // The user request said "Remove the bottom + button" and replace with FAB. 
+               // But usually we keep search? 
+               // Let's look at code.html header:
+               // <div class="flex gap-2">
+               // <button ...> <span ...>search</span> </button>
+               // <button ...> <span ...>menu</span> </button>
+               // </div>
+               // So I should probably add the Menu button back if I want to match design, 
+               // OR just keep Search. The user didn't explicitly ask for "Menu" button, but implied "Stock Screen ... changes ... refer to code.html".
+               // Let's add the Menu button to match code.html.
+               const SizedBox(width: 8),
+               _buildCircleButton(Icons.menu, Colors.white, AppColors.stoxSubText, border: AppColors.stoxBorder),
             ],
           ),
         ],
@@ -292,73 +429,24 @@ class _StockScreenState extends ConsumerState<StockScreen> {
     final expiredCount = allItems.where((i) => _isExpiredOrClose(i.expiryDate)).length;
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
       decoration: const BoxDecoration(
         color: Colors.white,
         border: Border(top: BorderSide(color: AppColors.stoxBorder)),
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text('TOTAL ITEMS', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.stoxSubText, letterSpacing: 1.2)),
-                  RichText(
-                    text: TextSpan(
-                      children: [
-                        TextSpan(text: '全 $total 品目', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.stoxText)),
-                        if (expiredCount > 0)
-                          TextSpan(text: '  ● ${expiredCount}品期限間近', style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.red)),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              OutlinedButton.icon(
-                onPressed: () {},
-                icon: const Icon(Icons.print, size: 14, color: AppColors.stoxSubText),
-                label: const Text('リスト出力', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.stoxSubText)),
-                style: OutlinedButton.styleFrom(
-                  side: const BorderSide(color: AppColors.stoxBorder),
-                  shape: const StadiumBorder(),
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: OutlinedButton.icon(
-                  onPressed: () {},
-                  icon: const Icon(Icons.edit_note, size: 18, color: AppColors.stoxPrimary),
-                  label: const Text('編集する', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.stoxPrimary)),
-                  style: OutlinedButton.styleFrom(
-                    side: const BorderSide(color: AppColors.stoxPrimary, width: 2),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: ElevatedButton.icon(
-                  onPressed: () {},
-                  icon: const Icon(Icons.shopping_cart, size: 18, color: Colors.white),
-                  label: const Text('買い物メモへ', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.white)),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.stoxPrimary,
-                    elevation: 4,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                  ),
-                ),
-              ),
-            ],
+          const Text('TOTAL ITEMS', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.stoxSubText, letterSpacing: 1.2)),
+          RichText(
+            text: TextSpan(
+              children: [
+                TextSpan(text: '全 $total 品目', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.stoxText)),
+                if (expiredCount > 0)
+                  TextSpan(text: '  ● ${expiredCount}品期限間近', style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.red)),
+              ],
+            ),
           ),
         ],
       ),
@@ -375,5 +463,67 @@ class _StockScreenState extends ConsumerState<StockScreen> {
       if (_selectedCategory == '調味料') return item.category.contains('調味料') || item.category.contains('香辛料');
       return false; 
     }).toList();
+  }
+  Widget _buildMenuButton(IconData icon, String label, {required VoidCallback onTap}) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(30),
+          border: Border.all(color: AppColors.stoxBorder),
+          boxShadow: const [
+            BoxShadow(
+              color: Colors.black12,
+              blurRadius: 8,
+              offset: Offset(0, 4),
+            )
+          ],
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, color: AppColors.stoxPrimary, size: 20),
+            const SizedBox(width: 8),
+            Text(
+              label,
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF334155), // slate-700
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+
+  Future<void> _onPhotoBtnTap() async {
+    try {
+      final XFile? photo = await _picker.pickImage(source: ImageSource.camera, maxWidth: 1024);
+      if (photo == null) return;
+
+      if (!mounted) return;
+
+      // Navigate to location selection screen
+      final result = await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => PhotoStockLocationScreen(imageFile: photo),
+        ),
+      );
+      
+      if (result == true) {
+        // Refresh? StockViewModel usually watches stream so it might auto-refresh if repo saves to DB.
+      }
+
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('エラーが発生しました: $e')),
+      );
+    }
   }
 }

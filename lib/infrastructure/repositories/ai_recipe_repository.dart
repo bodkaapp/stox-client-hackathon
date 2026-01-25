@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:typed_data';
 import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:http/http.dart' as http;
@@ -107,6 +108,63 @@ $text
       }).cast<Ingredient>().toList();
     } catch (e) {
       print('Error parsing ingredients from AI: $e');
+      return [];
+    }
+  }
+
+
+  /// 画像から在庫アイテムを解析する
+  Future<List<Ingredient>> analyzeStockImage(Uint8List imageBytes, String location) async {
+    final prompt = '''
+$locationを撮影した画像です。写真で確認できる食材や商品の名前を解析してリストアップしてください。
+出力形式はjsonで商品名はname, 商品の種類はcategoryのオブジェクトを作り、配列で複数の商品を返してください。
+分量(amount)や単位(unit)も推測できる場合は入れてください。
+statusは "stock" (在庫あり) にしてください。
+
+出力形式:
+[
+  {
+    "name": "材料名",
+    "amount": 数値(推測できない場合は1),
+    "unit": "単位(個, g, mlなど。推測できない場合は個)",
+    "category": "野菜" などのカテゴリ（推測）,
+    "status": "stock"
+  }
+]
+''';
+
+    final content = [
+      Content.multi([
+        TextPart(prompt),
+        DataPart('image/jpeg', imageBytes),
+      ])
+    ];
+
+    try {
+      final response = await _model.generateContent(content);
+      final responseText = response.text;
+      
+      if (responseText == null) return [];
+
+      final jsonMatch = RegExp(r'\[.*\]', dotAll: true).stringMatch(responseText);
+      if (jsonMatch == null) return [];
+      
+      final List<dynamic> jsonList = json.decode(jsonMatch);
+      return jsonList.map((e) {
+         return Ingredient(
+           id: DateTime.now().microsecondsSinceEpoch.toString() + (e['name'] ?? ''), 
+           name: e['name'] ?? '',
+           amount: (e['amount'] is num) ? (e['amount'] as num).toDouble() : 1.0,
+           unit: e['unit'] ?? '個',
+           category: e['category'] ?? 'その他',
+           status: IngredientStatus.stock,
+           storageType: StorageType.fridge, // Default, logic could be improved based on location
+           isEssential: false,
+           standardName: e['name'] ?? '', 
+         );
+      }).cast<Ingredient>().toList();
+    } catch (e) {
+      print('Error analyzing stock image: $e');
       return [];
     }
   }
