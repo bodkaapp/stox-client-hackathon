@@ -5,8 +5,11 @@ import 'config/theme.dart';
 
 import 'package:intl/date_symbol_data_local.dart';
 
+import 'package:google_mobile_ads/google_mobile_ads.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await MobileAds.instance.initialize();
   await initializeDateFormatting('ja');
   runApp(const ProviderScope(child: MyApp()));
 }
