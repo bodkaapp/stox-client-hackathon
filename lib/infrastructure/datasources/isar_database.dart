@@ -6,6 +6,7 @@ import 'schemas/recipe_schema.dart';
 import 'schemas/ingredient_schema.dart';
 import 'schemas/meal_plan_schema.dart';
 import 'schemas/user_schema.dart';
+import 'schemas/search_history_schema.dart';
 
 part 'isar_database.g.dart';
 
@@ -18,6 +19,7 @@ Future<Isar> isarDatabase(IsarDatabaseRef ref) async {
       IngredientCollectionSchema,
       MealPlanCollectionSchema,
       UserCollectionSchema,
+      SearchHistoryCollectionSchema,
     ],
     directory: dir.path,
   );

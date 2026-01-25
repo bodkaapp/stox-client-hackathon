@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../config/app_colors.dart';
 import '../viewmodels/recipe_book_viewmodel.dart';
-import 'recipe_search_results_screen.dart';
 import 'recipe_webview_screen.dart';
 import 'menu_plan_screen.dart';
+import '../widgets/search_modal.dart';
 
 class RecipeBookScreen extends ConsumerWidget {
   const RecipeBookScreen({super.key});
@@ -72,31 +72,9 @@ class RecipeBookScreen extends ConsumerWidget {
                         borderRadius: BorderRadius.circular(16),
                       ),
                       child: TextField(
-                        onSubmitted: (value) {
-                          final trimmedValue = value.trim();
-                          if (trimmedValue.isEmpty) return;
-
-                          final uri = Uri.tryParse(trimmedValue);
-                          final isUrl = uri != null && (uri.scheme == 'http' || uri.scheme == 'https') && uri.host.isNotEmpty;
-
-                          if (isUrl) {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => RecipeWebViewScreen(
-                                  url: trimmedValue,
-                                  title: '読み込み中...',
-                                ),
-                              ),
-                            ).then((_) => ref.refresh(recipeBookViewModelProvider));
-                          } else {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => RecipeSearchResultsScreen(searchQuery: trimmedValue),
-                              ),
-                            ).then((_) => ref.refresh(recipeBookViewModelProvider));
-                          }
+                        readOnly: true,
+                        onTap: () {
+                          SearchModal.show(context);
                         },
                         decoration: InputDecoration(
                           hintText: 'レシピを検索またはURLを入力',
