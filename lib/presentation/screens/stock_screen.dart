@@ -9,6 +9,7 @@ import '../../infrastructure/repositories/ai_recipe_repository.dart';
 import 'ai_analyzed_stock_screen.dart';
 import 'photo_stock_location_screen.dart';
 import 'dart:typed_data';
+import 'text_stock_add_modal.dart';
 
 class StockScreen extends ConsumerStatefulWidget {
   const StockScreen({super.key});
@@ -128,8 +129,13 @@ class _StockScreenState extends ConsumerState<StockScreen> {
                           Icons.edit, 
                           '文字を入力して在庫を追加', 
                           onTap: () {
-                            print('Add text inventory');
                             _toggleMenu();
+                            showModalBottomSheet(
+                              context: context,
+                              isScrollControlled: true,
+                              backgroundColor: Colors.transparent,
+                              builder: (context) => const TextStockAddModal(),
+                            );
                           }
                         ),
                         const SizedBox(height: 12),
