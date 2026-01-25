@@ -1,4 +1,4 @@
-package app.stox.stox
+package app.bodka.stox
 
 import io.flutter.embedding.android.FlutterActivity
 

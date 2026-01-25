@@ -1,3 +1,8 @@
+plugins {
+    id("com.google.gms.google-services") version "4.4.4" apply false
+    id("com.google.firebase.appdistribution") version "5.0.0" apply false
+}
+
 allprojects {
     repositories {
         google()
@@ -27,7 +32,10 @@ subprojects {
                 if (android != null) {
                     val setNamespace = android.javaClass.getMethod("setNamespace", String::class.java)
                     setNamespace.invoke(android, "dev.isar.isar_flutter_libs")
-                    println("Injected namespace for isar_flutter_libs")
+                    
+                    val setCompileSdkVersion = android.javaClass.getMethod("compileSdkVersion", Int::class.javaPrimitiveType)
+                    setCompileSdkVersion.invoke(android, 36)
+                    println("Injected namespace and compileSdkVersion 36 for isar_flutter_libs")
                 }
             } catch (e: Exception) {
                 println("Failed to inject namespace for isar_flutter_libs: ${e.message}")
@@ -43,6 +51,8 @@ subprojects {
         }
     }
 }
+
+
 
 tasks.register<Delete>("clean") {
     delete(rootProject.layout.buildDirectory)
