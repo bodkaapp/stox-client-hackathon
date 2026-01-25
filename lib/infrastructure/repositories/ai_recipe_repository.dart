@@ -114,14 +114,11 @@ $text
 
 
   /// 画像から在庫アイテムを解析する
-  Future<List<Ingredient>> analyzeStockImage(Uint8List imageBytes, String location) async {
+  Future<List<Ingredient>> analyzeStockImage(Uint8List imageBytes, String location, {String? mimeType}) async {
     final prompt = '''
 $locationを撮影した画像です。写真で確認できる食材や商品の名前を解析してリストアップしてください。
-出力形式はjsonで商品名はname, 商品の種類はcategoryのオブジェクトを作り、配列で複数の商品を返してください。
-分量(amount)や単位(unit)も推測できる場合は入れてください。
-statusは "stock" (在庫あり) にしてください。
+出力形式は以下のJSON形式のみを返してください。Markdownのコードブロック(```json ... ```)を含まないでください。
 
-出力形式:
 [
   {
     "name": "材料名",
@@ -133,39 +130,57 @@ statusは "stock" (在庫あり) にしてください。
 ]
 ''';
 
+  // Determine mimeType if not provided
+  // Default to jpeg if unknown, as it's most common for camera captures
+  final finalMimeType = mimeType ?? 'image/jpeg';
+
     final content = [
       Content.multi([
         TextPart(prompt),
-        DataPart('image/jpeg', imageBytes),
+        DataPart(finalMimeType, imageBytes),
       ])
     ];
 
-    try {
-      final response = await _model.generateContent(content);
-      final responseText = response.text;
-      
-      if (responseText == null) return [];
+    // Let exceptions bubble up to be handled by the UI
+    final response = await _model.generateContent(content);
+    final responseText = response.text;
+    
+    if (responseText == null) {
+      throw Exception('AIからの応答が空でした。');
+    }
 
-      final jsonMatch = RegExp(r'\[.*\]', dotAll: true).stringMatch(responseText);
-      if (jsonMatch == null) return [];
-      
-      final List<dynamic> jsonList = json.decode(jsonMatch);
+    // Clean up potential markdown code blocks
+    String cleanJson = responseText.trim();
+    if (cleanJson.startsWith('```json')) {
+      cleanJson = cleanJson.replaceFirst('```json', '').replaceFirst('```', '').trim();
+    } else if (cleanJson.startsWith('```')) {
+      cleanJson = cleanJson.replaceFirst('```', '').replaceFirst('```', '').trim();
+    }
+
+    // Attempt to extract JSON array if there's extra text
+    final jsonMatch = RegExp(r'\[.*\]', dotAll: true).stringMatch(cleanJson);
+    if (jsonMatch != null) {
+      cleanJson = jsonMatch;
+    }
+
+    try {
+      final List<dynamic> jsonList = json.decode(cleanJson);
       return jsonList.map((e) {
-         return Ingredient(
-           id: DateTime.now().microsecondsSinceEpoch.toString() + (e['name'] ?? ''), 
-           name: e['name'] ?? '',
-           amount: (e['amount'] is num) ? (e['amount'] as num).toDouble() : 1.0,
-           unit: e['unit'] ?? '個',
-           category: e['category'] ?? 'その他',
-           status: IngredientStatus.stock,
-           storageType: StorageType.fridge, // Default, logic could be improved based on location
-           isEssential: false,
-           standardName: e['name'] ?? '', 
-         );
+          return Ingredient(
+            id: DateTime.now().microsecondsSinceEpoch.toString() + (e['name'] ?? ''), 
+            name: e['name'] ?? '',
+            amount: (e['amount'] is num) ? (e['amount'] as num).toDouble() : 1.0,
+            unit: e['unit'] ?? '個',
+            category: e['category'] ?? 'その他',
+            status: IngredientStatus.stock,
+            storageType: StorageType.fridge, // Default
+            isEssential: false,
+            standardName: e['name'] ?? '', 
+          );
       }).cast<Ingredient>().toList();
     } catch (e) {
-      print('Error analyzing stock image: $e');
-      return [];
+      print('Error parsing ingredients from AI response: $responseText');
+      throw Exception('AIの応答を解析できませんでした: $responseText');
     }
   }
 }

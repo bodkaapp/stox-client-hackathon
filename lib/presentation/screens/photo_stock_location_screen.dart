@@ -108,7 +108,11 @@ class _PhotoStockLocationScreenState extends ConsumerState<PhotoStockLocationScr
       
       // Start loading ad and analysis concurrently
       _loadRewardedAd();
-      final analysisFuture = aiRepo.analyzeStockImage(_imageBytes!, _locationController.text);
+      final analysisFuture = aiRepo.analyzeStockImage(
+        _imageBytes!, 
+        _locationController.text,
+        mimeType: widget.imageFile.mimeType,
+      );
 
       // Wait for ad to load (with a small delay to ensure callback fires if fast) or timeout
       // In a real app we might want to ensure ad is loaded before showing, or show loading UI.
@@ -193,12 +197,22 @@ class _PhotoStockLocationScreenState extends ConsumerState<PhotoStockLocationScr
       }
 
     } catch (e) {
+      debugPrint('AI Analysis Error: $e');
       setState(() {
          _isAnalyzing = false;
       });
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('エラーが発生しました: $e')),
+          SnackBar(
+            content: Text('エラーが発生しました: $e'),
+            duration: const Duration(seconds: 10),
+            action: SnackBarAction(
+              label: '閉じる',
+              onPressed: () {
+                ScaffoldMessenger.of(context).hideCurrentSnackBar();
+              },
+            ),
+          ),
         );
       }
     }
