@@ -49,6 +49,7 @@ extension UserSettingsMapper on UserCollection {
       points: points,
       adRights: adRights,
       contentWifiOnly: contentWifiOnly,
+      hideAiIngredientRegistrationDialog: hideAiIngredientRegistrationDialog,
       myAreaLat: myAreaLat,
       myAreaLng: myAreaLng,
     );
@@ -62,6 +63,7 @@ extension UserSettingsDomainMapper on UserSettings {
       ..points = settings.points
       ..adRights = settings.adRights
       ..contentWifiOnly = settings.contentWifiOnly
+      ..hideAiIngredientRegistrationDialog = settings.hideAiIngredientRegistrationDialog
       ..myAreaLat = settings.myAreaLat
       ..myAreaLng = settings.myAreaLng;
   }

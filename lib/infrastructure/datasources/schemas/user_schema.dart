@@ -12,6 +12,7 @@ class UserCollection {
   int points = 0;
   int adRights = 0;
   bool contentWifiOnly = false;
+  bool hideAiIngredientRegistrationDialog = false;
   double? myAreaLat;
   double? myAreaLng;
 }

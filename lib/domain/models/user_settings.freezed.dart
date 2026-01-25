@@ -24,6 +24,8 @@ mixin _$UserSettings {
   int get points => throw _privateConstructorUsedError;
   int get adRights => throw _privateConstructorUsedError;
   bool get contentWifiOnly => throw _privateConstructorUsedError;
+  bool get hideAiIngredientRegistrationDialog =>
+      throw _privateConstructorUsedError;
   double? get myAreaLat => throw _privateConstructorUsedError;
   double? get myAreaLng => throw _privateConstructorUsedError;
 
@@ -44,6 +46,7 @@ abstract class $UserSettingsCopyWith<$Res> {
       int points,
       int adRights,
       bool contentWifiOnly,
+      bool hideAiIngredientRegistrationDialog,
       double? myAreaLat,
       double? myAreaLng});
 }
@@ -65,6 +68,7 @@ class _$UserSettingsCopyWithImpl<$Res, $Val extends UserSettings>
     Object? points = null,
     Object? adRights = null,
     Object? contentWifiOnly = null,
+    Object? hideAiIngredientRegistrationDialog = null,
     Object? myAreaLat = freezed,
     Object? myAreaLng = freezed,
   }) {
@@ -84,6 +88,11 @@ class _$UserSettingsCopyWithImpl<$Res, $Val extends UserSettings>
       contentWifiOnly: null == contentWifiOnly
           ? _value.contentWifiOnly
           : contentWifiOnly // ignore: cast_nullable_to_non_nullable
+              as bool,
+      hideAiIngredientRegistrationDialog: null ==
+              hideAiIngredientRegistrationDialog
+          ? _value.hideAiIngredientRegistrationDialog
+          : hideAiIngredientRegistrationDialog // ignore: cast_nullable_to_non_nullable
               as bool,
       myAreaLat: freezed == myAreaLat
           ? _value.myAreaLat
@@ -110,6 +119,7 @@ abstract class _$$UserSettingsImplCopyWith<$Res>
       int points,
       int adRights,
       bool contentWifiOnly,
+      bool hideAiIngredientRegistrationDialog,
       double? myAreaLat,
       double? myAreaLng});
 }
@@ -129,6 +139,7 @@ class __$$UserSettingsImplCopyWithImpl<$Res>
     Object? points = null,
     Object? adRights = null,
     Object? contentWifiOnly = null,
+    Object? hideAiIngredientRegistrationDialog = null,
     Object? myAreaLat = freezed,
     Object? myAreaLng = freezed,
   }) {
@@ -148,6 +159,11 @@ class __$$UserSettingsImplCopyWithImpl<$Res>
       contentWifiOnly: null == contentWifiOnly
           ? _value.contentWifiOnly
           : contentWifiOnly // ignore: cast_nullable_to_non_nullable
+              as bool,
+      hideAiIngredientRegistrationDialog: null ==
+              hideAiIngredientRegistrationDialog
+          ? _value.hideAiIngredientRegistrationDialog
+          : hideAiIngredientRegistrationDialog // ignore: cast_nullable_to_non_nullable
               as bool,
       myAreaLat: freezed == myAreaLat
           ? _value.myAreaLat
@@ -169,6 +185,7 @@ class _$UserSettingsImpl implements _UserSettings {
       this.points = 0,
       this.adRights = 0,
       this.contentWifiOnly = false,
+      this.hideAiIngredientRegistrationDialog = false,
       this.myAreaLat,
       this.myAreaLng});
 
@@ -187,13 +204,16 @@ class _$UserSettingsImpl implements _UserSettings {
   @JsonKey()
   final bool contentWifiOnly;
   @override
+  @JsonKey()
+  final bool hideAiIngredientRegistrationDialog;
+  @override
   final double? myAreaLat;
   @override
   final double? myAreaLng;
 
   @override
   String toString() {
-    return 'UserSettings(id: $id, points: $points, adRights: $adRights, contentWifiOnly: $contentWifiOnly, myAreaLat: $myAreaLat, myAreaLng: $myAreaLng)';
+    return 'UserSettings(id: $id, points: $points, adRights: $adRights, contentWifiOnly: $contentWifiOnly, hideAiIngredientRegistrationDialog: $hideAiIngredientRegistrationDialog, myAreaLat: $myAreaLat, myAreaLng: $myAreaLng)';
   }
 
   @override
@@ -207,6 +227,10 @@ class _$UserSettingsImpl implements _UserSettings {
                 other.adRights == adRights) &&
             (identical(other.contentWifiOnly, contentWifiOnly) ||
                 other.contentWifiOnly == contentWifiOnly) &&
+            (identical(other.hideAiIngredientRegistrationDialog,
+                    hideAiIngredientRegistrationDialog) ||
+                other.hideAiIngredientRegistrationDialog ==
+                    hideAiIngredientRegistrationDialog) &&
             (identical(other.myAreaLat, myAreaLat) ||
                 other.myAreaLat == myAreaLat) &&
             (identical(other.myAreaLng, myAreaLng) ||
@@ -216,7 +240,14 @@ class _$UserSettingsImpl implements _UserSettings {
   @JsonKey(ignore: true)
   @override
   int get hashCode => Object.hash(
-      runtimeType, id, points, adRights, contentWifiOnly, myAreaLat, myAreaLng);
+      runtimeType,
+      id,
+      points,
+      adRights,
+      contentWifiOnly,
+      hideAiIngredientRegistrationDialog,
+      myAreaLat,
+      myAreaLng);
 
   @JsonKey(ignore: true)
   @override
@@ -238,6 +269,7 @@ abstract class _UserSettings implements UserSettings {
       final int points,
       final int adRights,
       final bool contentWifiOnly,
+      final bool hideAiIngredientRegistrationDialog,
       final double? myAreaLat,
       final double? myAreaLng}) = _$UserSettingsImpl;
 
@@ -252,6 +284,8 @@ abstract class _UserSettings implements UserSettings {
   int get adRights;
   @override
   bool get contentWifiOnly;
+  @override
+  bool get hideAiIngredientRegistrationDialog;
   @override
   double? get myAreaLat;
   @override

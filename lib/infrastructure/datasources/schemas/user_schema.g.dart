@@ -27,23 +27,28 @@ const UserCollectionSchema = CollectionSchema(
       name: r'contentWifiOnly',
       type: IsarType.bool,
     ),
-    r'myAreaLat': PropertySchema(
+    r'hideAiIngredientRegistrationDialog': PropertySchema(
       id: 2,
+      name: r'hideAiIngredientRegistrationDialog',
+      type: IsarType.bool,
+    ),
+    r'myAreaLat': PropertySchema(
+      id: 3,
       name: r'myAreaLat',
       type: IsarType.double,
     ),
     r'myAreaLng': PropertySchema(
-      id: 3,
+      id: 4,
       name: r'myAreaLng',
       type: IsarType.double,
     ),
     r'originalId': PropertySchema(
-      id: 4,
+      id: 5,
       name: r'originalId',
       type: IsarType.string,
     ),
     r'points': PropertySchema(
-      id: 5,
+      id: 6,
       name: r'points',
       type: IsarType.long,
     )
@@ -94,10 +99,11 @@ void _userCollectionSerialize(
 ) {
   writer.writeLong(offsets[0], object.adRights);
   writer.writeBool(offsets[1], object.contentWifiOnly);
-  writer.writeDouble(offsets[2], object.myAreaLat);
-  writer.writeDouble(offsets[3], object.myAreaLng);
-  writer.writeString(offsets[4], object.originalId);
-  writer.writeLong(offsets[5], object.points);
+  writer.writeBool(offsets[2], object.hideAiIngredientRegistrationDialog);
+  writer.writeDouble(offsets[3], object.myAreaLat);
+  writer.writeDouble(offsets[4], object.myAreaLng);
+  writer.writeString(offsets[5], object.originalId);
+  writer.writeLong(offsets[6], object.points);
 }
 
 UserCollection _userCollectionDeserialize(
@@ -109,11 +115,12 @@ UserCollection _userCollectionDeserialize(
   final object = UserCollection();
   object.adRights = reader.readLong(offsets[0]);
   object.contentWifiOnly = reader.readBool(offsets[1]);
+  object.hideAiIngredientRegistrationDialog = reader.readBool(offsets[2]);
   object.id = id;
-  object.myAreaLat = reader.readDoubleOrNull(offsets[2]);
-  object.myAreaLng = reader.readDoubleOrNull(offsets[3]);
-  object.originalId = reader.readString(offsets[4]);
-  object.points = reader.readLong(offsets[5]);
+  object.myAreaLat = reader.readDoubleOrNull(offsets[3]);
+  object.myAreaLng = reader.readDoubleOrNull(offsets[4]);
+  object.originalId = reader.readString(offsets[5]);
+  object.points = reader.readLong(offsets[6]);
   return object;
 }
 
@@ -129,12 +136,14 @@ P _userCollectionDeserializeProp<P>(
     case 1:
       return (reader.readBool(offset)) as P;
     case 2:
-      return (reader.readDoubleOrNull(offset)) as P;
+      return (reader.readBool(offset)) as P;
     case 3:
       return (reader.readDoubleOrNull(offset)) as P;
     case 4:
-      return (reader.readString(offset)) as P;
+      return (reader.readDoubleOrNull(offset)) as P;
     case 5:
+      return (reader.readString(offset)) as P;
+    case 6:
       return (reader.readLong(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -343,6 +352,16 @@ extension UserCollectionQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
         property: r'contentWifiOnly',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<UserCollection, UserCollection, QAfterFilterCondition>
+      hideAiIngredientRegistrationDialogEqualTo(bool value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'hideAiIngredientRegistrationDialog',
         value: value,
       ));
     });
@@ -799,6 +818,20 @@ extension UserCollectionQuerySortBy
     });
   }
 
+  QueryBuilder<UserCollection, UserCollection, QAfterSortBy>
+      sortByHideAiIngredientRegistrationDialog() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'hideAiIngredientRegistrationDialog', Sort.asc);
+    });
+  }
+
+  QueryBuilder<UserCollection, UserCollection, QAfterSortBy>
+      sortByHideAiIngredientRegistrationDialogDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'hideAiIngredientRegistrationDialog', Sort.desc);
+    });
+  }
+
   QueryBuilder<UserCollection, UserCollection, QAfterSortBy> sortByMyAreaLat() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'myAreaLat', Sort.asc);
@@ -879,6 +912,20 @@ extension UserCollectionQuerySortThenBy
       thenByContentWifiOnlyDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'contentWifiOnly', Sort.desc);
+    });
+  }
+
+  QueryBuilder<UserCollection, UserCollection, QAfterSortBy>
+      thenByHideAiIngredientRegistrationDialog() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'hideAiIngredientRegistrationDialog', Sort.asc);
+    });
+  }
+
+  QueryBuilder<UserCollection, UserCollection, QAfterSortBy>
+      thenByHideAiIngredientRegistrationDialogDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'hideAiIngredientRegistrationDialog', Sort.desc);
     });
   }
 
@@ -964,6 +1011,13 @@ extension UserCollectionQueryWhereDistinct
   }
 
   QueryBuilder<UserCollection, UserCollection, QDistinct>
+      distinctByHideAiIngredientRegistrationDialog() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'hideAiIngredientRegistrationDialog');
+    });
+  }
+
+  QueryBuilder<UserCollection, UserCollection, QDistinct>
       distinctByMyAreaLat() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'myAreaLat');
@@ -1009,6 +1063,13 @@ extension UserCollectionQueryProperty
       contentWifiOnlyProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'contentWifiOnly');
+    });
+  }
+
+  QueryBuilder<UserCollection, bool, QQueryOperations>
+      hideAiIngredientRegistrationDialogProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'hideAiIngredientRegistrationDialog');
     });
   }
 

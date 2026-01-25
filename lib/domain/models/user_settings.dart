@@ -10,6 +10,7 @@ class UserSettings with _$UserSettings {
     @Default(0) int points,
     @Default(0) int adRights,
     @Default(false) bool contentWifiOnly,
+    @Default(false) bool hideAiIngredientRegistrationDialog,
     double? myAreaLat,
     double? myAreaLng,
   }) = _UserSettings;

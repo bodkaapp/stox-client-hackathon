@@ -9,6 +9,7 @@ import '../../domain/models/recipe.dart';
 import '../../infrastructure/repositories/ai_recipe_repository.dart';
 import '../../infrastructure/repositories/isar_ingredient_repository.dart';
 import '../../infrastructure/repositories/isar_recipe_repository.dart';
+import '../../infrastructure/repositories/isar_user_settings_repository.dart';
 
 class AiIngredientListScreen extends ConsumerStatefulWidget {
   final String? initialText;
@@ -108,85 +109,80 @@ class _AiIngredientListScreenState extends ConsumerState<AiIngredientListScreen>
     });
   }
 
-  void _showAddIngredientSheet() {
-    final nameController = TextEditingController();
-    final quantityController = TextEditingController();
 
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => Padding(
-        padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
-        child: Container(
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-          ),
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                '材料を追加',
-                style: TextStyle(
-                  color: AppColors.stoxText,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
+
+  Future<void> _handleRegister() async {
+    final userSettingsRepo = await ref.read(userSettingsRepositoryProvider.future);
+    final userSettings = await userSettingsRepo.get();
+
+    if (userSettings.hideAiIngredientRegistrationDialog) {
+      await _saveIngredients();
+    } else {
+      if (!mounted) return;
+      
+      bool dontShowAgain = false;
+
+      final result = await showDialog<bool>(
+        context: context,
+        builder: (context) {
+          return StatefulBuilder(
+            builder: (context, setState) {
+              return AlertDialog(
+                title: const Text('確認'),
+                content: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('「ある」材料は在庫へ、「ない」材料は買い物リストへ追加します。よろしいですか？'),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        Checkbox(
+                          value: dontShowAgain,
+                          onChanged: (value) {
+                            setState(() {
+                              dontShowAgain = value ?? false;
+                            });
+                          },
+                        ),
+                        const Expanded(
+                          child: Text(
+                            '今後このダイアログを非表示にする',
+                            style: TextStyle(fontSize: 12),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
-              ),
-              const SizedBox(height: 20),
-              TextField(
-                controller: nameController,
-                autofocus: true,
-                decoration: InputDecoration(
-                  labelText: '材料名',
-                  hintText: '例: じゃがいも',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                  prefixIcon: const Icon(Icons.restaurant),
-                ),
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: quantityController,
-                decoration: InputDecoration(
-                  labelText: '分量',
-                  hintText: '例: 2個',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                  prefixIcon: const Icon(Icons.scale),
-                ),
-              ),
-              const SizedBox(height: 24),
-              SizedBox(
-                width: double.infinity,
-                height: 50,
-                child: ElevatedButton(
-                  onPressed: () {
-                    if (nameController.text.isNotEmpty) {
-                      _addIngredient(nameController.text, quantityController.text);
-                      Navigator.pop(context);
-                    }
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.stoxPrimary,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context, false),
+                    child: const Text('キャンセル'),
                   ),
-                  child: const Text('追加する', style: TextStyle(fontWeight: FontWeight.bold)),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
+                  TextButton(
+                    onPressed: () => Navigator.pop(context, true),
+                    child: const Text('登録する'),
+                  ),
+                ],
+              );
+            },
+          );
+        },
+      );
+
+      if (result == true) {
+        if (dontShowAgain) {
+          await userSettingsRepo.save(
+            userSettings.copyWith(hideAiIngredientRegistrationDialog: true),
+          );
+        }
+        await _saveIngredients();
+      }
+    }
   }
 
-  Future<void> _saveToShoppingList() async {
-    // Save only "To Buy" items (Not at home)
-    final toBuyIngredients = _ingredients.where((i) => i.status == IngredientStatus.toBuy).toList();
-    
+  Future<void> _saveIngredients() async {
     setState(() {
       _isAnalyzing = true;
     });
@@ -198,35 +194,39 @@ class _AiIngredientListScreenState extends ConsumerState<AiIngredientListScreen>
       String recipeId = '';
       if (widget.sourceUrl != null && _recipeTitle.isNotEmpty) {
         recipeId = DateTime.now().microsecondsSinceEpoch.toString();
-        // Check if ID already exists? Assuming unique for now based entirely on timestamp for new entry.
-        // Actually this screen is for new saves usually.
         final recipe = Recipe(
           id: recipeId,
           title: _recipeTitle,
-          pageUrl: widget.sourceUrl ?? '', // Using url field for sourceUrl
+          pageUrl: widget.sourceUrl ?? '',
           ogpImageUrl: widget.imageUrl ?? '',
           createdAt: DateTime.now(),
         );
         await recipeRepo.save(recipe);
       }
 
-      for (final ingredient in toBuyIngredients) {
-        // Create new ID for persistence or use generated one
-        // Ensure status is toBuy
+      final stockIngredients = _ingredients.where((i) => i.status == IngredientStatus.stock).toList();
+      final toBuyIngredients = _ingredients.where((i) => i.status == IngredientStatus.toBuy).toList();
+
+      for (final ingredient in stockIngredients) {
         await ingredientRepo.save(ingredient.copyWith(
-          id: DateTime.now().microsecondsSinceEpoch.toString() + ingredient.name, // Ensure unique
-          status: IngredientStatus.toBuy
+          id: DateTime.now().microsecondsSinceEpoch.toString() + ingredient.name + '_stock',
+          status: IngredientStatus.stock,
+        ));
+      }
+
+      for (final ingredient in toBuyIngredients) {
+        await ingredientRepo.save(ingredient.copyWith(
+          id: DateTime.now().microsecondsSinceEpoch.toString() + ingredient.name + '_tobuy',
+          status: IngredientStatus.toBuy,
         ));
       }
 
       if (mounted) {
-        Navigator.pop(context, recipeId.isNotEmpty ? recipeId : true); // Return ID if available
+        Navigator.pop(context, recipeId.isNotEmpty ? recipeId : true);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              toBuyIngredients.isNotEmpty 
-                ? '${toBuyIngredients.length}件の材料を買い物リストに追加しました！'
-                : 'レシピを保存しました！'
+              '在庫に${stockIngredients.length}件、買い物リストに${toBuyIngredients.length}件追加しました！'
             ),
           ),
         );
@@ -243,6 +243,30 @@ class _AiIngredientListScreenState extends ConsumerState<AiIngredientListScreen>
     }
   }
 
+  Future<void> _handleBack() async {
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('確認'),
+        content: const Text('解析した材料は、在庫や買い物リストに追加されませんが、よろしいですか？'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('キャンセル'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('レシピに戻る'),
+          ),
+        ],
+      ),
+    );
+
+    if (result == true && mounted) {
+      Navigator.pop(context);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final homeCount = _ingredients.where((i) => i.status == IngredientStatus.stock).length;
@@ -252,7 +276,7 @@ class _AiIngredientListScreenState extends ConsumerState<AiIngredientListScreen>
 
     return Scaffold(
       backgroundColor: AppColors.stoxBackground,
-      appBar: AppBar(title: const Text('AI材料抽出'), centerTitle: true),
+      appBar: AppBar(title: const Text('材料抽出結果'), centerTitle: true),
       body: SafeArea(
         child: Stack(
           children: [
@@ -276,38 +300,16 @@ class _AiIngredientListScreenState extends ConsumerState<AiIngredientListScreen>
 
   Widget _buildHeader(int homeCount, int totalCount) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
       decoration: BoxDecoration(
         color: AppColors.stoxBackground.withOpacity(0.95),
         border: const Border(bottom: BorderSide(color: Color(0xFFFFEBD5))),
       ),
       child: Column(
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-               Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFFFEBD5),
-                      borderRadius: BorderRadius.circular(100),
-                    ),
-                    child: Text(
-                      '$homeCount / $totalCount 完了',
-                      style: const TextStyle(
-                        color: Color(0xFFE67E22),
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
+
+
+
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
@@ -363,12 +365,9 @@ class _AiIngredientListScreenState extends ConsumerState<AiIngredientListScreen>
 
   Widget _buildIngredientList() {
     return ListView.separated(
-      itemCount: _ingredients.length + 1,
+      itemCount: _ingredients.length,
       separatorBuilder: (context, index) => const Divider(height: 1, color: Color(0xFFF0E7DE)),
       itemBuilder: (context, index) {
-        if (index == _ingredients.length) {
-          return _buildAddIngredientButton();
-        }
         final item = _ingredients[index];
         return _buildIngredientRow(index, item);
       },
@@ -468,27 +467,7 @@ class _AiIngredientListScreenState extends ConsumerState<AiIngredientListScreen>
     );
   }
 
-  Widget _buildAddIngredientButton() {
-    return InkWell(
-      onTap: _showAddIngredientSheet,
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.symmetric(vertical: 12),
-        color: const Color(0xFFFFF7ED).withOpacity(0.3),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: const [
-            Icon(Icons.add_circle, color: AppColors.stoxPrimary, size: 18),
-            SizedBox(width: 6),
-            Text(
-              '材料を追加する',
-              style: TextStyle(color: AppColors.stoxPrimary, fontSize: 12, fontWeight: FontWeight.bold),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+
 
   Widget _buildFooter(double progress, int toBuyCount) {
     return Container(
@@ -499,31 +478,45 @@ class _AiIngredientListScreenState extends ConsumerState<AiIngredientListScreen>
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
-        children: [
-          Row(
-            children: [
-               Expanded(
-                  child: ElevatedButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: const Text('戻る'),
-                  )
-               ),
-              const SizedBox(width: 8),
-              Expanded(
-                flex: 2,
-                child: ElevatedButton.icon(
-                  onPressed: (_ingredients.isEmpty || _isAnalyzing) ? null : _saveToShoppingList,
-                  icon: const Icon(Icons.shopping_basket),
-                  label: Text('買い物リストへ ($toBuyCount)'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.stoxPrimary,
-                    foregroundColor: Colors.white,
-                  ),
+          children: [
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: _handleBack,
+                style: ElevatedButton.styleFrom(
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  backgroundColor: Colors.white,
+                  foregroundColor: AppColors.stoxText,
+                  elevation: 0,
+                  side: const BorderSide(color: Color(0xFFE8DDCE)),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: const [
+                    Text('何もしないで', style: TextStyle(fontSize: 10)),
+                    SizedBox(width: 4),
+                    Text('レシピに戻る', style: TextStyle(fontWeight: FontWeight.bold)),
+                  ],
                 ),
               ),
-            ],
-          ),
-        ],
+            ),
+            const SizedBox(height: 12),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: (_ingredients.isEmpty || _isAnalyzing) ? null : _handleRegister,
+                icon: const Icon(Icons.check),
+                label: const Text('材料を登録する'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.stoxPrimary,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                ),
+              ),
+            ),
+          ],
       ),
     );
   }
