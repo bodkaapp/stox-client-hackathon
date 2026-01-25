@@ -25,45 +25,49 @@ class RecipeBookScreen extends ConsumerWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
                 child: Column(
                   children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text(
-                          'マイレシピ帳',
-                          style: TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF292524), // text-stone-800
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: AppColors.stoxPrimary.withOpacity(0.15),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: const Icon(Icons.menu_book, color: AppColors.stoxPrimary, size: 22),
                           ),
-                        ),
-                        Row(
-                          children: [
-                            IconButton(
-                              onPressed: () {},
-                              icon: const Icon(Icons.settings, color: Color(0xFF57534E)), // text-stone-600
-                              style: IconButton.styleFrom(
-                                backgroundColor: Colors.transparent, 
-                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          const SizedBox(width: 8),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: const [
+                              Text(
+                                'マイレシピ帳',
+                                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.stoxText, height: 1.0),
                               ),
-                            ),
-                            const SizedBox(width: 4),
-                            Container(
-                              decoration: const BoxDecoration(
-                                color: Color(0xFFFFF7ED), // bg-orange-50
-                                shape: BoxShape.circle,
+                              Text(
+                                'RECIPE BOOK',
+                                style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.stoxPrimary, letterSpacing: 1.0),
                               ),
-                              child: IconButton(
-                                onPressed: () {
-                                  // Add recipe logic
-                                  ref.read(recipeBookViewModelProvider.notifier).addSampleRecipe();
-                                },
-                                icon: const Icon(Icons.add, color: Color(0xFFEA580C)), // text-orange-600
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
+                            ],
+                          ),
+                        ],
+                      ),
+                      Row(
+                        children: [
+                          _buildCircleButton(Icons.settings, Colors.white, AppColors.stoxSubText, border: AppColors.stoxBorder),
+                          const SizedBox(width: 8),
+                          GestureDetector(
+                            onTap: () {
+                              ref.read(recipeBookViewModelProvider.notifier).addSampleRecipe();
+                            },
+                            child: _buildCircleButton(Icons.add, Colors.white, Colors.white, isAdd: true),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                     const SizedBox(height: 16),
                       // Search Bar
                     Container(
@@ -580,6 +584,25 @@ class RecipeBookScreen extends ConsumerWidget {
           ],
         ),
       ),
+    );
+  }
+  Widget _buildCircleButton(IconData icon, Color bg, Color contentColor, {Color? border, bool isAdd = false}) {
+    final actualBg = isAdd ? AppColors.stoxPrimary : bg;
+
+    return Container(
+      width: 36,
+      height: 36,
+      decoration: BoxDecoration(
+        color: actualBg,
+        shape: BoxShape.circle,
+        border: border != null ? Border.all(color: border) : null,
+        boxShadow: isAdd ? [
+          BoxShadow(color: actualBg.withOpacity(0.2), blurRadius: 4, offset: const Offset(0, 2)) 
+        ] : [
+          const BoxShadow(color: Colors.black12, blurRadius: 1, offset: Offset(0, 1))
+        ],
+      ),
+      child: Icon(icon, color: contentColor, size: 20),
     );
   }
 }

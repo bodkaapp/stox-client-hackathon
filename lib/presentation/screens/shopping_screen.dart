@@ -55,23 +55,34 @@ class ShoppingScreen extends ConsumerWidget {
   }
 
   Widget _buildHeader(WidgetRef ref, bool isShoppingMode) {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Row(
             children: [
-              const Icon(Icons.shopping_cart, color: AppColors.stoxPrimary, size: 28),
-              const SizedBox(width: 8),
-              const Text(
-                'お買い物',
-                style: TextStyle(
-                  color: AppColors.stoxText,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: -0.5,
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: AppColors.stoxPrimary.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(12),
                 ),
+                child: const Icon(Icons.shopping_cart, color: AppColors.stoxPrimary, size: 22),
+              ),
+              const SizedBox(width: 8),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: const [
+                  Text(
+                    'お買い物',
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.stoxText, height: 1.0),
+                  ),
+                  Text(
+                    'SHOPPING LIST',
+                    style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.stoxPrimary, letterSpacing: 1.0),
+                  ),
+                ],
               ),
             ],
           ),
