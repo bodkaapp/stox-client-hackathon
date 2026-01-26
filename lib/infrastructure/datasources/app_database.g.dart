@@ -2304,6 +2304,269 @@ class UserSettingsCompanion extends UpdateCompanion<UserSettingsEntity> {
   }
 }
 
+class $IngredientAddHistoriesTable extends IngredientAddHistories
+    with TableInfo<$IngredientAddHistoriesTable, IngredientAddHistoryEntity> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $IngredientAddHistoriesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+      'id', aliasedName, false,
+      hasAutoIncrement: true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+      'name', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _countMeta = const VerificationMeta('count');
+  @override
+  late final GeneratedColumn<int> count = GeneratedColumn<int>(
+      'count', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(1));
+  static const VerificationMeta _lastAddedAtMeta =
+      const VerificationMeta('lastAddedAt');
+  @override
+  late final GeneratedColumn<DateTime> lastAddedAt = GeneratedColumn<DateTime>(
+      'last_added_at', aliasedName, false,
+      type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  @override
+  List<GeneratedColumn> get $columns => [id, name, count, lastAddedAt];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'ingredient_add_histories';
+  @override
+  VerificationContext validateIntegrity(
+      Insertable<IngredientAddHistoryEntity> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+          _nameMeta, name.isAcceptableOrUnknown(data['name']!, _nameMeta));
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('count')) {
+      context.handle(
+          _countMeta, count.isAcceptableOrUnknown(data['count']!, _countMeta));
+    }
+    if (data.containsKey('last_added_at')) {
+      context.handle(
+          _lastAddedAtMeta,
+          lastAddedAt.isAcceptableOrUnknown(
+              data['last_added_at']!, _lastAddedAtMeta));
+    } else if (isInserting) {
+      context.missing(_lastAddedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  IngredientAddHistoryEntity map(Map<String, dynamic> data,
+      {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return IngredientAddHistoryEntity(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      name: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
+      count: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}count'])!,
+      lastAddedAt: attachedDatabase.typeMapping.read(
+          DriftSqlType.dateTime, data['${effectivePrefix}last_added_at'])!,
+    );
+  }
+
+  @override
+  $IngredientAddHistoriesTable createAlias(String alias) {
+    return $IngredientAddHistoriesTable(attachedDatabase, alias);
+  }
+}
+
+class IngredientAddHistoryEntity extends DataClass
+    implements Insertable<IngredientAddHistoryEntity> {
+  final int id;
+  final String name;
+  final int count;
+  final DateTime lastAddedAt;
+  const IngredientAddHistoryEntity(
+      {required this.id,
+      required this.name,
+      required this.count,
+      required this.lastAddedAt});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['name'] = Variable<String>(name);
+    map['count'] = Variable<int>(count);
+    map['last_added_at'] = Variable<DateTime>(lastAddedAt);
+    return map;
+  }
+
+  IngredientAddHistoriesCompanion toCompanion(bool nullToAbsent) {
+    return IngredientAddHistoriesCompanion(
+      id: Value(id),
+      name: Value(name),
+      count: Value(count),
+      lastAddedAt: Value(lastAddedAt),
+    );
+  }
+
+  factory IngredientAddHistoryEntity.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return IngredientAddHistoryEntity(
+      id: serializer.fromJson<int>(json['id']),
+      name: serializer.fromJson<String>(json['name']),
+      count: serializer.fromJson<int>(json['count']),
+      lastAddedAt: serializer.fromJson<DateTime>(json['lastAddedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'name': serializer.toJson<String>(name),
+      'count': serializer.toJson<int>(count),
+      'lastAddedAt': serializer.toJson<DateTime>(lastAddedAt),
+    };
+  }
+
+  IngredientAddHistoryEntity copyWith(
+          {int? id, String? name, int? count, DateTime? lastAddedAt}) =>
+      IngredientAddHistoryEntity(
+        id: id ?? this.id,
+        name: name ?? this.name,
+        count: count ?? this.count,
+        lastAddedAt: lastAddedAt ?? this.lastAddedAt,
+      );
+  IngredientAddHistoryEntity copyWithCompanion(
+      IngredientAddHistoriesCompanion data) {
+    return IngredientAddHistoryEntity(
+      id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
+      count: data.count.present ? data.count.value : this.count,
+      lastAddedAt:
+          data.lastAddedAt.present ? data.lastAddedAt.value : this.lastAddedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('IngredientAddHistoryEntity(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('count: $count, ')
+          ..write('lastAddedAt: $lastAddedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, name, count, lastAddedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is IngredientAddHistoryEntity &&
+          other.id == this.id &&
+          other.name == this.name &&
+          other.count == this.count &&
+          other.lastAddedAt == this.lastAddedAt);
+}
+
+class IngredientAddHistoriesCompanion
+    extends UpdateCompanion<IngredientAddHistoryEntity> {
+  final Value<int> id;
+  final Value<String> name;
+  final Value<int> count;
+  final Value<DateTime> lastAddedAt;
+  const IngredientAddHistoriesCompanion({
+    this.id = const Value.absent(),
+    this.name = const Value.absent(),
+    this.count = const Value.absent(),
+    this.lastAddedAt = const Value.absent(),
+  });
+  IngredientAddHistoriesCompanion.insert({
+    this.id = const Value.absent(),
+    required String name,
+    this.count = const Value.absent(),
+    required DateTime lastAddedAt,
+  })  : name = Value(name),
+        lastAddedAt = Value(lastAddedAt);
+  static Insertable<IngredientAddHistoryEntity> custom({
+    Expression<int>? id,
+    Expression<String>? name,
+    Expression<int>? count,
+    Expression<DateTime>? lastAddedAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (name != null) 'name': name,
+      if (count != null) 'count': count,
+      if (lastAddedAt != null) 'last_added_at': lastAddedAt,
+    });
+  }
+
+  IngredientAddHistoriesCompanion copyWith(
+      {Value<int>? id,
+      Value<String>? name,
+      Value<int>? count,
+      Value<DateTime>? lastAddedAt}) {
+    return IngredientAddHistoriesCompanion(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      count: count ?? this.count,
+      lastAddedAt: lastAddedAt ?? this.lastAddedAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (count.present) {
+      map['count'] = Variable<int>(count.value);
+    }
+    if (lastAddedAt.present) {
+      map['last_added_at'] = Variable<DateTime>(lastAddedAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('IngredientAddHistoriesCompanion(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('count: $count, ')
+          ..write('lastAddedAt: $lastAddedAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -2313,12 +2576,20 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $SearchHistoriesTable searchHistories =
       $SearchHistoriesTable(this);
   late final $UserSettingsTable userSettings = $UserSettingsTable(this);
+  late final $IngredientAddHistoriesTable ingredientAddHistories =
+      $IngredientAddHistoriesTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
-  List<DatabaseSchemaEntity> get allSchemaEntities =>
-      [recipes, ingredients, mealPlans, searchHistories, userSettings];
+  List<DatabaseSchemaEntity> get allSchemaEntities => [
+        recipes,
+        ingredients,
+        mealPlans,
+        searchHistories,
+        userSettings,
+        ingredientAddHistories
+      ];
 }
 
 typedef $$RecipesTableCreateCompanionBuilder = RecipesCompanion Function({
@@ -3434,6 +3705,165 @@ typedef $$UserSettingsTableProcessedTableManager = ProcessedTableManager<
     ),
     UserSettingsEntity,
     PrefetchHooks Function()>;
+typedef $$IngredientAddHistoriesTableCreateCompanionBuilder
+    = IngredientAddHistoriesCompanion Function({
+  Value<int> id,
+  required String name,
+  Value<int> count,
+  required DateTime lastAddedAt,
+});
+typedef $$IngredientAddHistoriesTableUpdateCompanionBuilder
+    = IngredientAddHistoriesCompanion Function({
+  Value<int> id,
+  Value<String> name,
+  Value<int> count,
+  Value<DateTime> lastAddedAt,
+});
+
+class $$IngredientAddHistoriesTableFilterComposer
+    extends Composer<_$AppDatabase, $IngredientAddHistoriesTable> {
+  $$IngredientAddHistoriesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get name => $composableBuilder(
+      column: $table.name, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get count => $composableBuilder(
+      column: $table.count, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get lastAddedAt => $composableBuilder(
+      column: $table.lastAddedAt, builder: (column) => ColumnFilters(column));
+}
+
+class $$IngredientAddHistoriesTableOrderingComposer
+    extends Composer<_$AppDatabase, $IngredientAddHistoriesTable> {
+  $$IngredientAddHistoriesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get name => $composableBuilder(
+      column: $table.name, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get count => $composableBuilder(
+      column: $table.count, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get lastAddedAt => $composableBuilder(
+      column: $table.lastAddedAt, builder: (column) => ColumnOrderings(column));
+}
+
+class $$IngredientAddHistoriesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $IngredientAddHistoriesTable> {
+  $$IngredientAddHistoriesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<int> get count =>
+      $composableBuilder(column: $table.count, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get lastAddedAt => $composableBuilder(
+      column: $table.lastAddedAt, builder: (column) => column);
+}
+
+class $$IngredientAddHistoriesTableTableManager extends RootTableManager<
+    _$AppDatabase,
+    $IngredientAddHistoriesTable,
+    IngredientAddHistoryEntity,
+    $$IngredientAddHistoriesTableFilterComposer,
+    $$IngredientAddHistoriesTableOrderingComposer,
+    $$IngredientAddHistoriesTableAnnotationComposer,
+    $$IngredientAddHistoriesTableCreateCompanionBuilder,
+    $$IngredientAddHistoriesTableUpdateCompanionBuilder,
+    (
+      IngredientAddHistoryEntity,
+      BaseReferences<_$AppDatabase, $IngredientAddHistoriesTable,
+          IngredientAddHistoryEntity>
+    ),
+    IngredientAddHistoryEntity,
+    PrefetchHooks Function()> {
+  $$IngredientAddHistoriesTableTableManager(
+      _$AppDatabase db, $IngredientAddHistoriesTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$IngredientAddHistoriesTableFilterComposer(
+                  $db: db, $table: table),
+          createOrderingComposer: () =>
+              $$IngredientAddHistoriesTableOrderingComposer(
+                  $db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$IngredientAddHistoriesTableAnnotationComposer(
+                  $db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            Value<String> name = const Value.absent(),
+            Value<int> count = const Value.absent(),
+            Value<DateTime> lastAddedAt = const Value.absent(),
+          }) =>
+              IngredientAddHistoriesCompanion(
+            id: id,
+            name: name,
+            count: count,
+            lastAddedAt: lastAddedAt,
+          ),
+          createCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            required String name,
+            Value<int> count = const Value.absent(),
+            required DateTime lastAddedAt,
+          }) =>
+              IngredientAddHistoriesCompanion.insert(
+            id: id,
+            name: name,
+            count: count,
+            lastAddedAt: lastAddedAt,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$IngredientAddHistoriesTableProcessedTableManager
+    = ProcessedTableManager<
+        _$AppDatabase,
+        $IngredientAddHistoriesTable,
+        IngredientAddHistoryEntity,
+        $$IngredientAddHistoriesTableFilterComposer,
+        $$IngredientAddHistoriesTableOrderingComposer,
+        $$IngredientAddHistoriesTableAnnotationComposer,
+        $$IngredientAddHistoriesTableCreateCompanionBuilder,
+        $$IngredientAddHistoriesTableUpdateCompanionBuilder,
+        (
+          IngredientAddHistoryEntity,
+          BaseReferences<_$AppDatabase, $IngredientAddHistoriesTable,
+              IngredientAddHistoryEntity>
+        ),
+        IngredientAddHistoryEntity,
+        PrefetchHooks Function()>;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -3448,4 +3878,7 @@ class $AppDatabaseManager {
       $$SearchHistoriesTableTableManager(_db, _db.searchHistories);
   $$UserSettingsTableTableManager get userSettings =>
       $$UserSettingsTableTableManager(_db, _db.userSettings);
+  $$IngredientAddHistoriesTableTableManager get ingredientAddHistories =>
+      $$IngredientAddHistoriesTableTableManager(
+          _db, _db.ingredientAddHistories);
 }

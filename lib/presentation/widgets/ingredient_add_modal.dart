@@ -37,7 +37,7 @@ class _IngredientAddModalState extends ConsumerState<IngredientAddModal> {
   final FocusNode _nameFocusNode = FocusNode();
   double _quantity = 1.0;
 
-  final List<String> _suggestions = ['玉ねぎ', 'もやし', 'パン', 'マヨネーズ', '醤油', '牛乳'];
+  List<String> _suggestions = [];
 
   @override
   void initState() {
@@ -46,6 +46,21 @@ class _IngredientAddModalState extends ConsumerState<IngredientAddModal> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
        _nameFocusNode.requestFocus();
     });
+    _loadSuggestions();
+  }
+
+  Future<void> _loadSuggestions() async {
+    try {
+      final repo = await ref.read(ingredientRepositoryProvider.future);
+      final suggestions = await repo.getTopSuggestions(limit: 20);
+      if (mounted) {
+        setState(() {
+          _suggestions = suggestions;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error loading suggestions: $e');
+    }
   }
 
 
@@ -96,6 +111,11 @@ class _IngredientAddModalState extends ConsumerState<IngredientAddModal> {
       }).toList();
 
       await repo.saveAll(newIngredients);
+      
+      // Update usage history
+      for (final item in _addedItems) {
+        await repo.incrementInfoUsageCount(item.name);
+      }
       
       // Execute callback (e.g. invalidate providers)
       widget.onSaved();

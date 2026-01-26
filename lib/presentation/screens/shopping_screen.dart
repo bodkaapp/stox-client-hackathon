@@ -396,7 +396,7 @@ class ShoppingScreen extends ConsumerWidget {
                   border: Border.all(color: AppColors.stoxBorder),
                 ),
                 child: Text(
-                  '${item.amount}${item.unit}',
+                  '${item.amount % 1 == 0 ? item.amount.toInt() : item.amount}${item.unit}',
                   style: const TextStyle(
                     color: AppColors.stoxSubText,
                     fontSize: 11,

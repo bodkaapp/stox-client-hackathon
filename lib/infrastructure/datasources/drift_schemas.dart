@@ -89,3 +89,16 @@ class UserSettings extends Table {
     'UNIQUE (original_id)'
   ];
 }
+
+@DataClassName('IngredientAddHistoryEntity')
+class IngredientAddHistories extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get name => text()();
+  IntColumn get count => integer().withDefault(const Constant(1))();
+  DateTimeColumn get lastAddedAt => dateTime()();
+
+  @override
+  List<String> get customConstraints => [
+    'UNIQUE (name)'
+  ];
+}

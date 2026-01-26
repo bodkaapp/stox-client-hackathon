@@ -28,14 +28,30 @@ class DriftIngredientRepository implements IngredientRepository {
   Future<void> save(Ingredient ingredient) async {
     final companion = IngredientDomainMapper.fromDomain(ingredient);
     
-    final existing = await (db.select(db.ingredients)..where((t) => t.originalId.equals(ingredient.id))).getSingleOrNull();
+    final existingById = await (db.select(db.ingredients)..where((t) => t.originalId.equals(ingredient.id))).getSingleOrNull();
     
-    if (existing != null) {
-      // Update
-      await (db.update(db.ingredients)..where((t) => t.id.equals(existing.id))).write(companion);
+    if (existingById != null) {
+      // Update by ID
+      await (db.update(db.ingredients)..where((t) => t.id.equals(existingById.id))).write(companion);
     } else {
-      // Insert
-      await db.into(db.ingredients).insert(companion);
+      // Check for duplicate to merge
+      final duplicate = await (db.select(db.ingredients)..where((t) => 
+        t.name.equals(ingredient.name) & 
+        t.status.equals(ingredient.status.index) & 
+        t.storageType.equals(ingredient.storageType.index)
+      )).getSingleOrNull();
+
+      if (duplicate != null) {
+        // Merge amount
+        await (db.update(db.ingredients)..where((t) => t.id.equals(duplicate.id))).write(
+          IngredientsCompanion(
+            amount: Value(duplicate.amount + ingredient.amount),
+          ),
+        );
+      } else {
+        // Insert new
+        await db.into(db.ingredients).insert(companion);
+      }
     }
   }
   
@@ -65,6 +81,40 @@ class DriftIngredientRepository implements IngredientRepository {
      return (db.select(db.ingredients)..where((t) => t.status.equals(status.index)))
         .watch()
         .map((entities) => entities.map((e) => e.toDomain()).toList());
+  }
+
+  @override
+  Future<void> incrementInfoUsageCount(String name) async {
+    await db.transaction(() async {
+      final existing = await (db.select(db.ingredientAddHistories)..where((t) => t.name.equals(name))).getSingleOrNull();
+
+      if (existing != null) {
+        await (db.update(db.ingredientAddHistories)..where((t) => t.id.equals(existing.id))).write(
+          IngredientAddHistoriesCompanion(
+            count: Value(existing.count + 1),
+            lastAddedAt: Value(DateTime.now()),
+          )
+        );
+      } else {
+        await db.into(db.ingredientAddHistories).insert(
+          IngredientAddHistoriesCompanion(
+            name: Value(name),
+            count: const Value(1),
+            lastAddedAt: Value(DateTime.now()),
+          )
+        );
+      }
+    });
+  }
+
+  @override
+  Future<List<String>> getTopSuggestions({int limit = 20}) async {
+    final query = db.select(db.ingredientAddHistories)
+      ..orderBy([(t) => OrderingTerm(expression: t.count, mode: OrderingMode.desc)])
+      ..limit(limit);
+    
+    final results = await query.get();
+    return results.map((e) => e.name).toList();
   }
 }
 
