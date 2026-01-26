@@ -1,13 +1,13 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'isar_user_settings_repository.dart';
+part of 'drift_user_settings_repository.dart';
 
 // **************************************************************************
 // RiverpodGenerator
 // **************************************************************************
 
 String _$userSettingsRepositoryHash() =>
-    r'a4034a30c54635cfe513efa210ce68e16c6b766d';
+    r'fa8fb14d664392de357759cac14fc0da9c24db03';
 
 /// See also [userSettingsRepository].
 @ProviderFor(userSettingsRepository)
@@ -22,6 +22,8 @@ final userSettingsRepositoryProvider =
   allTransitiveDependencies: null,
 );
 
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
 typedef UserSettingsRepositoryRef = FutureProviderRef<UserSettingsRepository>;
 // ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member
+// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

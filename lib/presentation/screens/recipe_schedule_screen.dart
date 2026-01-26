@@ -6,8 +6,8 @@ import '../../config/app_colors.dart';
 import '../../domain/models/meal_plan.dart';
 import '../../domain/models/recipe.dart';
 import '../../domain/repositories/meal_plan_repository.dart';
-import '../../infrastructure/repositories/isar_recipe_repository.dart';
-import '../../infrastructure/repositories/isar_meal_plan_repository.dart';
+import '../../infrastructure/repositories/drift_recipe_repository.dart';
+import '../../infrastructure/repositories/drift_meal_plan_repository.dart';
 
 class RecipeScheduleScreen extends ConsumerStatefulWidget {
   final String title;

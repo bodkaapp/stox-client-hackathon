@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../config/app_colors.dart';
 import '../../domain/models/ingredient.dart';
-import '../../infrastructure/repositories/isar_ingredient_repository.dart';
+import '../../infrastructure/repositories/drift_ingredient_repository.dart';
 
 // Local model for added items in this session
 class AddedIngredientItem {

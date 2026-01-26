@@ -7,8 +7,8 @@ import '../../config/app_colors.dart';
 import '../../domain/models/meal_plan.dart';
 import '../../domain/models/recipe.dart';
 import '../../domain/repositories/meal_plan_repository.dart';
-import '../../infrastructure/repositories/isar_recipe_repository.dart';
-import '../../infrastructure/repositories/isar_meal_plan_repository.dart';
+import '../../infrastructure/repositories/drift_recipe_repository.dart';
+import '../../infrastructure/repositories/drift_meal_plan_repository.dart';
 import 'recipe_webview_screen.dart';
 
 // -----------------------------------------------------------------------------
@@ -36,7 +36,7 @@ final dailyMealPlanProvider = FutureProvider.autoDispose.family<List<MealPlanWit
   // Since we want reactive updates, we might want to use a StreamProvider instead, 
   // but for now, we'll simpler fetch. If we want real-time, we can change to Stream.
   // Actually, let's just use getByDateRange for the single day (start to end)
-  // or match the repository method. IsarMealPlanRepository has watchByDate.
+  // or match the repository method. DriftMealPlanRepository has watchByDate.
   // Let's use watchByDate logic if possible, but FutureProvider is easier for now.
   // We can use Ref.watch on a stream provider if we define one.
   

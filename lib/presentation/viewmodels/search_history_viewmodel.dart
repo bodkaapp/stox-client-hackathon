@@ -1,7 +1,7 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../domain/models/search_history.dart';
 import '../../domain/repositories/search_history_repository.dart';
-import '../../infrastructure/repositories/isar_search_history_repository.dart';
+import '../../infrastructure/repositories/drift_search_history_repository.dart';
 
 part 'search_history_viewmodel.g.dart';
 

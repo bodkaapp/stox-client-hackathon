@@ -33,8 +33,12 @@ mixin _$Ingredient {
   DateTime? get expiryDate => throw _privateConstructorUsedError;
   DateTime? get consumedAt => throw _privateConstructorUsedError;
 
+  /// Serializes this Ingredient to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-  @JsonKey(ignore: true)
+
+  /// Create a copy of Ingredient
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   $IngredientCopyWith<Ingredient> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -70,6 +74,8 @@ class _$IngredientCopyWithImpl<$Res, $Val extends Ingredient>
   // ignore: unused_field
   final $Res Function($Val) _then;
 
+  /// Create a copy of Ingredient
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -170,6 +176,8 @@ class __$$IngredientImplCopyWithImpl<$Res>
       _$IngredientImpl _value, $Res Function(_$IngredientImpl) _then)
       : super(_value, _then);
 
+  /// Create a copy of Ingredient
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -319,7 +327,7 @@ class _$IngredientImpl implements _Ingredient {
                 other.consumedAt == consumedAt));
   }
 
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(
       runtimeType,
@@ -336,7 +344,9 @@ class _$IngredientImpl implements _Ingredient {
       expiryDate,
       consumedAt);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of Ingredient
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$IngredientImplCopyWith<_$IngredientImpl> get copyWith =>
@@ -392,8 +402,11 @@ abstract class _Ingredient implements Ingredient {
   DateTime? get expiryDate;
   @override
   DateTime? get consumedAt;
+
+  /// Create a copy of Ingredient
+  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$IngredientImplCopyWith<_$IngredientImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

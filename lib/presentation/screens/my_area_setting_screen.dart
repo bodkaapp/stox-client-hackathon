@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../config/app_colors.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../infrastructure/repositories/isar_user_settings_repository.dart';
+import '../../infrastructure/repositories/drift_user_settings_repository.dart';
 
 class MyAreaSettingScreen extends ConsumerStatefulWidget {
   const MyAreaSettingScreen({super.key});

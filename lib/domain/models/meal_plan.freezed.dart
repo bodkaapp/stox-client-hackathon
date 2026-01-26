@@ -26,8 +26,12 @@ mixin _$MealPlan {
   MealType get mealType => throw _privateConstructorUsedError;
   bool get isDone => throw _privateConstructorUsedError;
 
+  /// Serializes this MealPlan to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-  @JsonKey(ignore: true)
+
+  /// Create a copy of MealPlan
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   $MealPlanCopyWith<MealPlan> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -55,6 +59,8 @@ class _$MealPlanCopyWithImpl<$Res, $Val extends MealPlan>
   // ignore: unused_field
   final $Res Function($Val) _then;
 
+  /// Create a copy of MealPlan
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -113,6 +119,8 @@ class __$$MealPlanImplCopyWithImpl<$Res>
       _$MealPlanImpl _value, $Res Function(_$MealPlanImpl) _then)
       : super(_value, _then);
 
+  /// Create a copy of MealPlan
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -191,12 +199,14 @@ class _$MealPlanImpl implements _MealPlan {
             (identical(other.isDone, isDone) || other.isDone == isDone));
   }
 
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode =>
       Object.hash(runtimeType, id, recipeId, date, mealType, isDone);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of MealPlan
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$MealPlanImplCopyWith<_$MealPlanImpl> get copyWith =>
@@ -231,8 +241,11 @@ abstract class _MealPlan implements MealPlan {
   MealType get mealType;
   @override
   bool get isDone;
+
+  /// Create a copy of MealPlan
+  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$MealPlanImplCopyWith<_$MealPlanImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

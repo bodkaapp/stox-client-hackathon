@@ -1,8 +1,8 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../domain/models/ingredient.dart';
-import '../../infrastructure/repositories/isar_ingredient_repository.dart';
-import '../../infrastructure/repositories/isar_user_settings_repository.dart';
+import '../../infrastructure/repositories/drift_ingredient_repository.dart';
+import '../../infrastructure/repositories/drift_user_settings_repository.dart';
 import '../providers/shopping_mode_provider.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 

@@ -6,7 +6,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../config/app_colors.dart';
 import '../../domain/models/recipe.dart';
-import '../../infrastructure/repositories/isar_recipe_repository.dart';
+import '../../infrastructure/repositories/drift_recipe_repository.dart';
 import 'ai_ingredient_list_screen.dart';
 import 'recipe_schedule_screen.dart';
 import '../mixins/ad_manager_mixin.dart';

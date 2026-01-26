@@ -24,8 +24,12 @@ mixin _$SearchHistory {
   String get query => throw _privateConstructorUsedError;
   DateTime get createdAt => throw _privateConstructorUsedError;
 
+  /// Serializes this SearchHistory to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-  @JsonKey(ignore: true)
+
+  /// Create a copy of SearchHistory
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   $SearchHistoryCopyWith<SearchHistory> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -49,6 +53,8 @@ class _$SearchHistoryCopyWithImpl<$Res, $Val extends SearchHistory>
   // ignore: unused_field
   final $Res Function($Val) _then;
 
+  /// Create a copy of SearchHistory
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -92,6 +98,8 @@ class __$$SearchHistoryImplCopyWithImpl<$Res>
       _$SearchHistoryImpl _value, $Res Function(_$SearchHistoryImpl) _then)
       : super(_value, _then);
 
+  /// Create a copy of SearchHistory
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -148,11 +156,13 @@ class _$SearchHistoryImpl implements _SearchHistory {
                 other.createdAt == createdAt));
   }
 
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(runtimeType, id, query, createdAt);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of SearchHistory
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$SearchHistoryImplCopyWith<_$SearchHistoryImpl> get copyWith =>
@@ -181,8 +191,11 @@ abstract class _SearchHistory implements SearchHistory {
   String get query;
   @override
   DateTime get createdAt;
+
+  /// Create a copy of SearchHistory
+  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$SearchHistoryImplCopyWith<_$SearchHistoryImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

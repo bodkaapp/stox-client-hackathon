@@ -19,7 +19,9 @@ mixin _$ShoppingState {
   List<Ingredient> get toBuyList => throw _privateConstructorUsedError;
   List<Ingredient> get inCartList => throw _privateConstructorUsedError;
 
-  @JsonKey(ignore: true)
+  /// Create a copy of ShoppingState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   $ShoppingStateCopyWith<ShoppingState> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -43,6 +45,8 @@ class _$ShoppingStateCopyWithImpl<$Res, $Val extends ShoppingState>
   // ignore: unused_field
   final $Res Function($Val) _then;
 
+  /// Create a copy of ShoppingState
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -81,6 +85,8 @@ class __$$ShoppingStateImplCopyWithImpl<$Res>
       _$ShoppingStateImpl _value, $Res Function(_$ShoppingStateImpl) _then)
       : super(_value, _then);
 
+  /// Create a copy of ShoppingState
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -149,7 +155,9 @@ class _$ShoppingStateImpl implements _ShoppingState {
       const DeepCollectionEquality().hash(_toBuyList),
       const DeepCollectionEquality().hash(_inCartList));
 
-  @JsonKey(ignore: true)
+  /// Create a copy of ShoppingState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$ShoppingStateImplCopyWith<_$ShoppingStateImpl> get copyWith =>
@@ -165,8 +173,11 @@ abstract class _ShoppingState implements ShoppingState {
   List<Ingredient> get toBuyList;
   @override
   List<Ingredient> get inCartList;
+
+  /// Create a copy of ShoppingState
+  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$ShoppingStateImplCopyWith<_$ShoppingStateImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

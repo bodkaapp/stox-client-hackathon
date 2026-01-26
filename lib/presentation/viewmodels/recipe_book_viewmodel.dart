@@ -1,8 +1,8 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../domain/models/recipe.dart';
 import '../../domain/repositories/meal_plan_repository.dart';
-import '../../infrastructure/repositories/isar_meal_plan_repository.dart';
-import '../../infrastructure/repositories/isar_recipe_repository.dart';
+import '../../infrastructure/repositories/drift_meal_plan_repository.dart';
+import '../../infrastructure/repositories/drift_recipe_repository.dart';
 
 part 'recipe_book_viewmodel.g.dart';
 

@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:typed_data';
 import '../../config/app_colors.dart';
 import '../../domain/models/ingredient.dart';
-import '../../infrastructure/repositories/isar_ingredient_repository.dart';
+import '../../infrastructure/repositories/drift_ingredient_repository.dart';
 
 class AiAnalyzedStockScreen extends ConsumerStatefulWidget {
   final List<Ingredient> initialIngredients;

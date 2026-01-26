@@ -1,4 +1,4 @@
-// This logic is mostly handled in IsarIngredientRepository and ShoppingViewModel, 
+// This logic is mostly handled in DriftIngredientRepository and ShoppingViewModel, 
 // but AiIngredientListScreen needs to manipulate local state before saving.
 // Created a screen file for AiIngredientListScreen.
 import 'package:flutter/material.dart';
@@ -7,9 +7,9 @@ import '../../config/app_colors.dart';
 import '../../domain/models/ingredient.dart';
 import '../../domain/models/recipe.dart';
 import '../../infrastructure/repositories/ai_recipe_repository.dart';
-import '../../infrastructure/repositories/isar_ingredient_repository.dart';
-import '../../infrastructure/repositories/isar_recipe_repository.dart';
-import '../../infrastructure/repositories/isar_user_settings_repository.dart';
+import '../../infrastructure/repositories/drift_ingredient_repository.dart';
+import '../../infrastructure/repositories/drift_recipe_repository.dart';
+import '../../infrastructure/repositories/drift_user_settings_repository.dart';
 
 class AiIngredientListScreen extends ConsumerStatefulWidget {
   final String? initialText;

@@ -1,6 +1,6 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../domain/models/ingredient.dart';
-import '../../infrastructure/repositories/isar_ingredient_repository.dart';
+import '../../infrastructure/repositories/drift_ingredient_repository.dart';
 
 part 'stock_viewmodel.g.dart';
 

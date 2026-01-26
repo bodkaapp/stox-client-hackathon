@@ -1,7 +1,7 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import '../../infrastructure/repositories/isar_recipe_repository.dart';
-import '../../infrastructure/repositories/isar_ingredient_repository.dart';
-import '../../infrastructure/repositories/isar_user_settings_repository.dart';
+import '../../infrastructure/repositories/drift_recipe_repository.dart';
+import '../../infrastructure/repositories/drift_ingredient_repository.dart';
+import '../../infrastructure/repositories/drift_user_settings_repository.dart';
 import '../../domain/models/recipe.dart';
 import '../../domain/models/ingredient.dart';
 import 'home_state.dart';
