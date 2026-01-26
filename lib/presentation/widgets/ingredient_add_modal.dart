@@ -3,26 +3,34 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../config/app_colors.dart';
 import '../../domain/models/ingredient.dart';
 import '../../infrastructure/repositories/isar_ingredient_repository.dart';
-import '../viewmodels/stock_viewmodel.dart';
 
 // Local model for added items in this session
-class AddedStockItem {
+class AddedIngredientItem {
   final String name;
   final double quantity;
   final String category;
 
-  AddedStockItem({required this.name, required this.quantity, required this.category});
+  AddedIngredientItem({required this.name, required this.quantity, required this.category});
 }
 
-class TextStockAddModal extends ConsumerStatefulWidget {
-  const TextStockAddModal({super.key});
+class IngredientAddModal extends ConsumerStatefulWidget {
+  final String title;
+  final IngredientStatus targetStatus;
+  final VoidCallback onSaved;
+
+  const IngredientAddModal({
+    super.key,
+    required this.title,
+    required this.targetStatus,
+    required this.onSaved,
+  });
 
   @override
-  ConsumerState<TextStockAddModal> createState() => _TextStockAddModalState();
+  ConsumerState<IngredientAddModal> createState() => _IngredientAddModalState();
 }
 
-class _TextStockAddModalState extends ConsumerState<TextStockAddModal> {
-  final List<AddedStockItem> _addedItems = [];
+class _IngredientAddModalState extends ConsumerState<IngredientAddModal> {
+  final List<AddedIngredientItem> _addedItems = [];
   
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _categoryController = TextEditingController();
@@ -46,7 +54,7 @@ class _TextStockAddModalState extends ConsumerState<TextStockAddModal> {
     if (name.isEmpty) return;
 
     setState(() {
-      _addedItems.add(AddedStockItem(
+      _addedItems.add(AddedIngredientItem(
         name: name,
         quantity: _quantity,
         category: _categoryController.text.trim(),
@@ -80,7 +88,7 @@ class _TextStockAddModalState extends ConsumerState<TextStockAddModal> {
           category: item.category.isNotEmpty ? item.category : 'その他',
           unit: '個', // Default unit
           amount: item.quantity,
-          status: IngredientStatus.stock,
+          status: widget.targetStatus, 
           storageType: StorageType.fridge, // Default to fridge
           purchaseDate: DateTime.now(),
           expiryDate: DateTime.now().add(const Duration(days: 7)), // Default +7 days
@@ -89,16 +97,18 @@ class _TextStockAddModalState extends ConsumerState<TextStockAddModal> {
 
       await repo.saveAll(newIngredients);
       
-      // Refresh list
-      ref.invalidate(stockViewModelProvider);
+      // Execute callback (e.g. invalidate providers)
+      widget.onSaved();
       
       if (mounted) {
         Navigator.of(context).pop();
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('保存に失敗しました: $e')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('保存に失敗しました: $e')),
+        );
+      }
     }
   }
 
@@ -166,9 +176,9 @@ class _TextStockAddModalState extends ConsumerState<TextStockAddModal> {
           Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text(
-                '在庫を追加',
-                style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: AppColors.stoxText),
+              Text(
+                widget.title,
+                style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: AppColors.stoxText),
               ),
               const SizedBox(height: 4),
               Container(
@@ -211,7 +221,6 @@ class _TextStockAddModalState extends ConsumerState<TextStockAddModal> {
         style: TextStyle(
           fontSize: 11,
           fontWeight: FontWeight.w500,
-          fontStyle: FontStyle.italic,
           color: AppColors.stoxSubText, 
         ),
       ),

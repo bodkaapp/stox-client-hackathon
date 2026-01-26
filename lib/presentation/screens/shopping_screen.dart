@@ -4,6 +4,7 @@ import '../../config/app_colors.dart';
 import '../../domain/models/ingredient.dart';
 import '../providers/shopping_mode_provider.dart';
 import '../viewmodels/shopping_viewmodel.dart';
+import '../widgets/ingredient_add_modal.dart';
 
 class ShoppingScreen extends ConsumerWidget {
   const ShoppingScreen({super.key});
@@ -23,7 +24,7 @@ class ShoppingScreen extends ConsumerWidget {
             return CustomScrollView(
               slivers: [
                 SliverToBoxAdapter(child: _buildHeader(ref, isShoppingMode)),
-                SliverToBoxAdapter(child: _buildProgressBarSection(allItems)),
+                if (isShoppingMode) SliverToBoxAdapter(child: _buildProgressBarSection(allItems)),
                 SliverPadding(
                   padding: const EdgeInsets.only(bottom: 80), // Space for FAB
                   sliver: SliverList(
@@ -49,7 +50,44 @@ class ShoppingScreen extends ConsumerWidget {
               icon: const Icon(Icons.check),
               backgroundColor: AppColors.stoxPrimary,
             )
-          : null,
+          : Container(
+              width: 64,
+              height: 64,
+              decoration: BoxDecoration(
+                color: AppColors.stoxPrimary,
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.stoxPrimary.withOpacity(0.3),
+                    blurRadius: 24,
+                    offset: const Offset(0, 8),
+                  )
+                ],
+              ),
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: () {
+                    showModalBottomSheet(
+                      context: context,
+                      isScrollControlled: true,
+                      backgroundColor: Colors.transparent,
+                      builder: (context) => IngredientAddModal(
+                    title: '買い物リストに追加',
+                    targetStatus: IngredientStatus.toBuy,
+                    onSaved: () {
+                      ref.invalidate(shoppingViewModelProvider);
+                    },
+                  ),
+                    );
+                  },
+                  borderRadius: BorderRadius.circular(32),
+                  child: const Center(
+                    child: Icon(Icons.add, color: Colors.white, size: 32),
+                  ),
+                ),
+              ),
+            ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
@@ -230,25 +268,7 @@ class ShoppingScreen extends ConsumerWidget {
 
     // Spacer or Add button placeholder
     widgets.add(
-      Padding(
-        padding: const EdgeInsets.symmetric(vertical: 32),
-        child: Center(
-          child: TextButton.icon(
-            onPressed: null, // Disabled for now as per plan
-            icon: const Icon(Icons.add, size: 16),
-            label: const Text('リストに追加 (Coming Soon)'),
-            style: TextButton.styleFrom(
-              backgroundColor: AppColors.stoxPrimary.withOpacity(0.1),
-              foregroundColor: AppColors.stoxPrimary,
-              disabledForegroundColor: AppColors.stoxSubText.withOpacity(0.5),
-              disabledBackgroundColor: AppColors.stoxBorder.withOpacity(0.5),
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-              shape: const StadiumBorder(),
-              textStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-            ),
-          ),
-        ),
-      ),
+      const SizedBox(height: 80), // Space for FAB
     );
 
     return widgets;
