@@ -5,7 +5,6 @@ class AppTheme {
   static ThemeData get light {
     return ThemeData(
       useMaterial3: true,
-      fontFamily: 'NotoSansJP', // Use the font family defined in pubspec.yaml
       scaffoldBackgroundColor: AppColors.stoxBackground,
       colorScheme: ColorScheme.fromSeed(
         seedColor: AppColors.stoxPrimary,
@@ -19,7 +18,6 @@ class AppTheme {
       textTheme: const TextTheme().apply(
         bodyColor: AppColors.stoxText,
         displayColor: AppColors.stoxText,
-        fontFamily: 'NotoSansJP',
       ),
       cardTheme: const CardThemeData(
         color: AppColors.stoxCardBg,
