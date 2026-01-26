@@ -10,6 +10,7 @@ class ShoppingScreen extends ConsumerWidget {
   const ShoppingScreen({super.key});
 
   @override
+  @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isShoppingMode = ref.watch(shoppingModeProvider);
     final stateAsync = ref.watch(shoppingViewModelProvider);
@@ -17,78 +18,126 @@ class ShoppingScreen extends ConsumerWidget {
     return Scaffold(
       backgroundColor: AppColors.stoxBackground,
       body: SafeArea(
-        child: stateAsync.when(
-          data: (state) {
-            final allItems = [...state.toBuyList, ...state.inCartList];
-            
-            return CustomScrollView(
-              slivers: [
-                SliverToBoxAdapter(child: _buildHeader(ref, isShoppingMode)),
-                if (isShoppingMode) SliverToBoxAdapter(child: _buildProgressBarSection(allItems)),
-                SliverPadding(
-                  padding: const EdgeInsets.only(bottom: 80), // Space for FAB
-                  sliver: SliverList(
-                    delegate: SliverChildListDelegate(_buildCategorizedItems(ref, allItems)),
+        bottom: false,
+        child: Stack(
+          children: [
+            Column(
+              children: [
+                _buildHeader(ref, isShoppingMode),
+                Expanded(
+                  child: stateAsync.when(
+                    data: (state) {
+                      final allItems = [...state.toBuyList, ...state.inCartList];
+                      
+                      return Column(
+                        children: [
+                          if (isShoppingMode) _buildProgressBarSection(allItems),
+                          Expanded(
+                            child: CustomScrollView(
+                              slivers: [
+                                SliverPadding(
+                                  padding: const EdgeInsets.only(bottom: 100), // Space for FAB
+                                  sliver: SliverList(
+                                    delegate: SliverChildListDelegate(_buildCategorizedItems(ref, allItems)),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          _buildFooter(allItems),
+                        ],
+                      );
+                    },
+                    loading: () => const Center(child: CircularProgressIndicator(color: AppColors.stoxPrimary)),
+                    error: (err, stack) => Center(child: Text('Error: $err')),
                   ),
                 ),
               ],
-            );
-          },
-          loading: () => const Center(child: CircularProgressIndicator(color: AppColors.stoxPrimary)),
-          error: (err, stack) => Center(child: Text('Error: $err')),
-        ),
-      ),
-      floatingActionButton: isShoppingMode
-          ? FloatingActionButton.extended(
-              onPressed: () async {
-                await ref.read(shoppingViewModelProvider.notifier).completeShoppingFlow();
-                if (context.mounted) {
-                   ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('お買い物を完了しました')));
-                }
-              },
-              label: const Text('買い物を完了'),
-              icon: const Icon(Icons.check),
-              backgroundColor: AppColors.stoxPrimary,
-            )
-          : Container(
-              width: 64,
-              height: 64,
-              decoration: BoxDecoration(
-                color: AppColors.stoxPrimary,
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.stoxPrimary.withOpacity(0.3),
-                    blurRadius: 24,
-                    offset: const Offset(0, 8),
-                  )
-                ],
-              ),
-              child: Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  onTap: () {
-                    showModalBottomSheet(
-                      context: context,
-                      isScrollControlled: true,
-                      backgroundColor: Colors.transparent,
-                      builder: (context) => IngredientAddModal(
-                    title: '買い物リストに追加',
-                    targetStatus: IngredientStatus.toBuy,
-                    onSaved: () {
-                      ref.invalidate(shoppingViewModelProvider);
-                    },
-                  ),
-                    );
-                  },
-                  borderRadius: BorderRadius.circular(32),
-                  child: const Center(
-                    child: Icon(Icons.add, color: Colors.white, size: 32),
-                  ),
-                ),
+            ),
+            
+            // FAB or Complete Button
+            Positioned(
+              bottom: 24,
+              left: 0,
+              right: 0,
+              child: Center(
+                child: isShoppingMode
+                  ? FloatingActionButton.extended(
+                      onPressed: () async {
+                        await ref.read(shoppingViewModelProvider.notifier).completeShoppingFlow();
+                        if (context.mounted) {
+                           ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('お買い物を完了しました')));
+                        }
+                      },
+                      label: const Text('買い物を完了'),
+                      icon: const Icon(Icons.check),
+                      backgroundColor: AppColors.stoxPrimary,
+                    )
+                  : GestureDetector(
+                      onTap: () {
+                        showModalBottomSheet(
+                          context: context,
+                          isScrollControlled: true,
+                          backgroundColor: Colors.transparent,
+                          builder: (context) => IngredientAddModal(
+                            title: '買い物リストに追加',
+                            targetStatus: IngredientStatus.toBuy,
+                            onSaved: () {
+                              ref.invalidate(shoppingViewModelProvider);
+                            },
+                          ),
+                        );
+                      },
+                      child: Container(
+                        width: 64,
+                        height: 64,
+                        decoration: BoxDecoration(
+                          color: AppColors.stoxPrimary,
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppColors.stoxPrimary.withOpacity(0.3),
+                              blurRadius: 24,
+                              offset: const Offset(0, 8),
+                            )
+                          ],
+                        ),
+                        child: const Center(
+                          child: Icon(Icons.add, color: Colors.white, size: 32),
+                        ),
+                      ),
+                    ),
               ),
             ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFooter(List<Ingredient> allItems) {
+    final total = allItems.length;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        border: Border(top: BorderSide(color: AppColors.stoxBorder)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('TOTAL ITEMS', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.stoxSubText, letterSpacing: 1.2)),
+          RichText(
+            text: TextSpan(
+              children: [
+                TextSpan(text: '全 $total 品目', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.stoxText)),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -266,11 +315,10 @@ class ShoppingScreen extends ConsumerWidget {
       widgets.add(_buildCategorySection(ref, category, catItems));
     });
 
-    // Spacer or Add button placeholder
-    widgets.add(
-      const SizedBox(height: 80), // Space for FAB
-    );
-
+    // Spacer for FAB is handled by SliverPadding in CustomScrollView now, but keeping a small one if needed inside list
+    // Actually it's better to remove the large spacer here as it's handled by padding.
+    // However, the original code had 80. The replace code has 100 in SliverPadding.
+    
     return widgets;
   }
 
@@ -338,14 +386,17 @@ class ShoppingScreen extends ConsumerWidget {
   }
 
   Widget _buildShoppingItemRow(WidgetRef ref, Ingredient item) {
+    final isShoppingMode = ref.watch(shoppingModeProvider);
     final isChecked = item.status == IngredientStatus.inCart;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 4),
       child: InkWell(
-        onTap: () {
-          ref.read(shoppingViewModelProvider.notifier).toggleItemStatus(item);
-        },
+        onTap: isShoppingMode
+            ? () {
+                ref.read(shoppingViewModelProvider.notifier).toggleItemStatus(item);
+              }
+            : null,
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
           decoration: BoxDecoration(
@@ -361,22 +412,24 @@ class ShoppingScreen extends ConsumerWidget {
           ),
           child: Row(
             children: [
-              SizedBox(
-                width: 24,
-                height: 24,
-                child: Checkbox(
-                  value: isChecked,
-                  onChanged: (value) {
-                    ref.read(shoppingViewModelProvider.notifier).toggleItemStatus(item);
-                  },
-                  activeColor: AppColors.stoxPrimary,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(4),
+              if (isShoppingMode) ...[
+                SizedBox(
+                  width: 24,
+                  height: 24,
+                  child: Checkbox(
+                    value: isChecked,
+                    onChanged: (value) {
+                      ref.read(shoppingViewModelProvider.notifier).toggleItemStatus(item);
+                    },
+                    activeColor: AppColors.stoxPrimary,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    side: const BorderSide(color: AppColors.stoxBorder, width: 2),
                   ),
-                  side: const BorderSide(color: AppColors.stoxBorder, width: 2),
                 ),
-              ),
-              const SizedBox(width: 12),
+                const SizedBox(width: 12),
+              ],
               Expanded(
                 child: Text(
                   item.name,
