@@ -129,9 +129,7 @@ class _SearchModalState extends ConsumerState<SearchModal> {
                   Expanded(
                     child: Container(
                       decoration: BoxDecoration(
-                        color: Colors.white,
                         borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: const Color(0xFFF59E0B), width: 2), // amber-500
                         boxShadow: [
                            BoxShadow(color: const Color(0xFFFEF3C7), blurRadius: 2, offset: const Offset(0, 1)), // amber-100 shadow
                         ],
@@ -142,11 +140,24 @@ class _SearchModalState extends ConsumerState<SearchModal> {
                         onSubmitted: _submit,
                         cursorColor: const Color(0xFFF59E0B),
                         style: const TextStyle(color: Color(0xFF292524)), // stone-800
-                        decoration: const InputDecoration(
-                          prefixIcon: Icon(Icons.search, color: Color(0xFFF59E0B)), // amber-500
+                        decoration: InputDecoration(
+                          prefixIcon: const Icon(Icons.search, color: Color(0xFFF59E0B)), // amber-500
                           hintText: '', // Placeholder not shown in design when typed
-                          border: InputBorder.none,
-                          contentPadding: EdgeInsets.symmetric(vertical: 12),
+                          filled: true,
+                          fillColor: Colors.white,
+                          contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            borderSide: const BorderSide(color: Color(0xFFF59E0B), width: 2),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            borderSide: const BorderSide(color: Color(0xFFF59E0B), width: 2),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            borderSide: const BorderSide(color: Color(0xFFF59E0B), width: 2),
+                          ),
                         ),
                       ),
                     ),
@@ -175,7 +186,7 @@ class _SearchModalState extends ConsumerState<SearchModal> {
                    Padding(
                      padding: const EdgeInsets.only(bottom: 24),
                      child: Container(
-                       padding: const EdgeInsets.all(1), // Border width
+                       padding: const EdgeInsets.all(2), // Border width
                        decoration: BoxDecoration(
                          gradient: const LinearGradient(
                            colors: [Color(0xFFFBBF24), Color(0xFFF97316)], // amber-400 to orange-500
@@ -188,7 +199,7 @@ class _SearchModalState extends ConsumerState<SearchModal> {
                        child: Container(
                          decoration: BoxDecoration(
                            color: Colors.white,
-                           borderRadius: BorderRadius.circular(15),
+                           borderRadius: BorderRadius.circular(14),
                          ),
                          child: Material(
                            color: Colors.transparent,
@@ -196,7 +207,7 @@ class _SearchModalState extends ConsumerState<SearchModal> {
                              onTap: () {
                                // Empty function as requested
                              },
-                             borderRadius: BorderRadius.circular(15),
+                             borderRadius: BorderRadius.circular(14),
                              child: Padding(
                                padding: const EdgeInsets.symmetric(vertical: 16),
                                child: Row(

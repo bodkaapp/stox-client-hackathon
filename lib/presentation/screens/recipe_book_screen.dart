@@ -70,24 +70,29 @@ class RecipeBookScreen extends ConsumerWidget {
                   ),
                     const SizedBox(height: 16),
                       // Search Bar
-                    Container(
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF5F5F4), // bg-stone-100
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: TextField(
-                        readOnly: true,
-                        onTap: () {
-                          SearchModal.show(context);
-                        },
-                        decoration: InputDecoration(
-                          hintText: 'レシピを検索またはURLを入力',
-                          hintStyle: const TextStyle(color: Color(0xFF78716C), fontSize: 14), // text-stone-500
-                          prefixIcon: const Icon(Icons.search, color: Color(0xFFA8A29E)), // text-stone-400
-                          border: InputBorder.none,
-                          contentPadding: const EdgeInsets.symmetric(vertical: 14),
-                          enabledBorder: InputBorder.none,
-                          focusedBorder: InputBorder.none,
+                    TextField(
+                      readOnly: true,
+                      onTap: () {
+                        SearchModal.show(context);
+                      },
+                      decoration: InputDecoration(
+                        hintText: 'レシピを検索またはURLを入力',
+                        hintStyle: const TextStyle(color: Color(0xFF78716C), fontSize: 14), // text-stone-500
+                        prefixIcon: const Icon(Icons.search, color: Color(0xFFA8A29E)), // text-stone-400
+                        filled: true,
+                        fillColor: const Color(0xFFF5F5F4), // bg-stone-100
+                        contentPadding: const EdgeInsets.symmetric(vertical: 14),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(16),
+                          borderSide: const BorderSide(color: Color(0xFFD6D3D1)), // stone-300
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(16),
+                          borderSide: const BorderSide(color: Color(0xFFD6D3D1)), // stone-300
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(16),
+                          borderSide: const BorderSide(color: Color(0xFFD6D3D1)), // stone-300
                         ),
                       ),
                     ),

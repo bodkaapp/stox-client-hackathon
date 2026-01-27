@@ -109,7 +109,6 @@ class HomeScreen extends ConsumerWidget {
                         decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: AppColors.stoxBorder),
                           boxShadow: [
                             BoxShadow(
                               color: Colors.black.withOpacity(0.05),
@@ -117,6 +116,10 @@ class HomeScreen extends ConsumerWidget {
                               offset: const Offset(0, 1),
                             ),
                           ],
+                        ),
+                        foregroundDecoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: const Color(0xFFD6D3D1)),
                         ),
                         clipBehavior: Clip.antiAlias,
                         child: Row(
@@ -266,8 +269,8 @@ class HomeScreen extends ConsumerWidget {
                          ref.read(shoppingViewModelProvider.notifier).startShopping();
                          context.push('/shopping');
                       }),
-                      _buildActionCard(Icons.soup_kitchen, 'クッキング', Colors.purple.shade50, Colors.purple.shade600, () {
-                         // Cooking mode logic
+                      _buildActionCard(Icons.menu_book, 'マイレシピ帳', Colors.purple.shade50, Colors.purple.shade600, () {
+                         context.push('/recipe_book');
                       }),
                     ],
                   ),
