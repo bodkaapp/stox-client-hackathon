@@ -183,6 +183,76 @@ $locationを撮影した画像です。写真で確認できる食材や商品�
       throw Exception('AIの応答を解析できませんでした: $responseText');
     }
   }
+
+  /// レシート画像から購入品を解析する
+  Future<List<Ingredient>> analyzeReceiptImage(Uint8List imageBytes, {String? mimeType}) async {
+    final prompt = '''
+レシートを撮影した画像です。レシートに記載されている購入品の商品名と数量、価格を読み取ってリストアップしてください。
+割引や小計、合計、税金などは除外してください。商品のみを抽出してください。
+出力形式は以下のJSON形式のみを返してください。Markdownのコードブロック(```json ... ```)を含まないでください。
+
+[
+  {
+    "name": "商品名",
+    "amount": 数値(推測できない場合は1),
+    "unit": "単位(個, g, mlなど。推測できない場合は個)",
+    "category": "野菜" などのカテゴリ（推測）,
+    "status": "stock"
+  }
+]
+''';
+
+  // Determine mimeType if not provided
+  final finalMimeType = mimeType ?? 'image/jpeg';
+
+    final content = [
+      Content.multi([
+        TextPart(prompt),
+        DataPart(finalMimeType, imageBytes),
+      ])
+    ];
+
+    try {
+      final response = await _model.generateContent(content);
+      final responseText = response.text;
+      
+      if (responseText == null) {
+        throw Exception('AIからの応答が空でした。');
+      }
+
+      // Clean up potential markdown code blocks
+      String cleanJson = responseText.trim();
+      if (cleanJson.startsWith('```json')) {
+        cleanJson = cleanJson.replaceFirst('```json', '').replaceFirst('```', '').trim();
+      } else if (cleanJson.startsWith('```')) {
+        cleanJson = cleanJson.replaceFirst('```', '').replaceFirst('```', '').trim();
+      }
+
+      // Attempt to extract JSON array if there's extra text
+      final jsonMatch = RegExp(r'\[.*\]', dotAll: true).stringMatch(cleanJson);
+      if (jsonMatch != null) {
+        cleanJson = jsonMatch;
+      }
+
+      final List<dynamic> jsonList = json.decode(cleanJson);
+      return jsonList.map((e) {
+          return Ingredient(
+            id: DateTime.now().microsecondsSinceEpoch.toString() + (e['name'] ?? ''), 
+            name: e['name'] ?? '',
+            amount: (e['amount'] is num) ? (e['amount'] as num).toDouble() : 1.0,
+            unit: e['unit'] ?? '個',
+            category: e['category'] ?? 'その他',
+            status: IngredientStatus.stock,
+            storageType: StorageType.fridge, // Default
+            isEssential: false,
+            standardName: e['name'] ?? '', 
+          );
+      }).cast<Ingredient>().toList();
+    } catch (e) {
+      print('Error parsing receipt from AI response: $e');
+      throw Exception('レシートの解析に失敗しました: $e');
+    }
+  }
 }
 
 @Riverpod(keepAlive: true)

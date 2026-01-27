@@ -1,17 +1,134 @@
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import '../../config/app_colors.dart';
 import '../../domain/models/ingredient.dart';
 import '../providers/shopping_mode_provider.dart';
 import '../viewmodels/shopping_viewmodel.dart';
 import '../widgets/ingredient_add_modal.dart';
+import '../../infrastructure/repositories/ai_recipe_repository.dart';
+import '../mixins/ad_manager_mixin.dart';
+import 'shopping_receipt_result_screen.dart';
 
-class ShoppingScreen extends ConsumerWidget {
+class ShoppingScreen extends ConsumerStatefulWidget {
   const ShoppingScreen({super.key});
 
   @override
+  ConsumerState<ShoppingScreen> createState() => _ShoppingScreenState();
+}
+
+class _ShoppingScreenState extends ConsumerState<ShoppingScreen> with AdManagerMixin {
+  bool _isMenuOpen = false;
+  bool _isAnalyzing = false;
+  final ImagePicker _picker = ImagePicker();
+
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  void initState() {
+    super.initState();
+    loadRewardedAd();
+  }
+
+  void _toggleMenu() {
+    setState(() {
+      _isMenuOpen = !_isMenuOpen;
+    });
+  }
+
+  Future<void> _onReceiptBtnTap() async {
+    // 1. Pick Image
+    try {
+      final XFile? photo = await _picker.pickImage(source: ImageSource.camera, maxWidth: 1024);
+      if (photo == null) return;
+
+      // 2. Play Ad & Analyze
+      await _analyzeReceipt(photo);
+
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('エラーが発生しました: $e')),
+        );
+      }
+    }
+  }
+
+  Future<void> _analyzeReceipt(XFile photo) async {
+    // 2. Show Ad
+    final success = await showAdAndExecute(
+      context: context,
+      preAdTitle: 'AI解析を開始',
+      preAdContent: 'レシートを解析して在庫リストと照合します。\n広告を再生することで、この機能を無料でご利用いただけます。',
+      confirmButtonText: '広告を見て解析する',
+      postAdMessage: '解析が完了しました。\n続けて結果を確認してください。',
+      onConsent: () {
+        setState(() {
+          _isAnalyzing = true;
+          // Close menu if open
+          if (_isMenuOpen) _isMenuOpen = false;
+        });
+      },
+    );
+
+    if (!success) {
+      setState(() {
+        _isAnalyzing = false;
+      });
+      return;
+    }
+
+    // 3. Analyze
+    try {
+      final bytes = await photo.readAsBytes();
+      final aiRepo = ref.read(aiRecipeRepositoryProvider);
+      
+      final receiptItems = await aiRepo.analyzeReceiptImage(
+        bytes,
+        mimeType: photo.mimeType,
+      );
+
+      // Get current shopping list for comparison
+      // We need the *latest* state.
+      final shoppingState = await ref.read(shoppingViewModelProvider.future);
+      final currentList = [...shoppingState.toBuyList, ...shoppingState.inCartList];
+
+      if (!mounted) return;
+
+      // 4. Navigate to Result Screen
+      final result = await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ShoppingReceiptResultScreen(
+            receiptItems: receiptItems,
+            currentShoppingList: currentList,
+          ),
+        ),
+      );
+
+      setState(() {
+        _isAnalyzing = false;
+      });
+
+      if (result == true) {
+         // Success
+      }
+
+    } catch (e) {
+      debugPrint('Receipt Analysis Error: $e');
+      setState(() {
+         _isAnalyzing = false;
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('解析エラー: $e')),
+        );
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final isShoppingMode = ref.watch(shoppingModeProvider);
     final stateAsync = ref.watch(shoppingViewModelProvider);
 
@@ -55,6 +172,81 @@ class ShoppingScreen extends ConsumerWidget {
               ],
             ),
             
+            // Dimmed Background Overlay (Only when menu is open)
+            if (_isMenuOpen)
+              Positioned.fill(
+                child: GestureDetector(
+                  onTap: _toggleMenu,
+                  child: AnimatedOpacity(
+                    opacity: _isMenuOpen ? 1.0 : 0.0,
+                    duration: const Duration(milliseconds: 200),
+                    child: Container(
+                      color: const Color(0xB3000000), 
+                    ),
+                  ),
+                ),
+              ),
+
+             if (_isAnalyzing)
+               Positioned.fill(
+                 child: Container(
+                   color: Colors.black45,
+                   child: const Center(
+                     child: CircularProgressIndicator(color: AppColors.stoxPrimary),
+                   ),
+                 ),
+               ),
+
+            // Menu Items (Only visible when !isShoppingMode and menu is open)
+            if (!isShoppingMode)
+              AnimatedPositioned(
+                duration: const Duration(milliseconds: 250),
+                curve: Curves.easeOutBack,
+                bottom: _isMenuOpen ? 100 : 20,
+                left: 0,
+                right: 0,
+                child: AnimatedOpacity(
+                  opacity: _isMenuOpen ? 1.0 : 0.0,
+                  duration: const Duration(milliseconds: 200),
+                  child: IgnorePointer(
+                    ignoring: !_isMenuOpen,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        _buildMenuButton(
+                          Icons.edit, 
+                          '買うものを入力する', 
+                          onTap: () {
+                            _toggleMenu();
+                            showModalBottomSheet(
+                              context: context,
+                              isScrollControlled: true,
+                              backgroundColor: Colors.transparent,
+                              builder: (context) => IngredientAddModal(
+                                title: '買い物リストに追加',
+                                targetStatus: IngredientStatus.toBuy,
+                                onSaved: () {
+                                  ref.invalidate(shoppingViewModelProvider);
+                                },
+                              ),
+                            );
+                          }
+                        ),
+                        const SizedBox(height: 12),
+                        _buildMenuButton(
+                          Icons.camera_alt, 
+                          'レシートを撮影する（お買い物モードを終わる）', 
+                          onTap: () {
+                             _onReceiptBtnTap(); // Starts camera -> ad -> analysis
+                          }
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+
             // FAB or Complete Button
             Positioned(
               bottom: 24,
@@ -74,20 +266,7 @@ class ShoppingScreen extends ConsumerWidget {
                       backgroundColor: AppColors.stoxPrimary,
                     )
                   : GestureDetector(
-                      onTap: () {
-                        showModalBottomSheet(
-                          context: context,
-                          isScrollControlled: true,
-                          backgroundColor: Colors.transparent,
-                          builder: (context) => IngredientAddModal(
-                            title: '買い物リストに追加',
-                            targetStatus: IngredientStatus.toBuy,
-                            onSaved: () {
-                              ref.invalidate(shoppingViewModelProvider);
-                            },
-                          ),
-                        );
-                      },
+                      onTap: _toggleMenu,
                       child: Container(
                         width: 64,
                         height: 64,
@@ -102,11 +281,49 @@ class ShoppingScreen extends ConsumerWidget {
                             )
                           ],
                         ),
-                        child: const Center(
-                          child: Icon(Icons.add, color: Colors.white, size: 32),
+                        child: AnimatedRotation(
+                           turns: _isMenuOpen ? 0.125 : 0, 
+                           duration: const Duration(milliseconds: 200),
+                           child: const Icon(Icons.add, color: Colors.white, size: 32),
                         ),
                       ),
                     ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMenuButton(IconData icon, String label, {required VoidCallback onTap}) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(30),
+          border: Border.all(color: AppColors.stoxBorder),
+          boxShadow: const [
+            BoxShadow(
+              color: Colors.black12,
+              blurRadius: 8,
+              offset: Offset(0, 4),
+            )
+          ],
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, color: AppColors.stoxPrimary, size: 20),
+            const SizedBox(width: 8),
+            Text(
+              label,
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF334155), // slate-700
               ),
             ),
           ],
@@ -314,10 +531,6 @@ class ShoppingScreen extends ConsumerWidget {
     categorized.forEach((category, catItems) {
       widgets.add(_buildCategorySection(ref, category, catItems));
     });
-
-    // Spacer for FAB is handled by SliverPadding in CustomScrollView now, but keeping a small one if needed inside list
-    // Actually it's better to remove the large spacer here as it's handled by padding.
-    // However, the original code had 80. The replace code has 100 in SliverPadding.
     
     return widgets;
   }
