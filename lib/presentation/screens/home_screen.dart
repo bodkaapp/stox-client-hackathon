@@ -5,6 +5,7 @@ import '../../config/app_colors.dart';
 import '../providers/shopping_mode_provider.dart';
 import '../viewmodels/home_viewmodel.dart';
 import '../viewmodels/shopping_viewmodel.dart'; // For real shopping count if needed, or pass via HomeState
+import '../viewmodels/notification_viewmodel.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -12,6 +13,7 @@ class HomeScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final stateAsync = ref.watch(homeViewModelProvider);
+    final notificationsAsync = ref.watch(notificationStreamProvider);
 
     return Scaffold(
       backgroundColor: const Color(0xFFFCFAF8), // background-light
@@ -55,20 +57,21 @@ class HomeScreen extends ConsumerWidget {
                           const SizedBox(width: 4),
                           Stack(
                             children: [
-                              _buildHeaderIconButton(Icons.notifications, () {}),
-                              Positioned(
-                                top: 4,
-                                right: 4,
-                                child: Container(
-                                  width: 8,
-                                  height: 8,
-                                  decoration: BoxDecoration(
-                                    color: Colors.red,
-                                    shape: BoxShape.circle,
-                                    border: Border.all(color: const Color(0xFFFCFAF8), width: 1.5),
+                              _buildHeaderIconButton(Icons.notifications, () => context.push('/notifications')),
+                              if (notificationsAsync.value?.any((n) => !n.isRead) ?? false)
+                                Positioned(
+                                  top: 4,
+                                  right: 4,
+                                  child: Container(
+                                    width: 8,
+                                    height: 8,
+                                    decoration: BoxDecoration(
+                                      color: Colors.red,
+                                      shape: BoxShape.circle,
+                                      border: Border.all(color: const Color(0xFFFCFAF8), width: 1.5),
+                                    ),
                                   ),
                                 ),
-                              ),
                             ],
                           ),
                         ],

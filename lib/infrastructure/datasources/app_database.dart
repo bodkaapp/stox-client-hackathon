@@ -5,12 +5,12 @@ import 'drift_schemas.dart';
 
 part 'app_database.g.dart';
 
-@DriftDatabase(tables: [Recipes, Ingredients, MealPlans, SearchHistories, UserSettings, IngredientAddHistories])
+@DriftDatabase(tables: [Recipes, Ingredients, MealPlans, SearchHistories, UserSettings, IngredientAddHistories, Notifications])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration {
@@ -21,6 +21,9 @@ class AppDatabase extends _$AppDatabase {
       onUpgrade: (Migrator m, int from, int to) async {
         if (from < 2) {
           await m.createTable(ingredientAddHistories);
+        }
+        if (from < 3) {
+          await m.createTable(notifications);
         }
       },
     );

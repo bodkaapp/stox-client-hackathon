@@ -8,6 +8,7 @@ import '../presentation/screens/stock_screen.dart';
 import '../presentation/screens/recipe_book_screen.dart';
 import '../presentation/screens/flyer_screen.dart';
 import '../presentation/screens/scaffold_with_nav_bar.dart';
+import '../presentation/screens/notification_list_screen.dart';
 
 part 'router.g.dart';
 
@@ -47,6 +48,11 @@ GoRouter router(RouterRef ref) {
             builder: (context, state) => const RecipeBookScreen(),
           ),
         ],
+      ),
+      GoRoute(
+        path: '/notifications',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => const NotificationListScreen(),
       ),
     ],
   );
