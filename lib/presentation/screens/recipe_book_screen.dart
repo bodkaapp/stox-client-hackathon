@@ -6,6 +6,7 @@ import '../viewmodels/recipe_book_viewmodel.dart';
 import 'recipe_webview_screen.dart';
 import 'menu_plan_screen.dart';
 import '../widgets/search_modal.dart';
+import 'recently_viewed_recipes_screen.dart';
 
 class RecipeBookScreen extends ConsumerWidget {
   const RecipeBookScreen({super.key});
@@ -345,7 +346,14 @@ class RecipeBookScreen extends ConsumerWidget {
                             ],
                           ),
                           TextButton(
-                            onPressed: () {},
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const RecentlyViewedRecipesScreen(),
+                                ),
+                              );
+                            },
                             child: const Text(
                               'すべて見る',
                               style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF78716C)),
