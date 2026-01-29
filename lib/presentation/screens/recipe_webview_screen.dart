@@ -35,6 +35,12 @@ class _RecipeWebViewScreenState extends ConsumerState<RecipeWebViewScreen> with 
   bool _isAnalyzing = false; // Added for overlay
 
   @override
+  void dispose() {
+    disposeAd(); // Dispose ad resources
+    super.dispose();
+  }
+  
+  @override
   void initState() {
     super.initState();
     _currentTitle = widget.title;
@@ -45,7 +51,7 @@ class _RecipeWebViewScreenState extends ConsumerState<RecipeWebViewScreen> with 
       ..setNavigationDelegate(
         NavigationDelegate(
           onPageStarted: (String url) {
-            setState(() { _isLoading = true; });
+            if (mounted) setState(() { _isLoading = true; });
           },
           onPageFinished: (String url) async {
             if (!mounted) return;

@@ -157,4 +157,12 @@ mixin AdManagerMixin<T extends StatefulWidget> on State<T> {
 
     return true;
   }
+
+
+  /// Dispose the Ad if it exists
+  void disposeAd() {
+    _rewardedAd?.dispose();
+    _rewardedAd = null;
+    _isAdLoaded = false;
+  }
 }
