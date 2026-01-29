@@ -245,6 +245,7 @@ class _RecipeWebViewScreenState extends ConsumerState<RecipeWebViewScreen> with 
               
               if (!mounted) return;
 
+               // Ad Bypass for Testing
                final success = await showAdAndExecute(
                 context: screenContext, // Use VALID screen context
                 preAdTitle: 'AI解析を開始',
@@ -256,7 +257,7 @@ class _RecipeWebViewScreenState extends ConsumerState<RecipeWebViewScreen> with 
                     setState(() { _isAnalyzing = true; });
                   }
                 }
-             );
+               );
 
              // Whether success or fail, turn off analyzing overlay
              if (mounted) {
@@ -264,6 +265,7 @@ class _RecipeWebViewScreenState extends ConsumerState<RecipeWebViewScreen> with 
              }
 
              if (!success) return;
+            //  final success = true; // Force success for testing
 
              if (!mounted) return;
 

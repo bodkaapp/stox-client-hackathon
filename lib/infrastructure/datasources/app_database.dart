@@ -1,7 +1,11 @@
+import 'dart:io';
 import 'package:drift/drift.dart';
-import 'package:drift_flutter/drift_flutter.dart';
+import 'package:drift/native.dart';
+import 'package:path/path.dart' as p;
+// import 'package:drift_flutter/drift_flutter.dart'; // No longer needed for helper
 import 'package:path_provider/path_provider.dart';
 import 'drift_schemas.dart';
+import 'package:flutter/foundation.dart';
 
 part 'app_database.g.dart';
 
@@ -16,9 +20,11 @@ class AppDatabase extends _$AppDatabase {
   MigrationStrategy get migration {
     return MigrationStrategy(
       onCreate: (Migrator m) async {
+        debugPrint('=== DB onCreate: Creating new database tables ===');
         await m.createAll();
       },
       onUpgrade: (Migrator m, int from, int to) async {
+        debugPrint('=== DB onUpgrade: Upgrading from $from to $to ===');
         if (from < 2) {
           await m.createTable(ingredientAddHistories);
         }
@@ -26,20 +32,21 @@ class AppDatabase extends _$AppDatabase {
           await m.createTable(notifications);
         }
       },
+      beforeOpen: (details) async {
+        debugPrint('=== DB beforeOpen: Version ${details.versionBefore} -> ${details.versionNow} ===');
+        if (details.wasCreated) {
+          debugPrint('=== DB wasCreated: TRUE ===');
+        }
+      },
     );
   }
 
   static QueryExecutor _openConnection() {
-    return driftDatabase(
-      name: 'stox_database',
-      web: DriftWebOptions(
-        sqlite3Wasm: Uri.parse('sqlite3.wasm'),
-        driftWorker: Uri.parse('drift_worker.js'),
-      ),
-      native: const DriftNativeOptions(
-        // By default, `driftDatabase` uses the `path_provider` package to find a
-        // suitable location.
-      ),
-    );
+    return LazyDatabase(() async {
+      // Use SupportDirectory for better persistence on Android
+      final dbFolder = await getApplicationSupportDirectory();
+      final file = File(p.join(dbFolder.path, 'stox_db.sqlite'));
+      return NativeDatabase(file);
+    });
   }
 }

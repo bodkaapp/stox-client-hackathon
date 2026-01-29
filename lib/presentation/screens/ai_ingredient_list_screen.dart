@@ -11,6 +11,33 @@ import '../../infrastructure/repositories/drift_ingredient_repository.dart';
 import '../../infrastructure/repositories/drift_recipe_repository.dart';
 import '../../infrastructure/repositories/drift_user_settings_repository.dart';
 
+enum AiSelection {
+  stock, // ある
+  toBuy, // 買う
+  ignored, // いらない
+}
+
+class _AiIngredientItem {
+  final Ingredient ingredient;
+  final AiSelection selection;
+
+  const _AiIngredientItem({
+    required this.ingredient,
+    this.selection = AiSelection.toBuy, // Default to "toBuy" (Not at home)
+  });
+
+  _AiIngredientItem copyWith({
+    Ingredient? ingredient,
+    AiSelection? selection,
+  }) {
+    return _AiIngredientItem(
+      ingredient: ingredient ?? this.ingredient,
+      selection: selection ?? this.selection,
+    );
+  }
+}
+
+
 class AiIngredientListScreen extends ConsumerStatefulWidget {
   final String? initialText;
   final String? sourceUrl;
@@ -31,7 +58,7 @@ class AiIngredientListScreen extends ConsumerStatefulWidget {
 
 class _AiIngredientListScreenState extends ConsumerState<AiIngredientListScreen> {
   final TextEditingController _inputController = TextEditingController();
-  List<Ingredient> _ingredients = [];
+  List<_AiIngredientItem> _ingredients = [];
   bool _isAnalyzing = false;
   late String _recipeTitle;
 
@@ -55,10 +82,38 @@ class _AiIngredientListScreenState extends ConsumerState<AiIngredientListScreen>
     });
 
     try {
-      final repository = ref.read(aiRecipeRepositoryProvider);
-      final results = await repository.extractIngredients(_inputController.text);
+      final aiRepository = ref.read(aiRecipeRepositoryProvider);
+      final ingredientRepository = await ref.read(ingredientRepositoryProvider.future);
+      
+      // Fetch current stock to check against
+      final allIngredients = await ingredientRepository.getAll();
+      
+      // Check against ALL existing ingredients (Stock, ToBuy, InCart)
+      // to avoid duplicates in shopping list.
+      final existingNames = allIngredients
+          .map((i) => i.name)
+          .toSet();
+      
+      debugPrint('Existing Items Count: ${existingNames.length}');
+
+      final results = await aiRepository.extractIngredients(_inputController.text);
+      
+      // Deduplicate results based on name
+      final uniqueResults = <String, Ingredient>{};
+      for (final item in results) {
+        if (!uniqueResults.containsKey(item.name)) {
+          uniqueResults[item.name] = item;
+        }
+      }
+      
       setState(() {
-        _ingredients = results;
+        _ingredients = uniqueResults.values.map((i) {
+          final isExisting = existingNames.contains(i.name);
+          return _AiIngredientItem(
+            ingredient: i,
+            selection: isExisting ? AiSelection.stock : AiSelection.toBuy,
+          );
+        }).toList();
         _isAnalyzing = false;
       });
     } catch (e) {
@@ -73,20 +128,9 @@ class _AiIngredientListScreenState extends ConsumerState<AiIngredientListScreen>
     }
   }
 
-  void _toggleIngredientStatus(int index) {
+  void _updateSelection(int index, AiSelection selection) {
     setState(() {
-      final current = _ingredients[index];
-      // Toggle between toBuy (買い物リスト) and stock (家にある)
-      // Logic: if toBuy -> set to home (simulated as stock or just hidden/marked)
-      // UI uses "ある" (Home/Stock) vs "ない" (ToBuy)
-      // If status is toBuy, it means "Not at home" ("ない"). 
-      // If status is stock, it means "At home" ("ある").
-      
-      final newStatus = current.status == IngredientStatus.toBuy 
-          ? IngredientStatus.stock 
-          : IngredientStatus.toBuy;
-
-      _ingredients[index] = current.copyWith(status: newStatus);
+      _ingredients[index] = _ingredients[index].copyWith(selection: selection);
     });
   }
 
@@ -97,14 +141,17 @@ class _AiIngredientListScreenState extends ConsumerState<AiIngredientListScreen>
     if (unit.isEmpty) unit = '個';
 
     setState(() {
-      _ingredients.add(Ingredient(
-        id: DateTime.now().microsecondsSinceEpoch.toString(),
-        name: name,
-        standardName: name, // Default to name
-        amount: amount,
-        unit: unit,
-        status: IngredientStatus.toBuy, // Default to "Not at home"
-        category: 'その他',
+      _ingredients.add(_AiIngredientItem(
+        ingredient: Ingredient(
+          id: DateTime.now().microsecondsSinceEpoch.toString(),
+          name: name,
+          standardName: name, // Default to name
+          amount: amount,
+          unit: unit,
+          status: IngredientStatus.toBuy, // Default to "Not at home"
+          category: 'その他',
+        ),
+        selection: AiSelection.toBuy,
       ));
     });
   }
@@ -116,7 +163,33 @@ class _AiIngredientListScreenState extends ConsumerState<AiIngredientListScreen>
     final userSettings = await userSettingsRepo.get();
 
     if (userSettings.hideAiIngredientRegistrationDialog) {
-      await _saveIngredients();
+       // Even if first dialog is hidden, we might want to check recipe registration?
+       // Current plan implies cascading. 
+       // If hidden, we assume "Register ingredients" is implicit YES.
+       // So we should proceed to Recipe Check if applicable.
+       
+       bool saveRecipe = false;
+        if (mounted && (widget.sourceUrl != null || _recipeTitle.isNotEmpty)) {
+           final recipeResult = await showDialog<bool>(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: const Text('確認'),
+              content: const Text('材料の登録が終わりました！\nマイレシピ帳に登録しますか？'),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context, false),
+                  child: const Text('いいえ'),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.pop(context, true),
+                  child: const Text('はい'),
+                ),
+              ],
+            ),
+          );
+          saveRecipe = recipeResult ?? false;
+        }
+      await _saveIngredients(saveRecipe: saveRecipe);
     } else {
       if (!mounted) return;
       
@@ -133,7 +206,7 @@ class _AiIngredientListScreenState extends ConsumerState<AiIngredientListScreen>
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('「ある」材料は在庫へ、「ない」材料は買い物リストへ追加します。よろしいですか？'),
+                    const Text('「ある」材料は在庫へ、\n「買う」材料は買い物リストへ追加します。\n「いらない」材料は登録されません。\nよろしいですか？'),
                     const SizedBox(height: 16),
                     Row(
                       children: [
@@ -177,12 +250,36 @@ class _AiIngredientListScreenState extends ConsumerState<AiIngredientListScreen>
             userSettings.copyWith(hideAiIngredientRegistrationDialog: true),
           );
         }
-        await _saveIngredients();
+        
+        // Check if we should ask for recipe registration
+        bool saveRecipe = false;
+        if (mounted && (widget.sourceUrl != null || _recipeTitle.isNotEmpty)) {
+           final recipeResult = await showDialog<bool>(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: const Text('確認'),
+              content: const Text('材料の登録が終わりました！\nマイレシピ帳に登録しますか？'),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context, false),
+                  child: const Text('いいえ'),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.pop(context, true),
+                  child: const Text('はい'),
+                ),
+              ],
+            ),
+          );
+          saveRecipe = recipeResult ?? false;
+        }
+
+        await _saveIngredients(saveRecipe: saveRecipe);
       }
     }
   }
 
-  Future<void> _saveIngredients() async {
+  Future<void> _saveIngredients({bool saveRecipe = false}) async {
     setState(() {
       _isAnalyzing = true;
     });
@@ -192,7 +289,7 @@ class _AiIngredientListScreenState extends ConsumerState<AiIngredientListScreen>
       final ingredientRepo = await ref.read(ingredientRepositoryProvider.future);
 
       String recipeId = '';
-      if (widget.sourceUrl != null && _recipeTitle.isNotEmpty) {
+      if (saveRecipe && (widget.sourceUrl != null || _recipeTitle.isNotEmpty)) {
         recipeId = DateTime.now().microsecondsSinceEpoch.toString();
         final recipe = Recipe(
           id: recipeId,
@@ -204,8 +301,14 @@ class _AiIngredientListScreenState extends ConsumerState<AiIngredientListScreen>
         await recipeRepo.save(recipe);
       }
 
-      final stockIngredients = _ingredients.where((i) => i.status == IngredientStatus.stock).toList();
-      final toBuyIngredients = _ingredients.where((i) => i.status == IngredientStatus.toBuy).toList();
+      final stockIngredients = _ingredients
+          .where((i) => i.selection == AiSelection.stock)
+          .map((i) => i.ingredient)
+          .toList();
+      final toBuyIngredients = _ingredients
+          .where((i) => i.selection == AiSelection.toBuy)
+          .map((i) => i.ingredient)
+          .toList();
 
       for (final ingredient in stockIngredients) {
         await ingredientRepo.save(ingredient.copyWith(
@@ -223,13 +326,24 @@ class _AiIngredientListScreenState extends ConsumerState<AiIngredientListScreen>
 
       if (mounted) {
         Navigator.pop(context, recipeId.isNotEmpty ? recipeId : true);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              '在庫に${stockIngredients.length}件、買い物リストに${toBuyIngredients.length}件追加しました！'
+        
+        final parts = <String>[];
+        if (stockIngredients.isNotEmpty) {
+          parts.add('在庫に${stockIngredients.length}件');
+        }
+        if (toBuyIngredients.isNotEmpty) {
+          parts.add('買い物リストに${toBuyIngredients.length}件');
+        }
+
+        if (parts.isNotEmpty) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                '${parts.join('、')}追加しました！'
+              ),
             ),
-          ),
-        );
+          );
+        }
       }
     } catch (e) {
       setState(() {
@@ -269,10 +383,10 @@ class _AiIngredientListScreenState extends ConsumerState<AiIngredientListScreen>
 
   @override
   Widget build(BuildContext context) {
-    final homeCount = _ingredients.where((i) => i.status == IngredientStatus.stock).length;
-    final totalCount = _ingredients.length;
-    final progress = totalCount > 0 ? homeCount / totalCount : 0.0;
-    final toBuyCount = totalCount - homeCount;
+    final stockCount = _ingredients.where((i) => i.selection == AiSelection.stock).length;
+    final toBuyCount = _ingredients.where((i) => i.selection == AiSelection.toBuy).length;
+    final relevantCount = stockCount + toBuyCount;
+    final progress = relevantCount > 0 ? stockCount / relevantCount : 0.0;
 
     return Scaffold(
       backgroundColor: AppColors.stoxBackground,
@@ -282,7 +396,7 @@ class _AiIngredientListScreenState extends ConsumerState<AiIngredientListScreen>
           children: [
             Column(
               children: [
-                _buildHeader(homeCount, totalCount),
+                _buildHeader(stockCount, relevantCount),
                 Expanded(
                   child: _ingredients.isEmpty && !_isAnalyzing
                       ? _buildEmptyState()
@@ -374,57 +488,64 @@ class _AiIngredientListScreenState extends ConsumerState<AiIngredientListScreen>
     );
   }
 
-  Widget _buildIngredientRow(int index, Ingredient item) {
-    // isHome means status == stock
-    final isHome = item.status == IngredientStatus.stock;
+  Widget _buildIngredientRow(int index, _AiIngredientItem item) {
+    final selection = item.selection;
+    final ingredient = item.ingredient;
+    
+    // Dim the text if ignored
+    final isIgnored = selection == AiSelection.ignored;
     
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-      color: isHome ? const Color(0xFFE8F5E9).withOpacity(0.3) : Colors.white,
+      color: Colors.white,
       child: Row(
         children: [
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  item.name,
-                  style: TextStyle(
-                    color: isHome ? AppColors.stoxText.withOpacity(0.6) : AppColors.stoxText,
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                    decoration: isHome ? TextDecoration.lineThrough : null,
-                    decorationColor: Colors.green.shade300,
+            child: Opacity(
+              opacity: isIgnored ? 0.4 : 1.0,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    ingredient.name,
+                    style: const TextStyle(
+                      color: AppColors.stoxText,
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                ),
-                Text(
-                  '${item.amount}${item.unit}',
-                  style: TextStyle(
-                    color: isHome ? Colors.green : const Color(0xFFF39C12),
-                    fontSize: 10,
+                  Text(
+                    '${ingredient.amount}${ingredient.unit}',
+                    style: const TextStyle(
+                      color: Color(0xFFF39C12),
+                      fontSize: 10,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
           Row(
             children: [
               _buildToggleButton(
                 label: 'ある',
-                isSelected: isHome,
+                isSelected: selection == AiSelection.stock,
                 activeColor: Colors.green,
-                onTap: () {
-                   if (!isHome) _toggleIngredientStatus(index);
-                },
+                onTap: () => _updateSelection(index, AiSelection.stock),
+              ),
+              const SizedBox(width: 8),
+               _buildToggleButton(
+                label: '買う',
+                isSelected: selection == AiSelection.toBuy,
+                activeColor: Colors.deepOrangeAccent,
+                onTap: () => _updateSelection(index, AiSelection.toBuy),
               ),
               const SizedBox(width: 8),
               _buildToggleButton(
-                label: 'ない',
-                isSelected: !isHome,
-                activeColor: Colors.redAccent,
-                onTap: () {
-                   if (isHome) _toggleIngredientStatus(index);
-                },
+                label: 'いらない',
+                isSelected: selection == AiSelection.ignored,
+                activeColor: Colors.grey,
+                onTap: () => _updateSelection(index, AiSelection.ignored),
               ),
             ],
           ),
@@ -452,8 +573,13 @@ class _AiIngredientListScreenState extends ConsumerState<AiIngredientListScreen>
           ),
         ),
         child: Center(
-          child: isSelected && label == 'ある'
-              ? Icon(Icons.check, color: activeColor, size: 18)
+          child: isSelected && (label == 'ある' || label == '買う' || label == 'いらない')
+              ? Icon(
+                  label == 'ある' ? Icons.check : 
+                  label == '買う' ? Icons.shopping_cart : 
+                  Icons.close, 
+                  color: activeColor, size: 16
+                )
               : Text(
                   label,
                   style: TextStyle(
