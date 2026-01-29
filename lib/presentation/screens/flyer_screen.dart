@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../config/app_colors.dart';
+import '../components/circle_action_button.dart';
 import 'my_area_setting_screen.dart';
 import 'flyer_viewer_screen.dart';
 
@@ -79,8 +80,12 @@ class FlyerScreen extends StatelessWidget {
           ),
           Row(
             children: [
-              _buildCircleButton(Icons.search, Colors.white, AppColors.stoxSubText,
-                  border: AppColors.stoxBorder),
+              CircleActionButton(
+                icon: Icons.search,
+                backgroundColor: Colors.white,
+                contentColor: AppColors.stoxSubText,
+                borderColor: AppColors.stoxBorder,
+              ),
               const SizedBox(width: 8),
               PopupMenuButton<String>(
                 offset: const Offset(0, 40),
@@ -109,30 +114,17 @@ class FlyerScreen extends StatelessWidget {
                     ),
                   ),
                 ],
-                child: _buildCircleButton(Icons.menu, Colors.white, AppColors.stoxSubText,
-                    border: AppColors.stoxBorder),
+                child: CircleActionButton(
+                  icon: Icons.menu,
+                  backgroundColor: Colors.white,
+                  contentColor: AppColors.stoxSubText,
+                  borderColor: AppColors.stoxBorder,
+                ),
               ),
             ],
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildCircleButton(IconData icon, Color bg, Color contentColor,
-      {Color? border}) {
-    return Container(
-      width: 36,
-      height: 36,
-      decoration: BoxDecoration(
-        color: bg,
-        shape: BoxShape.circle,
-        border: border != null ? Border.all(color: border) : null,
-        boxShadow: const [
-          BoxShadow(color: Colors.black12, blurRadius: 1, offset: Offset(0, 1))
-        ],
-      ),
-      child: Icon(icon, color: contentColor, size: 20),
     );
   }
 

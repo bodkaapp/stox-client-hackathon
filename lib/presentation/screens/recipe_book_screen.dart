@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../config/app_colors.dart';
+import '../components/circle_action_button.dart';
 import '../viewmodels/recipe_book_viewmodel.dart';
 import 'recipe_webview_screen.dart';
 import 'menu_plan_screen.dart';
@@ -56,13 +57,11 @@ class RecipeBookScreen extends ConsumerWidget {
                       ),
                       Row(
                         children: [
-                          _buildCircleButton(Icons.settings, Colors.white, AppColors.stoxSubText, border: AppColors.stoxBorder),
-                          const SizedBox(width: 8),
-                          GestureDetector(
-                            onTap: () {
-                              ref.read(recipeBookViewModelProvider.notifier).addSampleRecipe();
-                            },
-                            child: _buildCircleButton(Icons.add, Colors.white, Colors.white, isAdd: true),
+                          CircleActionButton(
+                            icon: Icons.settings,
+                            backgroundColor: Colors.white,
+                            contentColor: AppColors.stoxSubText,
+                            borderColor: AppColors.stoxBorder,
                           ),
                         ],
                       ),
@@ -591,23 +590,5 @@ class RecipeBookScreen extends ConsumerWidget {
       ),
     );
   }
-  Widget _buildCircleButton(IconData icon, Color bg, Color contentColor, {Color? border, bool isAdd = false}) {
-    final actualBg = isAdd ? AppColors.stoxPrimary : bg;
-
-    return Container(
-      width: 36,
-      height: 36,
-      decoration: BoxDecoration(
-        color: actualBg,
-        shape: BoxShape.circle,
-        border: border != null ? Border.all(color: border) : null,
-        boxShadow: isAdd ? [
-          BoxShadow(color: actualBg.withOpacity(0.2), blurRadius: 4, offset: const Offset(0, 2)) 
-        ] : [
-          const BoxShadow(color: Colors.black12, blurRadius: 1, offset: Offset(0, 1))
-        ],
-      ),
-      child: Icon(icon, color: contentColor, size: 20),
-    );
-  }
 }
+

@@ -10,6 +10,7 @@ import 'ai_analyzed_stock_screen.dart';
 import 'photo_stock_location_screen.dart';
 import 'dart:typed_data';
 import '../widgets/ingredient_add_modal.dart';
+import '../components/circle_action_button.dart';
 
 class StockScreen extends ConsumerStatefulWidget {
   const StockScreen({super.key});
@@ -230,7 +231,12 @@ class _StockScreenState extends ConsumerState<StockScreen> {
           ),
           Row(
             children: [
-              _buildCircleButton(Icons.search, Colors.white, AppColors.stoxSubText, border: AppColors.stoxBorder),
+              CircleActionButton(
+                icon: Icons.search,
+                backgroundColor: Colors.white,
+                contentColor: AppColors.stoxSubText,
+                borderColor: AppColors.stoxBorder,
+              ),
                // Second button 'Menu' from design code.html is actually a 'Menu' icon, not search. 
                // In original code it was "search" and "add". 
                // In code.html it is "search" (left) and "menu" (right). 
@@ -245,7 +251,12 @@ class _StockScreenState extends ConsumerState<StockScreen> {
                // OR just keep Search. The user didn't explicitly ask for "Menu" button, but implied "Stock Screen ... changes ... refer to code.html".
                // Let's add the Menu button to match code.html.
                const SizedBox(width: 8),
-               _buildCircleButton(Icons.menu, Colors.white, AppColors.stoxSubText, border: AppColors.stoxBorder),
+               CircleActionButton(
+                 icon: Icons.menu,
+                 backgroundColor: Colors.white,
+                 contentColor: AppColors.stoxSubText,
+                 borderColor: AppColors.stoxBorder,
+               ),
             ],
           ),
         ],
@@ -253,25 +264,7 @@ class _StockScreenState extends ConsumerState<StockScreen> {
     );
   }
 
-  Widget _buildCircleButton(IconData icon, Color bg, Color contentColor, {Color? border, bool isAdd = false}) {
-    final actualBg = isAdd ? AppColors.stoxPrimary : bg;
 
-    return Container(
-      width: 36,
-      height: 36,
-      decoration: BoxDecoration(
-        color: actualBg,
-        shape: BoxShape.circle,
-        border: border != null ? Border.all(color: border) : null,
-        boxShadow: isAdd ? [
-          BoxShadow(color: actualBg.withOpacity(0.2), blurRadius: 4, offset: const Offset(0, 2)) 
-        ] : [
-          const BoxShadow(color: Colors.black12, blurRadius: 1, offset: Offset(0, 1))
-        ],
-      ),
-      child: Icon(icon, color: contentColor, size: 20),
-    );
-  }
 
   Widget _buildFilterBar() {
     final categories = ['すべて', '野菜・果物', '肉・魚', '乳製品', '調味料'];
