@@ -409,11 +409,14 @@ class _IngredientAddModalState extends ConsumerState<IngredientAddModal> {
                   child: TextField(
                     controller: _nameController,
                     focusNode: _nameFocusNode,
-                    textInputAction: TextInputAction.done, // Or 'go'
-                    onEditingComplete: () {
-                      _addItem();
-                      // Keeping focus explicitly just in case, though overriding this callback usually prevents close.
-                      _nameFocusNode.requestFocus(); 
+                    textInputAction: TextInputAction.done,
+                    onSubmitted: (value) {
+                      if (_nameController.text.trim().isEmpty) {
+                        _saveItems();
+                      } else {
+                        _addItem();
+                        _nameFocusNode.requestFocus();
+                      }
                     },
                     decoration: const InputDecoration(
                       border: InputBorder.none,

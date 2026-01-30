@@ -131,6 +131,14 @@ class _ShoppingScreenState extends ConsumerState<ShoppingScreen> with AdManagerM
   Widget build(BuildContext context) {
     final isShoppingMode = ref.watch(shoppingModeProvider);
     final stateAsync = ref.watch(shoppingViewModelProvider);
+    
+    // Check if list is empty for Bubble visibility (data might be loading but we use valueOrNull/maybeWhen)
+    final allItems = stateAsync.valueOrNull != null 
+        ? [...stateAsync.value!.toBuyList, ...stateAsync.value!.inCartList] 
+        : <Ingredient>[];
+    
+    // Bubble should only show if loaded and empty (and not shopping mode)
+    final showBubble = stateAsync.hasValue && allItems.isEmpty && !isShoppingMode;
 
     return Scaffold(
       backgroundColor: AppColors.stoxBackground,
@@ -144,24 +152,37 @@ class _ShoppingScreenState extends ConsumerState<ShoppingScreen> with AdManagerM
                 Expanded(
                   child: stateAsync.when(
                     data: (state) {
-                      final allItems = [...state.toBuyList, ...state.inCartList];
+                      final currentItems = [...state.toBuyList, ...state.inCartList];
                       
                       return Column(
                         children: [
-                          if (isShoppingMode) _buildProgressBarSection(allItems),
+                          if (isShoppingMode && currentItems.isNotEmpty) _buildProgressBarSection(currentItems),
                           Expanded(
-                            child: CustomScrollView(
-                              slivers: [
-                                SliverPadding(
-                                  padding: const EdgeInsets.only(bottom: 100), // Space for FAB
-                                  sliver: SliverList(
-                                    delegate: SliverChildListDelegate(_buildCategorizedItems(ref, allItems)),
+                            child: currentItems.isEmpty 
+                              ? Center(
+                                  child: Text(
+                                    '買い物リストを登録する場所です。\n買うものを忘れないように\nメモしておきましょう。',
+                                    textAlign: TextAlign.center,
+                                    style: const TextStyle(
+                                      color: AppColors.stoxText,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w500,
+                                      height: 1.6,
+                                    ),
                                   ),
+                                )
+                              : CustomScrollView(
+                                  slivers: [
+                                    SliverPadding(
+                                      padding: const EdgeInsets.only(bottom: 100), // Space for FAB
+                                      sliver: SliverList(
+                                        delegate: SliverChildListDelegate(_buildCategorizedItems(ref, currentItems)),
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                              ],
-                            ),
                           ),
-                          _buildFooter(allItems),
+                          _buildFooter(currentItems),
                         ],
                       );
                     },
@@ -196,6 +217,47 @@ class _ShoppingScreenState extends ConsumerState<ShoppingScreen> with AdManagerM
                    ),
                  ),
                ),
+
+            // Guide Bubble
+            if (showBubble)
+              Positioned(
+                bottom: 100,
+                left: 0,
+                right: 0,
+                child: Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: AppColors.stoxPrimary,
+                          borderRadius: BorderRadius.circular(30),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.1),
+                              blurRadius: 8,
+                              offset: const Offset(0, 4),
+                            )
+                          ],
+                        ),
+                        child: const Text(
+                          'ここをタップして材料を追加します',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
+                      CustomPaint(
+                        size: const Size(12, 6),
+                        painter: _TrianglePainter(color: AppColors.stoxPrimary),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
 
             // Menu Items (Only visible when !isShoppingMode and menu is open)
             if (!isShoppingMode)
@@ -675,4 +737,28 @@ class _ShoppingScreenState extends ConsumerState<ShoppingScreen> with AdManagerM
       ),
     );
   }
+}
+
+class _TrianglePainter extends CustomPainter {
+  final Color color;
+
+  _TrianglePainter({required this.color});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.fill;
+
+    final path = Path();
+    path.moveTo(0, 0);
+    path.lineTo(size.width / 2, size.height);
+    path.lineTo(size.width, 0);
+    path.close();
+
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

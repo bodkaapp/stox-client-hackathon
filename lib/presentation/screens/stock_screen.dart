@@ -53,16 +53,29 @@ class _StockScreenState extends ConsumerState<StockScreen> {
                       
                       return Column(
                         children: [
-                          _buildListHeader(),
+                          if (filteredItems.isNotEmpty) _buildListHeader(),
                           Expanded(
-                            child: ListView.separated(
-                              padding: const EdgeInsets.fromLTRB(16, 0, 16, 160), // Increased padding for FAB
-                              itemCount: filteredItems.length,
-                              separatorBuilder: (context, index) => const Divider(height: 1, color: AppColors.stoxBorder),
-                              itemBuilder: (context, index) {
-                                return _buildListItem(filteredItems[index]);
-                              },
-                            ),
+                            child: filteredItems.isEmpty
+                              ? Center(
+                                  child: Text(
+                                    '家の中にある\n「買ったもの」「もらったもの」\nを登録して見る場所です。',
+                                    textAlign: TextAlign.center,
+                                    style: const TextStyle(
+                                      color: AppColors.stoxText,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w500,
+                                      height: 1.6,
+                                    ),
+                                  ),
+                                )
+                              : ListView.separated(
+                                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 160), // Increased padding for FAB
+                                  itemCount: filteredItems.length,
+                                  separatorBuilder: (context, index) => const Divider(height: 1, color: AppColors.stoxBorder),
+                                  itemBuilder: (context, index) {
+                                    return _buildListItem(filteredItems[index]);
+                                  },
+                                ),
                           ),
                           _buildFooter(items),
                         ],
@@ -100,6 +113,54 @@ class _StockScreenState extends ConsumerState<StockScreen> {
                  ),
                ),
 
+            // Guide Bubble
+            stateAvg.when(
+                data: (items) {
+                  final filteredItems = _filterItems(items);
+                  if (filteredItems.isNotEmpty) return const SizedBox.shrink();
+                  
+                  return Positioned(
+                    bottom: 100, // Adjust position to be above FAB
+                    left: 0,
+                    right: 0,
+                    child: Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            decoration: BoxDecoration(
+                              color: AppColors.stoxPrimary,
+                              borderRadius: BorderRadius.circular(30),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.1),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 4),
+                                )
+                              ],
+                            ),
+                            child: const Text(
+                              'ここをタップして在庫を追加します',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ),
+                          CustomPaint(
+                            size: const Size(12, 6),
+                            painter: _TrianglePainter(color: AppColors.stoxPrimary),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+                loading: () => const SizedBox.shrink(),
+                error: (_, __) => const SizedBox.shrink(),
+            ),
 
              // Menu Items
               AnimatedPositioned(
@@ -531,4 +592,28 @@ class _StockScreenState extends ConsumerState<StockScreen> {
       );
     }
   }
+}
+
+class _TrianglePainter extends CustomPainter {
+  final Color color;
+
+  _TrianglePainter({required this.color});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.fill;
+
+    final path = Path();
+    path.moveTo(0, 0);
+    path.lineTo(size.width / 2, size.height);
+    path.lineTo(size.width, 0);
+    path.close();
+
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
