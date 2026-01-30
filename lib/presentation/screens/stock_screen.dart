@@ -23,11 +23,130 @@ class _StockScreenState extends ConsumerState<StockScreen> {
   String _selectedCategory = 'すべて';
   bool _isMenuOpen = false;
   bool _isAnalyzing = false;
+  
+  // Search state
+  bool _isSearching = false;
+  String _searchQuery = '';
+  final TextEditingController _searchController = TextEditingController();
+
+  // Selection/Delete mode state
+  bool _isSelectionMode = false;
+  final Set<String> _selectedItemIds = {};
+
   final ImagePicker _picker = ImagePicker();
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
 
   void _toggleMenu() {
     setState(() {
       _isMenuOpen = !_isMenuOpen;
+    });
+  }
+
+  void _toggleSelectionMode() {
+    setState(() {
+      _isSelectionMode = !_isSelectionMode;
+      _selectedItemIds.clear();
+      _isMenuOpen = false; // Close menu if open
+    });
+  }
+
+  void _toggleItemSelection(String id) {
+    setState(() {
+      if (_selectedItemIds.contains(id)) {
+        _selectedItemIds.remove(id);
+      } else {
+        _selectedItemIds.add(id);
+      }
+    });
+  }
+
+  Future<void> _deleteSelectedItems() async {
+    if (_selectedItemIds.isEmpty) return;
+    
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('本当に削除してもいいですか？', style: TextStyle(fontWeight: FontWeight.bold)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('キャンセル', style: TextStyle(color: Colors.grey)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('削除します', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    // Capture items before deletion for Undo
+    final allItems = ref.read(stockViewModelProvider).value ?? [];
+    final itemsToDelete = allItems.where((item) => _selectedItemIds.contains(item.id)).toList();
+
+    final idsToDelete = _selectedItemIds.toList();
+    await ref.read(stockViewModelProvider.notifier).deleteItems(idsToDelete);
+    
+    if (!mounted) return;
+
+    setState(() {
+      _isSelectionMode = false;
+      _selectedItemIds.clear();
+    });
+
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    final controller = ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('${idsToDelete.length}件を削除しました'),
+        action: SnackBarAction(
+          label: 'やっぱり元に戻す',
+          onPressed: () async {
+            // Confirm restore
+            final shouldRestore = await showDialog<bool>(
+              context: context,
+              builder: (context) => AlertDialog(
+                title: const Text('削除した商品を元に戻しますか？', style: TextStyle(fontWeight: FontWeight.bold)),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context, false),
+                    child: const Text('キャンセル', style: TextStyle(color: Colors.grey)),
+                  ),
+                  TextButton(
+                    onPressed: () => Navigator.pop(context, true),
+                    child: const Text('元に戻す', style: TextStyle(color: AppColors.stoxPrimary, fontWeight: FontWeight.bold)),
+                  ),
+                ],
+              ),
+            );
+
+            if (shouldRestore == true) {
+              await ref.read(stockViewModelProvider.notifier).restoreItems(itemsToDelete);
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('商品を元に戻しました')),
+                );
+              }
+            }
+          },
+        ),
+        duration: const Duration(seconds: 6),
+      ),
+    );
+
+    // Force close after 10 seconds in case accessibility settings keep it open indefinitely
+    Future.delayed(const Duration(seconds: 6), () {
+      try {
+        controller.close(); 
+      } catch (_) {
+        // Ignore if already closed
+      }
     });
   }
 
@@ -44,8 +163,22 @@ class _StockScreenState extends ConsumerState<StockScreen> {
           children: [
             Column(
               children: [
-                _buildHeader(),
-                _buildFilterBar(),
+                stateAvg.when(
+                  data: (items) => _buildHeader(items),
+                  loading: () => _buildHeader([]), // Show header even while loading, empty items
+                  error: (_, __) => _buildHeader([]),
+                ),
+                
+                // Hide filter/search bar in selection mode to avoid clutter or confusion?
+                // Or maybe keep it to allow filtering while selecting? 
+                // Usually keeping it is fine.
+                AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 300),
+                  child: _isSearching 
+                    ? _buildSearchBar()
+                    : _buildFilterBar(),
+                ),
+
                 Expanded(
                   child: stateAvg.when(
                     data: (items) {
@@ -58,7 +191,9 @@ class _StockScreenState extends ConsumerState<StockScreen> {
                             child: filteredItems.isEmpty
                               ? Center(
                                   child: Text(
-                                    '家の中にある\n「買ったもの」「もらったもの」\nを登録して見る場所です。',
+                                    _isSearching
+                                      ? '検索結果がありません'
+                                      : '家の中にある\n「買ったもの」「もらったもの」\nを登録して見る場所です。',
                                     textAlign: TextAlign.center,
                                     style: const TextStyle(
                                       color: AppColors.stoxText,
@@ -69,7 +204,7 @@ class _StockScreenState extends ConsumerState<StockScreen> {
                                   ),
                                 )
                               : ListView.separated(
-                                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 160), // Increased padding for FAB
+                                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 160), // Increased padding for FAB/Footer
                                   itemCount: filteredItems.length,
                                   separatorBuilder: (context, index) => const Divider(height: 1, color: AppColors.stoxBorder),
                                   itemBuilder: (context, index) {
@@ -116,8 +251,15 @@ class _StockScreenState extends ConsumerState<StockScreen> {
             // Guide Bubble
             stateAvg.when(
                 data: (items) {
-                  final filteredItems = _filterItems(items);
-                  if (filteredItems.isNotEmpty) return const SizedBox.shrink();
+                  // Hide guide in selection mode
+                  if (_isSelectionMode) return const SizedBox.shrink();
+
+                  // Hide guide if menu is open
+                  if (_isMenuOpen) return const SizedBox.shrink();
+
+                  // Only show guide if total items are empty, not just filtered results
+                  // But request says "If registered stock data is empty".
+                  if (items.isNotEmpty) return const SizedBox.shrink();
                   
                   return Positioned(
                     bottom: 100, // Adjust position to be above FAB
@@ -215,50 +357,150 @@ class _StockScreenState extends ConsumerState<StockScreen> {
                              _onPhotoBtnTap();
                           }
                         ),
+                        const SizedBox(height: 12),
+                        // New: Select and Delete
+                        _buildMenuButton(
+                          Icons.delete_outline,
+                          '商品を選んで削除する',
+                          onTap: _toggleSelectionMode,
+                        ),
                       ],
                     ),
                   ),
                 ),
               ),
 
-            // FAB
-            Positioned(
-              bottom: 24, // Adjust based on footer height or desired position
-              left: 0,
-              right: 0,
-              child: Center(
-                child: GestureDetector(
-                  onTap: _toggleMenu,
-                  child: Container(
-                    width: 64,
-                    height: 64,
-                    decoration: BoxDecoration(
-                      color: AppColors.stoxPrimary,
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColors.stoxPrimary.withOpacity(0.3),
-                          blurRadius: 24,
-                          offset: const Offset(0, 8),
-                        )
-                      ],
+            // Guide Bubble for Delete
+            if (_isSelectionMode && _selectedItemIds.isNotEmpty)
+              Positioned(
+                bottom: 100,
+                left: 0,
+                right: 0,
+                child: Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: Colors.red, // Match delete button color
+                          borderRadius: BorderRadius.circular(30),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.1),
+                              blurRadius: 8,
+                              offset: const Offset(0, 4),
+                            )
+                          ],
+                        ),
+                        child: const Text(
+                          'ここをタップして削除します',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
+                      CustomPaint(
+                        size: const Size(12, 6),
+                        painter: _TrianglePainter(color: Colors.red),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+            // FAB / Delete Button
+            if (_isSelectionMode)
+               Positioned(
+                bottom: 24,
+                left: 0,
+                right: 0,
+                child: Center(
+                  child: GestureDetector(
+                    onTap: _selectedItemIds.isEmpty ? null : _deleteSelectedItems,
+                    child: Container(
+                      width: 64,
+                      height: 64,
+                      decoration: BoxDecoration(
+                        color: _selectedItemIds.isEmpty ? Colors.grey : Colors.red,
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: (_selectedItemIds.isEmpty ? Colors.grey : Colors.red).withOpacity(0.3),
+                            blurRadius: 24,
+                            offset: const Offset(0, 8),
+                          )
+                        ],
+                      ),
+                      child: const Icon(Icons.delete_outline, color: Colors.white, size: 32),
                     ),
-                    child: AnimatedRotation(
-                       turns: _isMenuOpen ? 0.125 : 0, // 45 degrees rotation
-                       duration: const Duration(milliseconds: 200),
-                       child: const Icon(Icons.add, color: Colors.white, size: 32),
+                  ),
+                ),
+              )
+            else
+              Positioned(
+                bottom: 24, // Adjust based on footer height or desired position
+                left: 0,
+                right: 0,
+                child: Center(
+                  child: GestureDetector(
+                    onTap: _toggleMenu,
+                    child: Container(
+                      width: 64,
+                      height: 64,
+                      decoration: BoxDecoration(
+                        color: AppColors.stoxPrimary,
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.stoxPrimary.withOpacity(0.3),
+                            blurRadius: 24,
+                            offset: const Offset(0, 8),
+                          )
+                        ],
+                      ),
+                      child: AnimatedRotation(
+                         turns: _isMenuOpen ? 0.125 : 0, // 45 degrees rotation
+                         duration: const Duration(milliseconds: 200),
+                         child: const Icon(Icons.add, color: Colors.white, size: 32),
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(List<Ingredient> items) {
+    // Disable search if no items
+    final bool isEmpty = items.isEmpty;
+    
+    // In selection mode, header changes? 
+    // Maybe show "X selected" and "Cancel" button on right.
+    if (_isSelectionMode) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              '${_selectedItemIds.length}件選択中',
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.stoxText),
+            ),
+            TextButton(
+              onPressed: _toggleSelectionMode,
+              child: const Text('キャンセル', style: TextStyle(color: AppColors.stoxPrimary, fontWeight: FontWeight.bold)),
+            )
+          ],
+        ),
+      );
+    }
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
       child: Row(
@@ -295,28 +537,34 @@ class _StockScreenState extends ConsumerState<StockScreen> {
               CircleActionButton(
                 icon: Icons.search,
                 backgroundColor: Colors.white,
-                contentColor: AppColors.stoxSubText,
-                borderColor: AppColors.stoxBorder,
+                contentColor: isEmpty ? Colors.grey : (_isSearching ? AppColors.stoxPrimary : AppColors.stoxSubText),
+                borderColor: isEmpty ? Colors.grey.withOpacity(0.3) : AppColors.stoxBorder,
+                onTap: isEmpty ? null : () {
+                  setState(() {
+                    _isSearching = !_isSearching;
+                    if (!_isSearching) {
+                      _searchQuery = '';
+                      _searchController.clear();
+                    }
+                  });
+                },
               ),
-               // Second button 'Menu' from design code.html is actually a 'Menu' icon, not search. 
-               // In original code it was "search" and "add". 
-               // In code.html it is "search" (left) and "menu" (right). 
-               // The user request said "Remove the bottom + button" and replace with FAB. 
-               // But usually we keep search? 
-               // Let's look at code.html header:
-               // <div class="flex gap-2">
-               // <button ...> <span ...>search</span> </button>
-               // <button ...> <span ...>menu</span> </button>
-               // </div>
-               // So I should probably add the Menu button back if I want to match design, 
-               // OR just keep Search. The user didn't explicitly ask for "Menu" button, but implied "Stock Screen ... changes ... refer to code.html".
-               // Let's add the Menu button to match code.html.
+               
                const SizedBox(width: 8),
                CircleActionButton(
                  icon: Icons.menu,
                  backgroundColor: Colors.white,
                  contentColor: AppColors.stoxSubText,
                  borderColor: AppColors.stoxBorder,
+                 onTap: _toggleMenu, // Add onTap here to make it work! The previous code didn't have onTap on menu button?
+                 // Wait, previous code:
+                 //  CircleActionButton(icon: Icons.menu, ...),
+                 // It did not assign _toggleMenu to onTap. It was missing!
+                 // The 'search' button had onTap but 'menu' button didn't in previous step?
+                 // Let's check history...
+                 // Yes, "CircleActionButton(icon: Icons.menu, ...)," no onTap.
+                 // So the menu button wasn't working before? The user said "Next, tap the hamburger menu next to it...".
+                 // Assuming I need to fix it now.
                ),
             ],
           ),
@@ -325,41 +573,93 @@ class _StockScreenState extends ConsumerState<StockScreen> {
     );
   }
 
-
+  Widget _buildSearchBar() {
+    return Container(
+      key: const ValueKey('searchBar'),
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      height: 44, // Match approx height of filter bars
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: AppColors.stoxBorder),
+        boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, 2))],
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.search, color: AppColors.stoxSubText, size: 20),
+          const SizedBox(width: 8),
+          Expanded(
+            child: TextField(
+              controller: _searchController,
+              autofocus: true,
+              style: const TextStyle(fontSize: 14, color: AppColors.stoxText),
+              decoration: const InputDecoration(
+                hintText: '在庫を検索...',
+                hintStyle: TextStyle(fontSize: 14, color: Colors.black38),
+                border: InputBorder.none,
+                isDense: true,
+                contentPadding: EdgeInsets.zero,
+              ),
+              onChanged: (val) {
+                setState(() {
+                  _searchQuery = val;
+                });
+              },
+            ),
+          ),
+          if (_searchQuery.isNotEmpty)
+            GestureDetector(
+              onTap: () {
+                _searchController.clear();
+                setState(() {
+                  _searchQuery = '';
+                });
+              },
+              child: const Icon(Icons.close, color: Colors.grey, size: 18),
+            ),
+        ],
+      ),
+    );
+  }
 
   Widget _buildFilterBar() {
     final categories = ['すべて', '野菜・果物', '肉・魚', '乳製品', '調味料'];
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: Row(
-        children: categories.map((cat) {
-          final isSelected = _selectedCategory == cat;
-          return Padding(
-            padding: const EdgeInsets.only(right: 8.0),
-            child: InkWell(
-              onTap: () => setState(() => _selectedCategory = cat),
-              borderRadius: BorderRadius.circular(20),
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                decoration: BoxDecoration(
-                  color: isSelected ? AppColors.stoxPrimary : Colors.white,
-                  borderRadius: BorderRadius.circular(20),
-                  border: isSelected ? null : Border.all(color: AppColors.stoxBorder),
-                  boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 1)],
-                ),
-                child: Text(
-                  cat,
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.bold,
-                    color: isSelected ? Colors.white : AppColors.stoxSubText,
+    return Padding(
+      key: const ValueKey('filterBar'),
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: Row(
+          children: categories.map((cat) {
+            final isSelected = _selectedCategory == cat;
+            return Padding(
+              padding: const EdgeInsets.only(right: 8.0),
+              child: InkWell(
+                onTap: () => setState(() => _selectedCategory = cat),
+                borderRadius: BorderRadius.circular(20),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: isSelected ? AppColors.stoxPrimary : Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    border: isSelected ? null : Border.all(color: AppColors.stoxBorder),
+                    boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 1)],
+                  ),
+                  child: Text(
+                    cat,
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                      color: isSelected ? Colors.white : AppColors.stoxSubText,
+                    ),
                   ),
                 ),
               ),
-            ),
-          );
-        }).toList(),
+            );
+          }).toList(),
+        ),
       ),
     );
   }
@@ -387,25 +687,18 @@ class _StockScreenState extends ConsumerState<StockScreen> {
     IconData iconData;
     Color iconColor;
     
-    // Using stox colors. 
-    // Veggies -> Green in original, now try to use stoxSubText (Brown/Neutral) or stoxPrimary (Orange)
-    // Actually standard Colors.* are okay to use if strictly necessary for meaning (e.g. Red for danger), 
-    // but for brands, let's stick to stoxSubText for "normal" categories and stoxPrimary for "meat/main".
-    // Or just use stoxPrimary for all icons to be uniform?
-    // Let's use stoxPrimary for Meat, stoxSubText for Veggies to differentiate slightly.
-    
     if (item.category.contains('肉') || item.category.contains('魚')) {
       iconData = Icons.restaurant;
       iconColor = AppColors.stoxPrimary.withOpacity(0.7);
     } else if (item.category.contains('野菜')) {
       iconData = Icons.eco;
-      iconColor = AppColors.stoxSubText.withOpacity(0.7); // Veggies = Earth/Brownish
+      iconColor = AppColors.stoxSubText.withOpacity(0.7); 
     } else if (item.category.contains('乳') || item.category.contains('卵') || item.name.contains('たまご')) {
       iconData = Icons.egg; 
       iconColor = AppColors.stoxPrimary.withOpacity(0.7);
     } else if (item.category.contains('水') || item.category.contains('飲料')) {
       iconData = Icons.water_drop;
-      iconColor = Colors.blue.withOpacity(0.7); // Keep blue for water as it's universal
+      iconColor = Colors.blue.withOpacity(0.7); 
     } else {
       iconData = Icons.kitchen;
       iconColor = AppColors.stoxSubText.withOpacity(0.7);
@@ -418,46 +711,66 @@ class _StockScreenState extends ConsumerState<StockScreen> {
       amountColor = AppColors.stoxPrimary;
     }
 
-    return Container(
-      color: Colors.white,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      child: Row(
-        children: [
-          SizedBox(
-            width: 24, 
-            child: Icon(iconData, size: 18, color: iconColor),
-          ),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+    final isSelected = _selectedItemIds.contains(item.id);
+
+    return InkWell( // Make whole row tapable for selection?
+      onTap: _isSelectionMode ? () => _toggleItemSelection(item.id) : null,
+      child: Container(
+        color: _isSelectionMode && isSelected ? AppColors.stoxPrimary.withOpacity(0.1) : Colors.white,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        child: Row(
+          children: [
+            if (_isSelectionMode)
+              Padding(
+                padding: const EdgeInsets.only(right: 12.0),
+                child: SizedBox(
+                  width: 24,
+                  height: 24,
+                  child: Checkbox(
+                    value: isSelected,
+                    onChanged: (val) => _toggleItemSelection(item.id),
+                    activeColor: AppColors.stoxPrimary,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                  ),
+                ),
+              ),
+
+            SizedBox(
+              width: 24, 
+              child: Icon(iconData, size: 18, color: iconColor),
+            ),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                child: Text(
+                  item.name,
+                  style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.stoxText),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ),
+            SizedBox(
+              width: 56,
               child: Text(
-                item.name,
-                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.stoxText),
-                overflow: TextOverflow.ellipsis,
+                _formatDate(item.expiryDate),
+                textAlign: TextAlign.right,
+                style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                  color: _isExpiredOrClose(item.expiryDate) ? Colors.red : AppColors.stoxSubText, // Red for expiry is standard
+                ),
               ),
             ),
-          ),
-          SizedBox(
-            width: 56,
-            child: Text(
-              _formatDate(item.expiryDate),
-              textAlign: TextAlign.right,
-              style: TextStyle(
-                fontSize: 10,
-                fontWeight: FontWeight.bold,
-                color: _isExpiredOrClose(item.expiryDate) ? Colors.red : AppColors.stoxSubText, // Red for expiry is standard
+            SizedBox(
+              width: 48,
+              child: Text(
+                '${_formatAmount(item.amount)}${item.unit}',
+                textAlign: TextAlign.right,
+                style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: amountColor),
               ),
             ),
-          ),
-          SizedBox(
-            width: 48,
-            child: Text(
-              '${_formatAmount(item.amount)}${item.unit}',
-              textAlign: TextAlign.right,
-              style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: amountColor),
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -491,6 +804,9 @@ class _StockScreenState extends ConsumerState<StockScreen> {
   }
 
   Widget _buildFooter(List<Ingredient> allItems) {
+    // If filtering/searching, footer should maybe react?
+    // Leaving as is for now.
+    
     final total = allItems.length;
     final expiredCount = allItems.where((i) => _isExpiredOrClose(i.expiryDate)).length;
 
@@ -520,6 +836,13 @@ class _StockScreenState extends ConsumerState<StockScreen> {
   }
 
   List<Ingredient> _filterItems(List<Ingredient> items) {
+    // Filter by search query if searching
+    if (_isSearching) {
+      if (_searchQuery.isEmpty) return items;
+      return items.where((item) => item.name.contains(_searchQuery)).toList();
+    }
+
+    // Otherwise filter by category
     if (_selectedCategory == 'すべて') return items;
     
     return items.where((item) {

@@ -20,4 +20,20 @@ class StockViewModel extends _$StockViewModel {
     });
     return all;
   }
+
+  Future<void> deleteItems(List<String> ids) async {
+    final repo = await ref.read(ingredientRepositoryProvider.future);
+    // Loop delete as repo doesn't have partial delete by list yet, and keeping it simple
+    for (final id in ids) {
+      await repo.delete(id);
+    }
+    // Refresh the list
+    ref.invalidateSelf();
+  }
+
+  Future<void> restoreItems(List<Ingredient> items) async {
+    final repo = await ref.read(ingredientRepositoryProvider.future);
+    await repo.saveAll(items);
+    ref.invalidateSelf();
+  }
 }

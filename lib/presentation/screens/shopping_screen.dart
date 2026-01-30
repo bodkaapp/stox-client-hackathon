@@ -138,7 +138,7 @@ class _ShoppingScreenState extends ConsumerState<ShoppingScreen> with AdManagerM
         : <Ingredient>[];
     
     // Bubble should only show if loaded and empty (and not shopping mode)
-    final showBubble = stateAsync.hasValue && allItems.isEmpty && !isShoppingMode;
+    final showBubble = stateAsync.hasValue && allItems.isEmpty && !isShoppingMode && !_isMenuOpen;
 
     return Scaffold(
       backgroundColor: AppColors.stoxBackground,
