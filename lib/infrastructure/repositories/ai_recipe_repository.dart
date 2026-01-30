@@ -253,6 +253,76 @@ $locationを撮影した画像です。写真で確認できる食材や商品�
       throw Exception('レシートの解析に失敗しました: $e');
     }
   }
+
+  /// 画像からレシピ提案用の解析を行う
+  Future<AiRecipeAnalysisResult> analyzeImageForRecipe(Uint8List imageBytes, {String? mimeType}) async {
+    final prompt = '''
+冷蔵庫の中身を撮影した画像です。
+1. 画像に写っている食材をリストアップしてください（最大10個程度）。
+2. それらの食材を使って作れるおすすめの料理名を1つだけ提案してください。
+
+出力形式は以下のJSON形式のみを返してください。Markdownのコードブロック(```json ... ```)を含まないでください。
+
+{
+  "ingredients": ["食材1", "食材2", "食材3"...],
+  "recommended_recipe": "料理名"
+}
+''';
+
+    final finalMimeType = mimeType ?? 'image/jpeg';
+
+    final content = [
+      Content.multi([
+        TextPart(prompt),
+        DataPart(finalMimeType, imageBytes),
+      ])
+    ];
+
+    try {
+      final response = await _model.generateContent(content);
+      final responseText = response.text;
+
+      if (responseText == null) {
+        throw Exception('AIからの応答が空でした。');
+      }
+
+      String cleanJson = responseText.trim();
+      if (cleanJson.startsWith('```json')) {
+        cleanJson = cleanJson.replaceFirst('```json', '').replaceFirst('```', '').trim();
+      } else if (cleanJson.startsWith('```')) {
+        cleanJson = cleanJson.replaceFirst('```', '').replaceFirst('```', '').trim();
+      }
+      
+      // Extract JSON object
+      final jsonMatch = RegExp(r'\{.*\}', dotAll: true).stringMatch(cleanJson);
+      if (jsonMatch != null) {
+        cleanJson = jsonMatch;
+      }
+
+      final Map<String, dynamic> jsonMap = json.decode(cleanJson);
+      final List<String> ingredients = (jsonMap['ingredients'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? [];
+      final String recommendedRecipe = jsonMap['recommended_recipe'] ?? 'おすすめレシピ';
+
+      return AiRecipeAnalysisResult(
+        ingredients: ingredients,
+        recommendedRecipe: recommendedRecipe,
+      );
+    } catch (e) {
+      print('Error parsing recipe analysis: $e');
+      // Fallback
+      return AiRecipeAnalysisResult(
+        ingredients: ['野菜', '肉', '卵'], 
+        recommendedRecipe: '冷蔵庫の残り物レシピ'
+      );
+    }
+  }
+}
+
+class AiRecipeAnalysisResult {
+  final List<String> ingredients;
+  final String recommendedRecipe;
+
+  AiRecipeAnalysisResult({required this.ingredients, required this.recommendedRecipe});
 }
 
 @Riverpod(keepAlive: true)

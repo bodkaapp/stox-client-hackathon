@@ -10,6 +10,7 @@ import '../presentation/screens/flyer_screen.dart';
 import '../presentation/screens/scaffold_with_nav_bar.dart';
 import '../presentation/screens/notification_list_screen.dart';
 import '../presentation/screens/splash_screen.dart';
+import '../presentation/screens/tutorial_screen.dart';
 
 part 'router.g.dart';
 
@@ -25,6 +26,10 @@ GoRouter router(RouterRef ref) {
       GoRoute(
         path: '/splash',
         builder: (context, state) => const SplashScreen(),
+      ),
+      GoRoute(
+        path: '/tutorial',
+        builder: (context, state) => const TutorialScreen(),
       ),
       ShellRoute(
         navigatorKey: _shellNavigatorKey,

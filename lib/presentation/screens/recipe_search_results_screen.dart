@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import '../../config/app_colors.dart';
 import 'recipe_webview_screen.dart';
 import '../components/recipe_list_card.dart';
+import '../components/large_recipe_list_card.dart';
 
 class RecipeSearchResultsScreen extends StatefulWidget {
   final String searchQuery;
@@ -165,6 +166,25 @@ class _RecipeSearchResultsScreenState extends State<RecipeSearchResultsScreen> {
         String? imageUrl;
         if (item['pagemap'] != null && item['pagemap']['cse_image'] != null) {
           imageUrl = item['pagemap']['cse_image'][0]['src'];
+        }
+
+        if (index == 0) {
+          return LargeRecipeListCard(
+            title: title,
+            imageUrl: imageUrl,
+            description: snippet,
+            sourceInfo: displayLink,
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => RecipeWebViewScreen(
+                  url: link,
+                  title: title,
+                  imageUrl: imageUrl,
+                ),
+              ),
+            ),
+          );
         }
 
         return RecipeListCard(

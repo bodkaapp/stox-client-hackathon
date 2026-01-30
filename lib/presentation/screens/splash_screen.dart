@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -13,13 +14,24 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    _navigateToHome();
+    _checkFirstLaunch();
   }
 
-  Future<void> _navigateToHome() async {
+  Future<void> _checkFirstLaunch() async {
+    // Artificial delay for splash effect
     await Future.delayed(const Duration(seconds: 2));
+    
+    if (!mounted) return;
+
+    final prefs = await SharedPreferences.getInstance();
+    final isFirstLaunch = prefs.getBool('is_first_launch') ?? true;
+
     if (mounted) {
-      context.go('/');
+      if (isFirstLaunch) {
+        context.go('/tutorial');
+      } else {
+        context.go('/');
+      }
     }
   }
 

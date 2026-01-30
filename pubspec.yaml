@@ -47,6 +47,7 @@ dependencies:
   google_mobile_ads: ^7.0.0
   google_maps_flutter: ^2.14.0
   holiday_jp: ^0.0.8
+  shared_preferences: ^2.5.4
 
 dev_dependencies:
   flutter_test:
@@ -62,3 +63,5 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/images/
