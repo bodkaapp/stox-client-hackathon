@@ -9,6 +9,7 @@ import '../presentation/screens/recipe_book_screen.dart';
 import '../presentation/screens/flyer_screen.dart';
 import '../presentation/screens/scaffold_with_nav_bar.dart';
 import '../presentation/screens/notification_list_screen.dart';
+import '../presentation/screens/splash_screen.dart';
 
 part 'router.g.dart';
 
@@ -19,8 +20,12 @@ final _shellNavigatorKey = GlobalKey<NavigatorState>();
 GoRouter router(RouterRef ref) {
   return GoRouter(
     navigatorKey: _rootNavigatorKey,
-    initialLocation: '/',
+    initialLocation: '/splash',
     routes: [
+      GoRoute(
+        path: '/splash',
+        builder: (context, state) => const SplashScreen(),
+      ),
       ShellRoute(
         navigatorKey: _shellNavigatorKey,
         builder: (context, state, child) {
