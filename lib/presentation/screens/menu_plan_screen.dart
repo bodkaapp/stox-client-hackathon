@@ -9,6 +9,8 @@ import '../../domain/models/recipe.dart';
 import '../../domain/repositories/meal_plan_repository.dart';
 import '../../infrastructure/repositories/drift_recipe_repository.dart';
 import '../../infrastructure/repositories/drift_meal_plan_repository.dart';
+import '../widgets/calendar/weekly_calendar_strip.dart';
+import '../widgets/calendar/monthly_calendar_view.dart';
 import 'recipe_webview_screen.dart';
 
 // -----------------------------------------------------------------------------
@@ -68,6 +70,8 @@ class MenuPlanScreen extends ConsumerStatefulWidget {
 
 class _MenuPlanScreenState extends ConsumerState<MenuPlanScreen> {
   late ScrollController _dateScrollController;
+  bool _isMonthlyView = false;
+  DateTime _focusedMonth = DateTime.now();
 
   @override
   void initState() {
@@ -118,11 +122,13 @@ class _MenuPlanScreenState extends ConsumerState<MenuPlanScreen> {
             padding: const EdgeInsets.only(right: 16.0),
             child: IconButton(
               onPressed: () {
-                // Calendar view toggle or similar (future implementation)
+                setState(() {
+                  _isMonthlyView = !_isMonthlyView;
+                });
               },
               icon: const Icon(Icons.calendar_month, color: Color(0xFF57534E)),
               style: IconButton.styleFrom(
-                backgroundColor: const Color(0xFFF5F5F4), // bg-stone-100
+                backgroundColor: _isMonthlyView ? AppColors.stoxPrimary.withOpacity(0.1) : const Color(0xFFF5F5F4), // bg-stone-100 or active tint
               ),
             ),
           ),
@@ -130,8 +136,29 @@ class _MenuPlanScreenState extends ConsumerState<MenuPlanScreen> {
       ),
       body: Column(
         children: [
-          // Date Strip
-          _buildDateStrip(selectedDate),
+          // Date Strip or Calendar
+          _isMonthlyView 
+            ? MonthlyCalendarView(
+                selectedDate: selectedDate,
+                focusedMonth: _focusedMonth,
+                onDateSelected: (date) {
+                  ref.read(selectedDateProvider.notifier).state = date;
+                  // Optional: switch back to week view? Or keep in month view?
+                  // Keeping in month view as per standard behavior unless requested.
+                },
+                onPageChanged: (date) {
+                  setState(() {
+                    _focusedMonth = date;
+                  });
+                },
+              )
+            : WeeklyCalendarStrip(
+                selectedDate: selectedDate,
+                onDateSelected: (date) {
+                  ref.read(selectedDateProvider.notifier).state = date;
+                },
+                scrollController: _dateScrollController,
+              ),
           
           const Divider(height: 1, color: Color(0xFFF5F5F4)),
 
@@ -148,72 +175,7 @@ class _MenuPlanScreenState extends ConsumerState<MenuPlanScreen> {
     );
   }
 
-  Widget _buildDateStrip(DateTime selectedDate) {
-    // Show range of  +/- 14 days? Or just a month?
-    // Design shows horizontal scroll. Let's do +/- 14 days from today for now.
-    final today = DateTime.now();
-    final dates = List.generate(30, (index) => today.subtract(const Duration(days: 5)).add(Duration(days: index)));
 
-    return Container(
-      height: 90,
-      color: const Color(0xFFFFF7ED).withOpacity(0.3), // slight tint
-      child: ListView.builder(
-        controller: _dateScrollController,
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-        itemCount: dates.length,
-        itemBuilder: (context, index) {
-          final date = dates[index];
-          final isSelected = DateUtils.isSameDay(date, selectedDate);
-          final isToday = DateUtils.isSameDay(date, today);
-          
-          return GestureDetector(
-            onTap: () {
-              ref.read(selectedDateProvider.notifier).state = date;
-            },
-            child: Container(
-              width: 50,
-              margin: const EdgeInsets.only(right: 8),
-              decoration: BoxDecoration(
-                color: isSelected ? AppColors.stoxPrimary : (isToday ? Colors.white : Colors.transparent),
-                borderRadius: BorderRadius.circular(12),
-                border: isToday && !isSelected ? Border.all(color: AppColors.stoxPrimary) : null,
-                boxShadow: isSelected ? [
-                  BoxShadow(
-                    color: AppColors.stoxPrimary.withOpacity(0.3),
-                    blurRadius: 8,
-                    offset: const Offset(0, 4),
-                  )
-                ] : null,
-              ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    DateFormat.E('ja').format(date),
-                    style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
-                      color: isSelected ? Colors.white : (date.weekday == 7 ? Colors.red : (date.weekday == 6 ? Colors.blue : const Color(0xFF78716C))),
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    '${date.day}',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: isSelected ? Colors.white : const Color(0xFF292524),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          );
-        },
-      ),
-    );
-  }
 
   Widget _buildMealSections(List<MealPlanWithRecipe> plans) {
     // Group by MealType

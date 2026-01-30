@@ -8,6 +8,8 @@ import '../../domain/models/recipe.dart';
 import '../../domain/repositories/meal_plan_repository.dart';
 import '../../infrastructure/repositories/drift_recipe_repository.dart';
 import '../../infrastructure/repositories/drift_meal_plan_repository.dart';
+import '../widgets/calendar/weekly_calendar_strip.dart';
+import '../widgets/calendar/monthly_calendar_view.dart';
 
 class RecipeScheduleScreen extends ConsumerStatefulWidget {
   final String title;
@@ -176,136 +178,84 @@ class _RecipeScheduleScreenState extends ConsumerState<RecipeScheduleScreen> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   const SizedBox(height: 24),
-                  if (!_isMonthlyView) ...[
-                    // Undecided Button
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      child: GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            _selectedDate = null;
-                          });
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          decoration: BoxDecoration(
-                            color: _selectedDate == null ? AppColors.stoxBannerBg : Colors.white,
-                            border: Border.all(
-                              color: _selectedDate == null ? AppColors.stoxPrimary : AppColors.stoxBorder,
-                              width: _selectedDate == null ? 2 : 1,
+                    // Undecided Button (Only in Weekly View)
+                    if (!_isMonthlyView) ...[
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        child: GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              _selectedDate = null;
+                            });
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            decoration: BoxDecoration(
+                              color: _selectedDate == null ? AppColors.stoxBannerBg : Colors.white,
+                              border: Border.all(
+                                color: _selectedDate == null ? AppColors.stoxPrimary : AppColors.stoxBorder,
+                                width: _selectedDate == null ? 2 : 1,
+                              ),
+                              borderRadius: BorderRadius.circular(32),
                             ),
-                            borderRadius: BorderRadius.circular(32),
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.help_outline, 
-                                color: _selectedDate == null ? AppColors.stoxPrimary : Colors.grey,
-                              ),
-                              const SizedBox(width: 8),
-                              Text(
-                                '日程を未定にする',
-                                style: TextStyle(
-                                  color: _selectedDate == null ? AppColors.stoxPrimary : Colors.grey[700],
-                                  fontWeight: FontWeight.bold,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.help_outline, 
+                                  color: _selectedDate == null ? AppColors.stoxPrimary : Colors.grey,
                                 ),
-                              ),
-                            ],
+                                const SizedBox(width: 8),
+                                Text(
+                                  '日程を未定にする',
+                                  style: TextStyle(
+                                    color: _selectedDate == null ? AppColors.stoxPrimary : Colors.grey[700],
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 8),
-                    const Center(
-                      child: Text(
-                        'あとでカレンダーから設定できます',
-                        style: TextStyle(fontSize: 11, color: Colors.grey),
+                      const SizedBox(height: 8),
+                      const Center(
+                        child: Text(
+                          'あとでカレンダーから設定できます',
+                          style: TextStyle(fontSize: 11, color: Colors.grey),
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 32),
+                      const SizedBox(height: 32),
+                    ],
+
+                    const SizedBox(height: 16),
                     
-                    // Weekly Scroll
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          const Text('日付を選択', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey)),
-                          Text(DateFormat('yyyy年 M月').format(_selectedDate ?? DateTime.now()), style: const TextStyle(fontSize: 12, color: Colors.grey)),
-                        ],
-                      ),
-                    ),
-                    SizedBox(
-                      height: 100,
-                      child: ListView.separated(
-                        scrollDirection: Axis.horizontal,
-                        padding: const EdgeInsets.symmetric(horizontal: 20),
-                        itemCount: 14, // 2 weeks
-                        separatorBuilder: (_, __) => const SizedBox(width: 12),
-                        itemBuilder: (context, index) {
-                          final date = DateTime.now().add(Duration(days: index));
-                          final isSelected = _selectedDate != null && 
-                                             date.year == _selectedDate!.year && 
-                                             date.month == _selectedDate!.month && 
-                                             date.day == _selectedDate!.day;
-                          final isToday = index == 0;
-                          
-                          return GestureDetector(
-                            onTap: () {
-                              setState(() {
-                                _selectedDate = date;
-                              });
-                            },
-                            child: Container(
-                              width: 64,
-                              decoration: BoxDecoration(
-                                color: isSelected ? AppColors.stoxPrimary : Colors.white,
-                                borderRadius: BorderRadius.circular(24),
-                                border: Border.all(
-                                  color: isSelected ? AppColors.stoxPrimary : AppColors.stoxBorder,
-                                  width: 1,
-                                ),
-                                boxShadow: isSelected 
-                                  ? [BoxShadow(color: AppColors.stoxPrimary.withOpacity(0.3), blurRadius: 8, offset: const Offset(0, 4))]
-                                  : null,
-                              ),
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Text(
-                                    isToday ? '今日' : (index == 1 ? '明日' : ''),
-                                    style: TextStyle(
-                                      fontSize: 10, 
-                                      color: isSelected ? Colors.white.withOpacity(0.9) : Colors.grey,
-                                    ),
-                                  ),
-                                  Text(
-                                    date.day.toString(),
-                                    style: TextStyle(
-                                      fontSize: 24, 
-                                      fontWeight: FontWeight.bold,
-                                      color: isSelected ? Colors.white : AppColors.stoxText,
-                                    ),
-                                  ),
-                                  Text(
-                                    DateFormat.E('ja').format(date),
-                                    style: TextStyle(
-                                      fontSize: 10, 
-                                      color: isSelected ? Colors.white.withOpacity(0.9) : Colors.grey,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          );
+                    // Weekly Scroll or Monthly View
+                    if (!_isMonthlyView) ...[
+                      WeeklyCalendarStrip(
+                        selectedDate: _selectedDate,
+                        onDateSelected: (date) {
+                          setState(() {
+                            _selectedDate = date;
+                          });
                         },
                       ),
-                    ),
-                  ] else ...[
-                    // Monthly Calendar
-                    _buildCalendar(),
-                  ],
+                    ] else ...[
+                      MonthlyCalendarView(
+                        selectedDate: _selectedDate,
+                        focusedMonth: _focusedMonth,
+                        onDateSelected: (date) {
+                          setState(() {
+                            _selectedDate = date;
+                          });
+                        },
+                        onPageChanged: (date) {
+                          setState(() {
+                            _focusedMonth = date;
+                          });
+                        },
+                      ),
+                    ],
 
                   const SizedBox(height: 32),
 
@@ -450,120 +400,5 @@ class _RecipeScheduleScreenState extends ConsumerState<RecipeScheduleScreen> {
     );
   }
 
-  Widget _buildCalendar() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Column(
-        children: [
-          // Calendar Header
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              IconButton( // Prev Month
-                 onPressed: () {
-                   setState(() {
-                     _focusedMonth = DateTime(_focusedMonth.year, _focusedMonth.month - 1);
-                   });
-                 },
-                 icon: const Icon(Icons.chevron_left),
-              ),
-              Text(
-                DateFormat('yyyy年M月').format(_focusedMonth),
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-              ),
-              IconButton( // Next Month
-                 onPressed: () {
-                   setState(() {
-                     _focusedMonth = DateTime(_focusedMonth.year, _focusedMonth.month + 1);
-                   });
-                 },
-                 icon: const Icon(Icons.chevron_right),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          
-          // Days of Week
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: ['S', 'M', 'T', 'W', 'T', 'F', 'S'].asMap().entries.map((entry) {
-              final idx = entry.key;
-              final label = entry.value;
-              Color color = AppColors.stoxText;
-              if (idx == 0) color = Colors.red; // Sunday
-              // if (idx == 6) color = Colors.blue; // Saturday optional
-              return SizedBox(
-                width: 32,
-                child: Center(
-                  child: Text(
-                    label,
-                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: color),
-                  ),
-                ),
-              );
-            }).toList(),
-          ),
-          const SizedBox(height: 8),
-          
-          // Days Grid
-          LayoutBuilder(
-            builder: (context, constraints) {
-              final daysInMonth = DateUtils.getDaysInMonth(_focusedMonth.year, _focusedMonth.month);
-              final firstDayOfMonth = DateTime(_focusedMonth.year, _focusedMonth.month, 1);
-              final firstWeekday = firstDayOfMonth.weekday % 7; // Sunday = 0
-              
-              final totalCells = firstWeekday + daysInMonth;
-              final totalRows = (totalCells / 7).ceil();
-              
-              return Column(
-                children: List.generate(totalRows, (row) {
-                  return Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: List.generate(7, (col) {
-                      final dayIndex = row * 7 + col;
-                      if (dayIndex < firstWeekday || dayIndex >= totalCells) {
-                        return const SizedBox(width: 40, height: 40);
-                      }
-                      
-                      final day = dayIndex - firstWeekday + 1;
-                      final date = DateTime(_focusedMonth.year, _focusedMonth.month, day);
-                      final isSelected = _selectedDate != null && DateUtils.isSameDay(date, _selectedDate!);
-                      
-                      return GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            _selectedDate = date;
-                          });
-                        },
-                        child: Container(
-                          width: 40,
-                          height: 40,
-                          alignment: Alignment.center,
-                          decoration: BoxDecoration(
-                            color: isSelected ? AppColors.stoxPrimary : Colors.transparent,
-                            shape: BoxShape.circle,
-                            boxShadow: isSelected 
-                                ? [BoxShadow(color: AppColors.stoxPrimary.withOpacity(0.3), blurRadius: 4, offset: const Offset(0, 2))]
-                                : null,
-                          ),
-                          child: Text(
-                            day.toString(),
-                            style: TextStyle(
-                              color: isSelected ? Colors.white : AppColors.stoxText,
-                              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                              fontSize: 14,
-                            ),
-                          ),
-                        ),
-                      );
-                    }),
-                  );
-                }),
-              );
-            }
-          ),
-        ],
-      ),
-    );
-  }
+
 }
