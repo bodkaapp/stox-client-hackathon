@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../config/app_colors.dart';
+import '../../domain/models/recipe.dart';
 import '../providers/shopping_mode_provider.dart';
 import '../viewmodels/home_viewmodel.dart';
 import '../viewmodels/shopping_viewmodel.dart'; // For real shopping count if needed, or pass via HomeState
 import '../viewmodels/notification_viewmodel.dart';
+import '../viewmodels/recipe_book_viewmodel.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -81,109 +83,185 @@ class HomeScreen extends ConsumerWidget {
                 ),
               ),
 
-              // Today's Menu Section
               SliverToBoxAdapter(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                  child: Column(
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          const Row(
-                            children: [
-                              Icon(Icons.restaurant, color: AppColors.stoxPrimary, size: 20),
-                              SizedBox(width: 4),
-                              Text(
-                                '今日の献立',
-                                style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.stoxText),
-                              ),
-                            ],
-                          ),
-                          const Text(
-                            '変更',
-                            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.stoxPrimary),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 6),
-                      Container(
-                        height: 96,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(12),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.05),
-                              blurRadius: 2,
-                              offset: const Offset(0, 1),
-                            ),
-                          ],
-                        ),
-                        foregroundDecoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: const Color(0xFFD6D3D1)),
-                        ),
-                        clipBehavior: Clip.antiAlias,
-                        child: Row(
-                          children: [
-                            Container(
-                              width: 128,
-                              height: double.infinity,
-                              decoration: const BoxDecoration(
-                                color: Color(0xFFFFF7ED), // Orange-50
-                              ),
-                              child: const Center(child: Icon(Icons.restaurant_menu, size: 48, color: AppColors.stoxPrimary)),
-                            ),
-                            Expanded(
-                              child: Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
+                  child: Consumer(
+                    builder: (context, ref, child) {
+                      final todaysMenuAsync = ref.watch(todaysMenuProvider);
+
+                      return todaysMenuAsync.when(
+                        data: (recipes) {
+                          if (recipes.isEmpty) {
+                            return Column(
+                              children: [
+                                Row(
                                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
-                                    Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                    const Row(
                                       children: [
-                                        const Text(
-                                          '和風ハンバーグ定食',
+                                        Icon(Icons.restaurant, color: AppColors.stoxPrimary, size: 20),
+                                        SizedBox(width: 4),
+                                        Text(
+                                          '今日の献立',
                                           style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.stoxText),
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                        const SizedBox(height: 4),
-                                        Row(
-                                          children: [
-                                            _buildMetaTag(Icons.schedule, '20分'),
-                                            const SizedBox(width: 8),
-                                            _buildMetaTag(Icons.bolt, '342kcal'),
-                                          ],
                                         ),
                                       ],
                                     ),
-                                    SizedBox(
-                                      width: double.infinity,
-                                      height: 28,
-                                      child: ElevatedButton.icon(
-                                        onPressed: () {},
-                                        icon: const Icon(Icons.auto_awesome, size: 14, color: Colors.white),
-                                        label: const Text('URL/AIでレシピ登録', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.white)),
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor: AppColors.stoxPrimary,
-                                          padding: EdgeInsets.zero,
-                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-                                          elevation: 0,
+                                    TextButton(
+                                      onPressed: () => context.push('/recipe_book'),
+                                      child: const Text(
+                                        '登録する',
+                                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.stoxPrimary),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 6),
+                                Container(
+                                  width: double.infinity,
+                                  padding: const EdgeInsets.all(24),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(color: AppColors.stoxBorder),
+                                  ),
+                                  child: Column(
+                                    children: [
+                                      const Icon(Icons.no_food, color: AppColors.stoxSubText, size: 32),
+                                      const SizedBox(height: 8),
+                                      const Text(
+                                        '今日の献立はまだありません',
+                                        style: TextStyle(fontSize: 12, color: AppColors.stoxSubText),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            );
+                          }
+
+                          final recipe = recipes.first;
+                          return Column(
+                            children: [
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  const Row(
+                                    children: [
+                                      Icon(Icons.restaurant, color: AppColors.stoxPrimary, size: 20),
+                                      SizedBox(width: 4),
+                                      Text(
+                                        '今日の献立',
+                                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.stoxText),
+                                      ),
+                                    ],
+                                  ),
+                                  TextButton(
+                                    onPressed: () => context.push('/recipe_book'),
+                                    child: const Text(
+                                      '変更',
+                                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.stoxPrimary),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 6),
+                              Container(
+                                height: 96,
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(12),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.05),
+                                      blurRadius: 2,
+                                      offset: const Offset(0, 1),
+                                    ),
+                                  ],
+                                ),
+                                foregroundDecoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(color: const Color(0xFFD6D3D1)),
+                                ),
+                                clipBehavior: Clip.antiAlias,
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      width: 128,
+                                      height: double.infinity,
+                                      decoration: const BoxDecoration(
+                                        color: Color(0xFFFFF7ED), // Orange-50
+                                      ),
+                                      child: (recipe.ogpImageUrl.isNotEmpty)
+                                          ? Image.network(
+                                              recipe.ogpImageUrl,
+                                              fit: BoxFit.cover,
+                                              errorBuilder: (_, __, ___) => const Center(child: Icon(Icons.restaurant_menu, size: 48, color: AppColors.stoxPrimary)),
+                                            )
+                                          : const Center(child: Icon(Icons.restaurant_menu, size: 48, color: AppColors.stoxPrimary)),
+                                    ),
+                                    Expanded(
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            Column(
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  recipe.title,
+                                                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.stoxText),
+                                                  maxLines: 2,
+                                                  overflow: TextOverflow.ellipsis,
+                                                ),
+                                                const SizedBox(height: 4),
+                                                // Metadata placeholders - currently not in Recipe model
+                                                // Row(
+                                                //   children: [
+                                                //     _buildMetaTag(Icons.schedule, '20分'),
+                                                //     const SizedBox(width: 8),
+                                                //     _buildMetaTag(Icons.bolt, '342kcal'),
+                                                //   ],
+                                                // ),
+                                              ],
+                                            ),
+                                            SizedBox(
+                                              width: double.infinity,
+                                              height: 28,
+                                              child: ElevatedButton.icon(
+                                                onPressed: () {
+                                                  // Navigate to recipe detail or webview
+                                                  // context.push('/recipe/${recipe.id}');
+                                                  // For now, consistent with other parts, webview or book
+                                                  context.push('/recipe_book'); 
+                                                },
+                                                icon: const Icon(Icons.visibility, size: 14, color: Colors.white),
+                                                label: const Text('レシピを見る', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.white)),
+                                                style: ElevatedButton.styleFrom(
+                                                  backgroundColor: AppColors.stoxPrimary,
+                                                  padding: EdgeInsets.zero,
+                                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                                                  elevation: 0,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
                                         ),
                                       ),
                                     ),
                                   ],
                                 ),
                               ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
+                            ],
+                          );
+                        },
+                        loading: () => const SizedBox(height: 100, child: Center(child: CircularProgressIndicator())),
+                        error: (err, stack) => const SizedBox.shrink(),
+                      );
+                    },
                   ),
                 ),
               ),
