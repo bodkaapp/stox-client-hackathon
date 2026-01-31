@@ -11,6 +11,7 @@ import '../widgets/ingredient_add_modal.dart';
 import '../../infrastructure/repositories/ai_recipe_repository.dart';
 import '../mixins/ad_manager_mixin.dart';
 import 'shopping_receipt_result_screen.dart';
+import '../widgets/voice_shopping_modal.dart';
 
 class ShoppingScreen extends ConsumerStatefulWidget {
   const ShoppingScreen({super.key});
@@ -293,6 +294,22 @@ class _ShoppingScreenState extends ConsumerState<ShoppingScreen> with AdManagerM
                                 },
                               ),
                             );
+                          }
+                        ),
+                        const SizedBox(height: 12),
+                        _buildMenuButton(
+                          Icons.mic, 
+                          '声で操作する', 
+                          onTap: () async {
+                             _toggleMenu();
+                             await showModalBottomSheet(
+                               context: context, 
+                               isScrollControlled: true,
+                               backgroundColor: Colors.transparent,
+                               builder: (context) => const VoiceShoppingModal(),
+                             );
+                             // Refresh list after modal closes to show new items
+                             ref.invalidate(shoppingViewModelProvider);
                           }
                         ),
                         const SizedBox(height: 12),

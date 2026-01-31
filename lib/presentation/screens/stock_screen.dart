@@ -10,7 +10,9 @@ import 'ai_analyzed_stock_screen.dart';
 import 'photo_stock_location_screen.dart';
 import 'dart:typed_data';
 import '../widgets/ingredient_add_modal.dart';
+import '../widgets/voice_shopping_modal.dart';
 import '../components/circle_action_button.dart';
+
 
 class StockScreen extends ConsumerStatefulWidget {
   const StockScreen({super.key});
@@ -346,6 +348,21 @@ class _StockScreenState extends ConsumerState<StockScreen> {
                                 },
                               ),
                             );
+                          }
+                        ),
+                        const SizedBox(height: 12),
+                        _buildMenuButton(
+                          Icons.mic, 
+                          '声で操作する', 
+                          onTap: () async {
+                             _toggleMenu();
+                             await showModalBottomSheet(
+                               context: context, 
+                               isScrollControlled: true,
+                               backgroundColor: Colors.transparent,
+                               builder: (context) => const VoiceShoppingModal(targetStatus: IngredientStatus.stock),
+                             );
+                             ref.invalidate(stockViewModelProvider);
                           }
                         ),
                         const SizedBox(height: 12),

@@ -8,3 +8,6 @@
   - `lib/infrastructure/repositories/ai_recipe_repository.dart` のAPIキーを環境変数などから取得するように修正する
   - https://console.developers.google.com/apis/api/generativelanguage.googleapis.com/overview?project=882140138724 にアクセスし、「有効にする」 ボタンを押してください。 数分待つと反映され、アプリから解析ができるようになるはずです。
   - Google Cloud Consoleで Generative Language API を有効にする
+- iOS権限設定 (Info.plist)
+  - `NSSpeechRecognitionUsageDescription` に日本語の説明文を設定する（例: "音声で商品を追加するために使用します"）
+  - `NSMicrophoneUsageDescription` に日本語の説明文を設定する（例: "音声で商品を追加するためにマイクを使用します"）
