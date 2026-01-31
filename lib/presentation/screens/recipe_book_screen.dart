@@ -80,7 +80,7 @@ class RecipeBookScreen extends ConsumerWidget {
                         hintStyle: const TextStyle(color: Color(0xFF78716C), fontSize: 14), // text-stone-500
                         prefixIcon: const Icon(Icons.search, color: Color(0xFFA8A29E)), // text-stone-400
                         filled: true,
-                        fillColor: const Color(0xFFF5F5F4), // bg-stone-100
+                        fillColor: Colors.white,
                         contentPadding: const EdgeInsets.symmetric(vertical: 14),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(16),
@@ -422,12 +422,40 @@ class RecipeBookScreen extends ConsumerWidget {
                     ],
                   ),
                   const SizedBox(height: 12),
-                  // Mock Items
-                  _buildHistoryItem('Oct', '23', '豚肉の生姜焼き・ほうれん草のナムル'),
-                  const SizedBox(height: 12),
-                  _buildHistoryItem('Oct', '22', '秋鮭のホイル焼き・きんぴらごぼう'),
-                  const SizedBox(height: 12),
-                  _buildHistoryItem('Oct', '21', 'カレーライス・ポテトサラダ'),
+                  Consumer(
+                    builder: (context, ref, child) {
+                      final pastMenusAsync = ref.watch(pastMenusProvider);
+
+                      return pastMenusAsync.when(
+                        data: (dailyMenus) {
+                          if (dailyMenus.isEmpty) {
+                            return const Center(
+                              child: Padding(
+                                padding: EdgeInsets.all(20),
+                                child: Text('過去の献立はありません', style: TextStyle(color: Color(0xFF78716C))),
+                              ),
+                            );
+                          }
+                          return Column(
+                            children: dailyMenus.map((menu) {
+                              // Format date M/D
+                              final month = menu.date.month.toString();
+                              final day = menu.date.day.toString();
+                              // Join recipe titles
+                              final title = menu.recipes.map((r) => r.title).join('・');
+                              
+                              return Padding(
+                                padding: const EdgeInsets.only(bottom: 12),
+                                child: _buildHistoryItem(month, day, title),
+                              );
+                            }).toList(),
+                          );
+                        },
+                        loading: () => const Center(child: Padding(padding: EdgeInsets.all(20), child: CircularProgressIndicator())),
+                        error: (err, stack) => Center(child: Text('Error: $err')),
+                      );
+                    }
+                  ),
                 ]),
               ),
             ),

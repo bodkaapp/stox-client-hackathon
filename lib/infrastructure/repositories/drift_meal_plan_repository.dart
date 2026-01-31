@@ -22,6 +22,18 @@ class DriftMealPlanRepository implements MealPlanRepository {
   }
 
   @override
+  Future<List<MealPlan>> getEarlierThanDate(DateTime date, {int limit = 20}) async {
+    // Queries meal plans strictly before the given date
+    // Ordered by date descending (newest first)
+    final entities = await (db.select(db.mealPlans)
+      ..where((t) => t.date.isSmallerThanValue(date))
+      ..orderBy([(t) => OrderingTerm(expression: t.date, mode: OrderingMode.desc)])
+      ..limit(limit)
+    ).get();
+    return entities.map((e) => e.toDomain()).toList();
+  }
+
+  @override
   Future<void> save(MealPlan mealPlan) async {
     final companion = MealPlanDomainMapper.fromDomain(mealPlan);
     final existing = await (db.select(db.mealPlans)..where((t) => t.originalId.equals(mealPlan.id))).getSingleOrNull();

@@ -1,5 +1,6 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../domain/models/recipe.dart';
+import '../../domain/models/meal_plan.dart';
 import '../../domain/repositories/meal_plan_repository.dart';
 import '../../infrastructure/repositories/drift_meal_plan_repository.dart';
 import '../../infrastructure/repositories/drift_recipe_repository.dart';
@@ -58,4 +59,51 @@ Stream<List<Recipe>> todaysMenu(TodaysMenuRef ref) async* {
 
     return recipes;
   });
+}
+
+@riverpod
+Future<List<DailyMenu>> pastMenus(PastMenusRef ref) async {
+  final mealPlanRepo = await ref.watch(mealPlanRepositoryProvider.future);
+  final recipeRepo = await ref.watch(recipeRepositoryProvider.future);
+
+  // Fetch past 20 meal plans
+  final plans = await mealPlanRepo.getEarlierThanDate(DateTime.now());
+
+  // Group by date
+  final grouped = <DateTime, List<MealPlan>>{};
+  for (final plan in plans) {
+    // Normalize date to YMD
+    final date = DateTime(plan.date.year, plan.date.month, plan.date.day);
+    if (!grouped.containsKey(date)) {
+      grouped[date] = [];
+    }
+    grouped[date]!.add(plan);
+  }
+
+  final results = <DailyMenu>[];
+  for (final entry in grouped.entries) {
+    final date = entry.key;
+    final dayPlans = entry.value;
+
+    final recipes = <Recipe>[];
+    for (final plan in dayPlans) {
+      final recipe = await recipeRepo.getById(plan.recipeId);
+      if (recipe != null) {
+        recipes.add(recipe);
+      }
+    }
+
+    if (recipes.isNotEmpty) {
+      results.add(DailyMenu(date: date, recipes: recipes));
+    }
+  }
+
+  return results;
+}
+
+class DailyMenu {
+  final DateTime date;
+  final List<Recipe> recipes;
+
+  DailyMenu({required this.date, required this.recipes});
 }

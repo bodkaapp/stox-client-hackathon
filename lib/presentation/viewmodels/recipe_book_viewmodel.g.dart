@@ -22,6 +22,22 @@ final todaysMenuProvider = AutoDisposeStreamProvider<List<Recipe>>.internal(
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef TodaysMenuRef = AutoDisposeStreamProviderRef<List<Recipe>>;
+String _$pastMenusHash() => r'6fadf323b974d28f4a8ff79f674ce42e93dbf1f4';
+
+/// See also [pastMenus].
+@ProviderFor(pastMenus)
+final pastMenusProvider = AutoDisposeFutureProvider<List<DailyMenu>>.internal(
+  pastMenus,
+  name: r'pastMenusProvider',
+  debugGetCreateSourceHash:
+      const bool.fromEnvironment('dart.vm.product') ? null : _$pastMenusHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+typedef PastMenusRef = AutoDisposeFutureProviderRef<List<DailyMenu>>;
 String _$recipeBookViewModelHash() =>
     r'87a3898c69af24c39ab76e7f61f24495d04de663';
 
