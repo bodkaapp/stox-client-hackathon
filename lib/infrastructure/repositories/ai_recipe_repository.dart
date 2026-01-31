@@ -9,6 +9,8 @@ import '../../domain/models/ingredient.dart';
 
 part 'ai_recipe_repository.g.dart';
 
+final String _apiKey = 'AIzaSyAioUT4nuQ8KXOdt2TfXODP0ALBPWlON-s';
+
 class AiRecipeRepository {
   final GenerativeModel _model;
 
@@ -327,8 +329,6 @@ class AiRecipeAnalysisResult {
 
 @Riverpod(keepAlive: true)
 AiRecipeRepository aiRecipeRepository(AiRecipeRepositoryRef ref) {
-  // TODO: 本番環境では環境変数などから取得する
-  const apiKey = 'AIzaSyB3wT4qTq3bVFbetWMkUHO6Y2ie_ijU6TE'; 
-  final model = GenerativeModel(model: 'gemini-1.5-flash', apiKey: apiKey);
+  final model = GenerativeModel(model: 'gemini-1.5-flash', apiKey: _apiKey);
   return AiRecipeRepository(model);
 }

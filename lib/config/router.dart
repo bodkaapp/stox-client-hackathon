@@ -11,6 +11,7 @@ import '../presentation/screens/scaffold_with_nav_bar.dart';
 import '../presentation/screens/notification_list_screen.dart';
 import '../presentation/screens/splash_screen.dart';
 import '../presentation/screens/tutorial_screen.dart';
+import '../presentation/screens/account_settings_screen.dart';
 
 part 'router.g.dart';
 
@@ -63,6 +64,14 @@ GoRouter router(RouterRef ref) {
         path: '/notifications',
         parentNavigatorKey: _rootNavigatorKey,
         builder: (context, state) => const NotificationListScreen(),
+      ),
+      GoRoute(
+        path: '/account_settings',
+        parentNavigatorKey: _rootNavigatorKey,
+        pageBuilder: (context, state) => const MaterialPage(
+          fullscreenDialog: true,
+          child: AccountSettingsScreen(),
+        ),
       ),
     ],
   );

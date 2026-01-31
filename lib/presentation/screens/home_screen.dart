@@ -32,13 +32,16 @@ class HomeScreen extends ConsumerWidget {
                     children: [
                       Row(
                         children: [
-                          Container(
-                            width: 32,
-                            height: 32,
-                            child: const Icon(Icons.person, color: AppColors.stoxPrimary, size: 20),
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              border: Border.all(color: AppColors.stoxPrimary),
+                          GestureDetector(
+                            onTap: () => context.push('/account_settings'),
+                            child: Container(
+                              width: 32,
+                              height: 32,
+                              child: const Icon(Icons.person, color: AppColors.stoxPrimary, size: 20),
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                border: Border.all(color: AppColors.stoxPrimary),
+                              ),
                             ),
                           ),
                           const SizedBox(width: 8),
