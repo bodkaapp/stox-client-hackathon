@@ -7,6 +7,7 @@ import 'recipe_webview_screen.dart';
 import 'menu_plan_screen.dart';
 import '../widgets/search_modal.dart';
 import 'recently_viewed_recipes_screen.dart';
+import 'cooking_mode_screen.dart';
 
 class RecipeBookScreen extends ConsumerWidget {
   const RecipeBookScreen({super.key});
@@ -133,18 +134,51 @@ class RecipeBookScreen extends ConsumerWidget {
                                   ],
                                 ),
                                 if (recipes.isNotEmpty)
-                                  TextButton(
-                                    onPressed: () {},
-                                    style: TextButton.styleFrom(
-                                      foregroundColor: const Color(0xFFD97706), // amber-600
-                                      textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-                                    ),
-                                    child: const Row(
-                                      children: [
-                                        Text('編集する'),
-                                        Icon(Icons.chevron_right, size: 16),
-                                      ],
-                                    ),
+                                  Row(
+                                    children: [
+                                      TextButton(
+                                        onPressed: () {},
+                                        style: TextButton.styleFrom(
+                                          foregroundColor: const Color(0xFFD97706), // amber-600
+                                          textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                        ),
+                                        child: const Row(
+                                          children: [
+                                            Text('編集する'),
+                                            Icon(Icons.chevron_right, size: 16),
+                                          ],
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      ElevatedButton(
+                                        onPressed: () {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) => CookingModeScreen(recipes: recipes),
+                                            ),
+                                          );
+                                        },
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: AppColors.stoxPrimary,
+                                          foregroundColor: Colors.white,
+                                          elevation: 0,
+                                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(20),
+                                          ),
+                                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                        ),
+                                        child: const Row(
+                                          children: [
+                                            Icon(Icons.restaurant_menu, size: 16),
+                                            SizedBox(width: 4),
+                                            Text('今すぐ作る', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
                                   ),
                               ],
                             ),
