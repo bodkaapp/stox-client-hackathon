@@ -153,8 +153,7 @@ class RecipeBookScreen extends ConsumerWidget {
                                       const SizedBox(width: 8),
                                       ElevatedButton(
                                         onPressed: () {
-                                          Navigator.push(
-                                            context,
+                                          Navigator.of(context, rootNavigator: true).push(
                                             MaterialPageRoute(
                                               builder: (context) => CookingModeScreen(recipes: recipes),
                                             ),
@@ -595,8 +594,7 @@ class RecipeBookScreen extends ConsumerWidget {
     return GestureDetector(
       onTap: () {
         if (recipe.pageUrl.isNotEmpty) {
-           Navigator.push(
-            context,
+           Navigator.of(context, rootNavigator: true).push(
             MaterialPageRoute(
               builder: (context) => RecipeWebViewScreen(
                 url: recipe.pageUrl, 

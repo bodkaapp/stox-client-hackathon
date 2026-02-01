@@ -66,8 +66,7 @@ class RecentlyViewedRecipesScreen extends ConsumerWidget {
                 sourceInfo: domain,
                 onTap: () {
                   if (recipe.pageUrl.isNotEmpty) {
-                    Navigator.push(
-                      context,
+                    Navigator.of(context, rootNavigator: true).push(
                       MaterialPageRoute(
                         builder: (context) => RecipeWebViewScreen(
                           url: recipe.pageUrl,

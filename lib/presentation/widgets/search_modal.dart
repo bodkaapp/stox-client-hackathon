@@ -73,8 +73,7 @@ class _SearchModalState extends ConsumerState<SearchModal> {
     Navigator.pop(context); // Close modal first
 
     if (isUrl) {
-      Navigator.push(
-        context,
+      Navigator.of(context, rootNavigator: true).push(
         MaterialPageRoute(
           builder: (context) => RecipeWebViewScreen(
             url: trimmedValue,

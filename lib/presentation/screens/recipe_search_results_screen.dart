@@ -174,8 +174,7 @@ class _RecipeSearchResultsScreenState extends State<RecipeSearchResultsScreen> {
             imageUrl: imageUrl,
             description: snippet,
             sourceInfo: displayLink,
-            onTap: () => Navigator.push(
-              context,
+            onTap: () => Navigator.of(context, rootNavigator: true).push(
               MaterialPageRoute(
                 builder: (context) => RecipeWebViewScreen(
                   url: link,
@@ -192,8 +191,7 @@ class _RecipeSearchResultsScreenState extends State<RecipeSearchResultsScreen> {
           imageUrl: imageUrl,
           description: snippet,
           sourceInfo: displayLink,
-          onTap: () => Navigator.push(
-            context,
+          onTap: () => Navigator.of(context, rootNavigator: true).push(
             MaterialPageRoute(
               builder: (context) => RecipeWebViewScreen(
                 url: link,

@@ -446,8 +446,7 @@ class _MenuPlanScreenState extends ConsumerState<MenuPlanScreen> {
                 child: GestureDetector(
                   onTap: () {
                     if (recipe != null && recipe.pageUrl.isNotEmpty) {
-                      Navigator.push(
-                        context,
+                      Navigator.of(context, rootNavigator: true).push(
                         MaterialPageRoute(
                           builder: (context) => RecipeWebViewScreen(
                             url: recipe.pageUrl,
@@ -504,8 +503,7 @@ class _MenuPlanScreenState extends ConsumerState<MenuPlanScreen> {
           GestureDetector(
             onTap: () {
               if (recipe != null && recipe.pageUrl.isNotEmpty) {
-                Navigator.push(
-                  context,
+                Navigator.of(context, rootNavigator: true).push(
                   MaterialPageRoute(
                     builder: (context) => RecipeWebViewScreen(
                       url: recipe.pageUrl,

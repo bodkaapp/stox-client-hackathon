@@ -130,20 +130,21 @@ class _CookingModeScreenState extends State<CookingModeScreen> with TickerProvid
         ),
         body: Column(
           children: [
-            Container(
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                border: Border(bottom: BorderSide(color: Color(0xFFE7E5E4))), // stone-200
+            if (widget.recipes.length > 1)
+              Container(
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  border: Border(bottom: BorderSide(color: Color(0xFFE7E5E4))), // stone-200
+                ),
+                child: TabBar(
+                  controller: _tabController,
+                  isScrollable: true,
+                  labelColor: AppColors.stoxPrimary,
+                  unselectedLabelColor: AppColors.stoxSubText,
+                  indicatorColor: AppColors.stoxPrimary,
+                  tabs: widget.recipes.map((r) => Tab(text: _truncateTitle(r.title))).toList(),
+                ),
               ),
-              child: TabBar(
-                controller: _tabController,
-                isScrollable: true,
-                labelColor: AppColors.stoxPrimary,
-                unselectedLabelColor: AppColors.stoxSubText,
-                indicatorColor: AppColors.stoxPrimary,
-                tabs: widget.recipes.map((r) => Tab(text: _truncateTitle(r.title))).toList(),
-              ),
-            ),
             Expanded(
               child: LayoutBuilder(
                 builder: (context, constraints) {
@@ -163,6 +164,7 @@ class _CookingModeScreenState extends State<CookingModeScreen> with TickerProvid
 
   Widget _buildMobileLayout() {
     return TabBarView(
+      physics: const NeverScrollableScrollPhysics(),
       controller: _tabController,
       children: widget.recipes.map((recipe) => _RecipeWebView(recipe: recipe)).toList(),
     );
@@ -178,6 +180,7 @@ class _CookingModeScreenState extends State<CookingModeScreen> with TickerProvid
     }
 
     return PageView.builder(
+      physics: const NeverScrollableScrollPhysics(),
       controller: _pageController,
       itemCount: chunks.length,
       onPageChanged: (page) {
