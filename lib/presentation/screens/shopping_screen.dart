@@ -141,7 +141,10 @@ class _ShoppingScreenState extends ConsumerState<ShoppingScreen> with AdManagerM
     // Bubble should only show if loaded and empty (and not shopping mode)
     final showBubble = stateAsync.hasValue && allItems.isEmpty && !isShoppingMode && !_isMenuOpen;
 
-    return Scaffold(
+    return PopScope(
+      canPop: !isShoppingMode,
+      child: Scaffold(
+
       backgroundColor: AppColors.stoxBackground,
       body: SafeArea(
         bottom: false,
@@ -371,6 +374,7 @@ class _ShoppingScreenState extends ConsumerState<ShoppingScreen> with AdManagerM
             ),
           ],
         ),
+      ),
       ),
     );
   }
