@@ -8,6 +8,7 @@ import '../../config/app_constants.dart';
 import '../datasources/recipe_parser.dart';
 import '../../domain/models/ingredient.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter/foundation.dart';
 
 part 'ai_recipe_repository.g.dart';
 
@@ -320,6 +321,102 @@ $locationを撮影した画像です。写真で確認できる食材や商品�
       );
     }
   }
+
+  /// 画像からキッチンアイテムを識別する
+  Future<List<String>> identifyKitchenItems(Uint8List imageBytes, {String? mimeType}) async {
+    final prompt = '''
+この写真に写っているすべてのアイテム（食品、調味料、キッチン用品など）をリストアップしてください。
+出力は文字列のJSON配列 `["アイテム1", "アイテム2", ...]` のみで返してください。
+Markdownのコードブロックを含めないでください。
+''';
+
+    final finalMimeType = mimeType ?? 'image/jpeg';
+
+    final content = [
+      Content.multi([
+        TextPart(prompt),
+        DataPart(finalMimeType, imageBytes),
+      ])
+    ];
+
+    try {
+      final response = await _model.generateContent(content);
+      final responseText = response.text;
+
+      if (responseText == null) return [];
+
+      String cleanJson = responseText.trim();
+      if (cleanJson.startsWith('```json')) {
+        cleanJson = cleanJson.replaceFirst('```json', '').replaceFirst('```', '').trim();
+      } else if (cleanJson.startsWith('```')) {
+        cleanJson = cleanJson.replaceFirst('```', '').replaceFirst('```', '').trim();
+      }
+
+      final jsonMatch = RegExp(r'\[.*\]', dotAll: true).stringMatch(cleanJson);
+      if (jsonMatch != null) {
+        cleanJson = jsonMatch;
+      }
+
+      final List<dynamic> jsonList = json.decode(cleanJson);
+      return jsonList.map((e) => e.toString()).toList();
+    } catch (e) {
+      debugPrint('Error identifying kitchen items: $e');
+      return [];
+    }
+  }
+
+  /// アイテムリストから複数のレシピを提案する
+  Future<List<AiRecipeSuggestion>> suggestRecipesFromItems(List<String> items) async {
+    final prompt = '''
+ここにアイテムのリストがあります: ${json.encode(items)}
+このリストから料理に使える**食品のみ**を正確にフィルタリングしてください（洗剤やスポンジなどは除外）。
+その後、それらの食品を主に使用して作れるおすすめの料理を**5つ**提案してください。
+出力は以下のJSON形式のみを返してください。Markdownのコードブロックを含めないでください。
+
+[
+  {
+    "name": "料理名",
+    "description": "簡単な説明（20文字程度）",
+    "usedIngredients": ["使用する食材1", "使用する食材2"]
+  }
+]
+''';
+
+    final content = [Content.text(prompt)];
+
+    try {
+      final response = await _model.generateContent(content);
+      final responseText = response.text;
+
+      if (responseText == null) return [];
+
+      String cleanJson = responseText.trim();
+      if (cleanJson.startsWith('```json')) {
+        cleanJson = cleanJson.replaceFirst('```json', '').replaceFirst('```', '').trim();
+      } else if (cleanJson.startsWith('```')) {
+        cleanJson = cleanJson.replaceFirst('```', '').replaceFirst('```', '').trim();
+      }
+
+      final jsonMatch = RegExp(r'\[.*\]', dotAll: true).stringMatch(cleanJson);
+      if (jsonMatch != null) {
+        cleanJson = jsonMatch;
+      }
+
+      final List<dynamic> jsonList = json.decode(cleanJson);
+      return jsonList.map((e) {
+        return AiRecipeSuggestion(
+          name: e['name'] ?? '',
+          description: e['description'] ?? '',
+          usedIngredients: (e['usedIngredients'] as List<dynamic>?)?.map((i) => i.toString()).toList() ?? [],
+        );
+      }).toList();
+    } catch (e) {
+      debugPrint('Error suggesting recipes from items: $e');
+      return [
+        AiRecipeSuggestion(name: '冷蔵庫の残り物レシピ', description: 'あるもので作れる簡単レシピ', usedIngredients: items),
+      ];
+    }
+  }
 }
 
 class AiRecipeAnalysisResult {
@@ -327,6 +424,18 @@ class AiRecipeAnalysisResult {
   final String recommendedRecipe;
 
   AiRecipeAnalysisResult({required this.ingredients, required this.recommendedRecipe});
+}
+
+class AiRecipeSuggestion {
+  final String name;
+  final String description;
+  final List<String> usedIngredients;
+
+  AiRecipeSuggestion({
+    required this.name,
+    required this.description,
+    required this.usedIngredients,
+  });
 }
 
 @Riverpod(keepAlive: true)

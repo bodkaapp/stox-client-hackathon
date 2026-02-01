@@ -4,6 +4,9 @@ import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../config/app_colors.dart';
 
+import '../../domain/models/ingredient.dart';
+import '../../presentation/screens/ai_analyzed_stock_screen.dart';
+
 class AccountSettingsScreen extends StatelessWidget {
   const AccountSettingsScreen({super.key});
 
@@ -39,6 +42,57 @@ class AccountSettingsScreen extends StatelessWidget {
     }
   }
 
+  void _openDebugAiResult(BuildContext context) {
+    final mockIngredients = [
+      const Ingredient(
+        id: 'debug_1',
+        name: 'りんご',
+        standardName: 'りんご',
+        amount: 3,
+        unit: '個',
+        category: '果物',
+        status: IngredientStatus.stock,
+      ),
+      const Ingredient(
+        id: 'debug_2',
+        name: '豚肉こま切れ',
+        standardName: '豚肉こま切れ',
+        amount: 250,
+        unit: 'g',
+        category: '肉',
+        status: IngredientStatus.stock,
+      ),
+      const Ingredient(
+        id: 'debug_3',
+        name: '牛乳',
+        standardName: '牛乳',
+        amount: 1,
+        unit: '本',
+        category: '乳製品',
+        status: IngredientStatus.stock,
+      ),
+      const Ingredient(
+        id: 'debug_4',
+        name: '謎の物体X',
+        standardName: '謎の物体X',
+        amount: 1,
+        unit: '個',
+        category: 'その他',
+        status: IngredientStatus.stock,
+      ),
+    ];
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => AiAnalyzedStockScreen(
+          initialIngredients: mockIngredients,
+          location: 'デバッグ用冷蔵庫',
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -70,6 +124,11 @@ class AccountSettingsScreen extends StatelessWidget {
                 title: 'チュートリアルからやり直す',
                 onTap: () => _resetTutorial(context),
                 isDestructive: true,
+              ),
+               _buildSettingsTile(
+                icon: Icons.bug_report,
+                title: 'AI解析結果画面確認 (Debug)',
+                onTap: () => _openDebugAiResult(context),
               ),
             ],
           ),

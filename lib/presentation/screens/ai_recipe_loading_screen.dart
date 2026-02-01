@@ -4,16 +4,13 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:stox/presentation/screens/recipe_search_results_screen.dart';
-
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'ai_recipe_proposal_screen.dart';
+import '../widgets/search_modal.dart';
 import '../../infrastructure/repositories/ai_recipe_repository.dart';
 
-/**
- * AIがレシピを考えています…
- * の画面のとき、Geminiのレスポンスから、材料名のリストと、Geminiがおすすめするレシピ名を受け取るようにしてください。
- * その材料名を10秒を個数分で割った間隔で表示して、10秒待つように変更してください。
- * そして、最後に、Geminiから受け取ったレシピ名をSearch engineで検索して、検索結果を表示するようにしてください。
- */
 class AiRecipeLoadingScreen extends ConsumerStatefulWidget {
   final XFile imageFile;
 
@@ -27,15 +24,12 @@ class AiRecipeLoadingScreen extends ConsumerStatefulWidget {
 }
 
 class _AiRecipeLoadingScreenState extends ConsumerState<AiRecipeLoadingScreen> {
-  String _displayText = '';
+  String _displayText = 'AIが写真を解析しています…';
   List<String> _ingredients = [];
-  String _recommendedRecipe = '';
+  List<AiRecipeSuggestion> _recipeSuggestions = [];
   bool _analysisComplete = false;
+  bool _hasError = false;
   Timer? _animationTimer;
-
-  // Minimum wait time (10 seconds)
-  static const int _minWaitTimeMs = 10000;
-  final int _startTime = DateTime.now().millisecondsSinceEpoch;
 
   @override
   void initState() {
@@ -48,62 +42,97 @@ class _AiRecipeLoadingScreenState extends ConsumerState<AiRecipeLoadingScreen> {
       final bytes = await widget.imageFile.readAsBytes();
       final aiRepo = ref.read(aiRecipeRepositoryProvider);
       
-      // Run analysis in parallel with the minimum wait timer
-      final analysisFuture = aiRepo.analyzeImageForRecipe(bytes, mimeType: widget.imageFile.mimeType);
+      // Step 1: Identify items
+      final items = await aiRepo.identifyKitchenItems(bytes, mimeType: widget.imageFile.mimeType);
       
-      // Wait for analysis to complete
-      final result = await analysisFuture;
-
       if (!mounted) return;
 
+      if (items.isEmpty) {
+        setState(() {
+          _hasError = true;
+        });
+        return;
+      }
+
       setState(() {
-        _ingredients = result.ingredients;
-        _recommendedRecipe = result.recommendedRecipe;
-        _analysisComplete = true; // Mark as analysis done, but animation might still be running
+        _ingredients = items;
       });
 
-      // Start animation of ingredients
-      _startIngredientAnimation();
+      // Start Animation
+      final int intervalMs = (10000 / _ingredients.length).floor();
+      _startIngredientAnimation(intervalMs);
+      
+      // Step 3: Suggest Recipes (Parallel)
+      final suggestions = await aiRepo.suggestRecipesFromItems(_ingredients);
+      
+      if (mounted) {
+        setState(() {
+          _recipeSuggestions = suggestions;
+        });
+        _checkAndNavigate();
+      }
 
     } catch (e) {
       debugPrint('Analysis failed: $e');
       if (mounted) {
-        // Fallback navigation after error
-        _navigateToResults('冷蔵庫の残り物');
+         setState(() {
+          _hasError = true;
+        });
       }
     }
   }
 
-  void _startIngredientAnimation() {
-    if (_ingredients.isEmpty) {
-      // No ingredients found, verify total time and navigate
-      _checkTimeAndNavigate();
-      return;
+  Future<void> _onErrorRetake() async {
+    final picker = ImagePicker();
+    try {
+      final XFile? image = await picker.pickImage(source: ImageSource.camera);
+      if (image != null && mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => AiRecipeLoadingScreen(imageFile: image),
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint('Error retaking image: $e');
+    }
+  }
+
+  Future<void> _markTutorialDone() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('is_first_launch', false);
+  }
+
+  Future<void> _onErrorSkip() async {
+    await _markTutorialDone();
+    if (mounted) {
+      context.go('/');
+    }
+  }
+  
+  Future<void> _onErrorSearchAction() async {
+    await _markTutorialDone();
+    if (mounted) {
+       // Navigate to home first
+       context.go('/');
+       // Wait a bit for navigation
+       await Future.delayed(const Duration(milliseconds: 300));
+       if (mounted) {
+          SearchModal.show(context);
+       }
+    }
+  }
+
+
+  void _startIngredientAnimation(int intervalMs) {
+    // Change text when animation starts (or slightly before/after)
+    if (mounted) {
+       setState(() {
+         _displayText = 'AIがレシピを考えています…\n発見: ${_ingredients.first}'; 
+       });
     }
 
-    // Determine how much time is left to fill 10 seconds total
-    final elapsed = DateTime.now().millisecondsSinceEpoch - _startTime;
-    final remainingTime = _minWaitTimeMs - elapsed;
-    
-    // If we took too long already, just show quickly. 
-    // If we have time, spread them out.
-    // However, user requested: "divide 10 seconds by the number of ingredients"
-    // AND "wait 10 seconds". 
-    // Ideally, we want the whole process to take ~10s. 
-    // If analysis took 3s, we have 7s left to show ingredients.
-    // If analysis took 12s, we should probably just show them fast or process already took long enough.
-    
-    // Let's stick to the user's specific request: "10秒を個数分で割った間隔で表示"
-    // This implies the animation duration is strictly 10s regardless of analysis time? 
-    // OR, we start the 10s animation AFTER analysis? 
-    // "AIがレシピを考えています…の画面のとき... 材料名を10秒を個数分で割った間隔で表示して、10秒待つ" 
-    // Interpreting this as: total animation time should be 10 seconds.
-    // Since we need ingredients first to display them, we effectively have to wait for analysis first.
-    // But analysis takes time. 
-    // Let's calculate interval based on 10 seconds total animation duration.
-    
-    final int intervalMs = (10000 / _ingredients.length).floor();
-    
     int currentIndex = 0;
     _animationTimer = Timer.periodic(Duration(milliseconds: intervalMs), (timer) {
       if (!mounted) {
@@ -113,38 +142,30 @@ class _AiRecipeLoadingScreenState extends ConsumerState<AiRecipeLoadingScreen> {
 
       if (currentIndex < _ingredients.length) {
         setState(() {
-          _displayText = '発見: ${_ingredients[currentIndex]}';
+           // Keep the main message, update the ingredient part
+          _displayText = 'AIがレシピを考えています…\n発見: ${_ingredients[currentIndex]}';
         });
         currentIndex++;
       } else {
         timer.cancel();
-        // Animation done (approx 10s passed since animation start).
-        // Total time will be Analysis Time + 10s. This might be long but safe. 
-        _navigateToResults(_recommendedRecipe);
+        _analysisComplete = true; 
+        _checkAndNavigate();
       }
     });
   }
   
-  void _checkTimeAndNavigate() {
-     // Ensure at least 10s total passed if no animation
-    final elapsed = DateTime.now().millisecondsSinceEpoch - _startTime;
-    final remaining = _minWaitTimeMs - elapsed;
-    
-    if (remaining > 0) {
-      Timer(Duration(milliseconds: remaining), () {
-        if (mounted) _navigateToResults(_recommendedRecipe.isNotEmpty ? _recommendedRecipe : '冷蔵庫の残り物');
-      });
-    } else {
-       _navigateToResults(_recommendedRecipe.isNotEmpty ? _recommendedRecipe : '冷蔵庫の残り物');
+  void _checkAndNavigate() {
+    if (_analysisComplete && _recipeSuggestions.isNotEmpty) {
+      _navigateToProposal();
     }
   }
 
-  void _navigateToResults(String query) {
+  void _navigateToProposal() {
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
-        builder: (context) => RecipeSearchResultsScreen(
-          searchQuery: query,
+        builder: (context) => AiRecipeProposalScreen(
+          suggestions: _recipeSuggestions,
         ),
       ),
     );
@@ -158,6 +179,10 @@ class _AiRecipeLoadingScreenState extends ConsumerState<AiRecipeLoadingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (_hasError) {
+      return _buildErrorView();
+    }
+    
     return Scaffold(
       body: Stack(
         fit: StackFit.expand,
@@ -170,7 +195,7 @@ class _AiRecipeLoadingScreenState extends ConsumerState<AiRecipeLoadingScreen> {
           
           // Semi-transparent overlay
           Container(
-            color: Colors.black.withOpacity(0.5),
+            color: Colors.black.withValues(alpha: 0.5),
           ),
           
           // Centered Content
@@ -182,27 +207,19 @@ class _AiRecipeLoadingScreenState extends ConsumerState<AiRecipeLoadingScreen> {
                   color: Colors.white,
                 ),
                 const SizedBox(height: 24),
-                const Text(
-                  'AIがレシピを考えています…',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 1.2,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                
-                // Dynamic Ingredient Text
+                // Dynamic Text (Main Message + Ingredient)
                 AnimatedSwitcher(
                   duration: const Duration(milliseconds: 300),
                   child: Text(
                     _displayText,
                     key: ValueKey<String>(_displayText),
+                    textAlign: TextAlign.center,
                     style: const TextStyle(
-                      color: Colors.white70,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 1.2,
+                      height: 1.5,
                     ),
                   ),
                 ),
@@ -210,6 +227,76 @@ class _AiRecipeLoadingScreenState extends ConsumerState<AiRecipeLoadingScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+  
+  Widget _buildErrorView() {
+    return Scaffold(
+      backgroundColor: const Color(0xFFFFF9F0),
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+               const Icon(Icons.error_outline, size: 64, color: Color(0xFFEF9F27)),
+               const SizedBox(height: 24),
+               Text(
+                 '商品が見つかりませんでした',
+                 textAlign: TextAlign.center,
+                 style: GoogleFonts.outfit(
+                   fontSize: 22,
+                   fontWeight: FontWeight.bold,
+                   color: const Color(0xFF333333),
+                 ),
+               ),
+               const SizedBox(height: 16),
+               const Text(
+                 '写真から食材を特定できませんでした。\nもう一度撮影するか、レシピを検索してください。',
+                 textAlign: TextAlign.center,
+                 style: TextStyle(
+                   color: Color(0xFF666666),
+                   height: 1.5,
+                 ),
+               ),
+               const SizedBox(height: 48),
+               
+               // Retake Button
+               ElevatedButton.icon(
+                  onPressed: _onErrorRetake,
+                  icon: const Icon(Icons.camera_alt, color: Colors.white),
+                  label: const Text('もう一度撮影する', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFEF9F27),
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                  ),
+               ),
+               const SizedBox(height: 16),
+               
+               // Search Button
+               OutlinedButton.icon(
+                  onPressed: _onErrorSearchAction,
+                  icon: const Icon(Icons.search, color: Color(0xFFEF9F27)),
+                  label: const Text('レシピを検索する', style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFFEF9F27))),
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    side: const BorderSide(color: Color(0xFFEF9F27)),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                  ),
+               ),
+               const SizedBox(height: 16),
+               
+               // Skip Button
+               TextButton(
+                 onPressed: _onErrorSkip,
+                 child: const Text('スキップする', style: TextStyle(color: Color(0xFF8A8A8A))),
+               ),
+            ],
+          ),
+        ),
       ),
     );
   }
