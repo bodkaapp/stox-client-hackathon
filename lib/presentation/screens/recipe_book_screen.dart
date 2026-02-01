@@ -57,16 +57,6 @@ class RecipeBookScreen extends ConsumerWidget {
                           ),
                         ],
                       ),
-                      Row(
-                        children: [
-                          CircleActionButton(
-                            icon: Icons.settings,
-                            backgroundColor: Colors.white,
-                            contentColor: AppColors.stoxSubText,
-                            borderColor: AppColors.stoxBorder,
-                          ),
-                        ],
-                      ),
                     ],
                   ),
                     const SizedBox(height: 16),

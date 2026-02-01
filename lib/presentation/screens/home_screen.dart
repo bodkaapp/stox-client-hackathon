@@ -58,8 +58,6 @@ class HomeScreen extends ConsumerWidget {
                       ),
                       Row(
                         children: [
-                          _buildHeaderIconButton(Icons.search, () {}),
-                          const SizedBox(width: 4),
                           Stack(
                             children: [
                               _buildHeaderIconButton(Icons.notifications, () => context.push('/notifications')),
