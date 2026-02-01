@@ -132,8 +132,198 @@ class _ShoppingScreenState extends ConsumerState<ShoppingScreen> with AdManagerM
   Widget build(BuildContext context) {
     final isShoppingMode = ref.watch(shoppingModeProvider);
     final stateAsync = ref.watch(shoppingViewModelProvider);
-    
-    // Check if list is empty for Bubble visibility (data might be loading but we use valueOrNull/maybeWhen)
+
+    return PopScope(
+      canPop: !isShoppingMode,
+      child: Scaffold(
+        backgroundColor: AppColors.stoxBackground,
+        body: SafeArea(
+          bottom: false,
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              if (constraints.maxWidth >= 600) {
+                return _buildTabletLayout(context, ref, stateAsync, isShoppingMode);
+              }
+              return _buildMobileLayout(context, ref, stateAsync, isShoppingMode);
+            },
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTabletLayout(BuildContext context, WidgetRef ref, AsyncValue<ShoppingState> stateAsync, bool isShoppingMode) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Left Column: Operations
+        Container(
+          width: 320, // Fixed width sidebar
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            border: Border(right: BorderSide(color: AppColors.stoxBorder)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header
+              Padding(
+                padding: const EdgeInsets.all(20),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: AppColors.stoxPrimary.withOpacity(0.15),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Icon(Icons.shopping_cart, color: AppColors.stoxPrimary, size: 22),
+                    ),
+                    const SizedBox(width: 8),
+                    const Text(
+                      'お買い物',
+                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.stoxText),
+                    ),
+                  ],
+                ),
+              ),
+
+              const Divider(),
+
+              // Actions List
+              Expanded(
+                child: ListView(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  children: [
+                    const Text('アクション', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.stoxSubText)),
+                    const SizedBox(height: 8),
+                    
+                    ListTile(
+                      leading: const Icon(Icons.edit, color: AppColors.stoxText),
+                      title: const Text('買うものを入力', style: TextStyle(fontSize: 14)),
+                      enabled: !isShoppingMode,
+                      onTap: () {
+                         showModalBottomSheet(
+                           context: context,
+                           isScrollControlled: true,
+                           backgroundColor: Colors.transparent,
+                           builder: (context) => IngredientAddModal(
+                             title: '買い物リストに追加',
+                             targetStatus: IngredientStatus.toBuy,
+                             onSaved: () {
+                               ref.invalidate(shoppingViewModelProvider);
+                             },
+                           ),
+                         );
+                      },
+                    ),
+                    ListTile(
+                      leading: const Icon(Icons.mic, color: AppColors.stoxText),
+                      title: const Text('音声で入力', style: TextStyle(fontSize: 14)),
+                      enabled: !isShoppingMode,
+                      onTap: () async {
+                         await showModalBottomSheet(
+                           context: context, 
+                           isScrollControlled: true,
+                           backgroundColor: Colors.transparent,
+                           builder: (context) => const VoiceShoppingModal(),
+                         );
+                         ref.invalidate(shoppingViewModelProvider);
+                      },
+                    ),
+                    ListTile(
+                      leading: const Icon(Icons.camera_alt, color: AppColors.stoxText),
+                      title: const Text('レシート撮影', style: TextStyle(fontSize: 14)),
+                      enabled: !isShoppingMode,
+                      onTap: _onReceiptBtnTap,
+                    ),
+
+                    const Divider(height: 32),
+
+                    // Shopping Mode Toggle
+                    InkWell(
+                      onTap: () {
+                        if (isShoppingMode) {
+                          ref.read(shoppingViewModelProvider.notifier).finishShopping();
+                        } else {
+                          ref.read(shoppingViewModelProvider.notifier).startShopping();
+                        }
+                      },
+                      borderRadius: BorderRadius.circular(12),
+                      child: Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: isShoppingMode ? AppColors.stoxPrimary.withOpacity(0.1) : Colors.grey.shade100,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: isShoppingMode ? AppColors.stoxPrimary : Colors.transparent),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(isShoppingMode ? Icons.shopping_cart_checkout : Icons.shopping_basket, 
+                                 color: isShoppingMode ? AppColors.stoxPrimary : AppColors.stoxText),
+                            const SizedBox(width: 12),
+                            Expanded(child: Text(
+                              isShoppingMode ? 'お買い物モード中' : 'お買い物モードを開始',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: isShoppingMode ? AppColors.stoxPrimary : AppColors.stoxText,
+                              ),
+                            )),
+                            Switch(
+                              value: isShoppingMode, 
+                              onChanged: (val) {
+                                if (val) {
+                                  ref.read(shoppingViewModelProvider.notifier).startShopping();
+                                } else {
+                                  ref.read(shoppingViewModelProvider.notifier).finishShopping();
+                                }
+                              },
+                              activeColor: AppColors.stoxPrimary,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    
+                    if (isShoppingMode)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 16.0),
+                        child: ElevatedButton.icon(
+                          onPressed: () async {
+                            await ref.read(shoppingViewModelProvider.notifier).completeShoppingFlow();
+                            if (context.mounted) {
+                               ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('お買い物を完了しました')));
+                            }
+                          },
+                          icon: const Icon(Icons.check),
+                          label: const Text('買い物を完了する'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.stoxPrimary,
+                            foregroundColor: Colors.white,
+                            minimumSize: const Size(double.infinity, 48),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+
+        // Right Column: List
+        Expanded(
+          child: _buildCommonListArea(stateAsync, isShoppingMode),
+        ),
+        
+        if (_isAnalyzing)
+           const Center(child: CircularProgressIndicator()),
+      ],
+    );
+  }
+
+  Widget _buildMobileLayout(BuildContext context, WidgetRef ref, AsyncValue<ShoppingState> stateAsync, bool isShoppingMode) {
+     // Check if list is empty for Bubble visibility (data might be loading but we use valueOrNull/maybeWhen)
     final allItems = stateAsync.valueOrNull != null 
         ? [...stateAsync.value!.toBuyList, ...stateAsync.value!.inCartList] 
         : <Ingredient>[];
@@ -141,58 +331,13 @@ class _ShoppingScreenState extends ConsumerState<ShoppingScreen> with AdManagerM
     // Bubble should only show if loaded and empty (and not shopping mode)
     final showBubble = stateAsync.hasValue && allItems.isEmpty && !isShoppingMode && !_isMenuOpen;
 
-    return PopScope(
-      canPop: !isShoppingMode,
-      child: Scaffold(
-
-      backgroundColor: AppColors.stoxBackground,
-      body: SafeArea(
-        bottom: false,
-        child: Stack(
+    return Stack(
           children: [
             Column(
               children: [
                 _buildHeader(ref, isShoppingMode),
                 Expanded(
-                  child: stateAsync.when(
-                    data: (state) {
-                      final currentItems = [...state.toBuyList, ...state.inCartList];
-                      
-                      return Column(
-                        children: [
-                          if (isShoppingMode && currentItems.isNotEmpty) _buildProgressBarSection(currentItems),
-                          Expanded(
-                            child: currentItems.isEmpty 
-                              ? Center(
-                                  child: Text(
-                                    '買い物リストを登録する場所です。\n買うものを忘れないように\nメモしておきましょう。',
-                                    textAlign: TextAlign.center,
-                                    style: const TextStyle(
-                                      color: AppColors.stoxText,
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w500,
-                                      height: 1.6,
-                                    ),
-                                  ),
-                                )
-                              : CustomScrollView(
-                                  slivers: [
-                                    SliverPadding(
-                                      padding: const EdgeInsets.only(bottom: 100), // Space for FAB
-                                      sliver: SliverList(
-                                        delegate: SliverChildListDelegate(_buildCategorizedItems(ref, currentItems)),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                          ),
-                          _buildFooter(currentItems),
-                        ],
-                      );
-                    },
-                    loading: () => const Center(child: CircularProgressIndicator(color: AppColors.stoxPrimary)),
-                    error: (err, stack) => Center(child: Text('Error: $err')),
-                  ),
+                  child: _buildCommonListArea(stateAsync, isShoppingMode),
                 ),
               ],
             ),
@@ -373,9 +518,48 @@ class _ShoppingScreenState extends ConsumerState<ShoppingScreen> with AdManagerM
               ),
             ),
           ],
-        ),
-      ),
-      ),
+        );
+  }
+
+  Widget _buildCommonListArea(AsyncValue<ShoppingState> stateAsync, bool isShoppingMode) {
+    return stateAsync.when(
+      data: (state) {
+        final currentItems = [...state.toBuyList, ...state.inCartList];
+        
+        return Column(
+          children: [
+            if (isShoppingMode && currentItems.isNotEmpty) _buildProgressBarSection(currentItems),
+            Expanded(
+              child: currentItems.isEmpty 
+                ? Center(
+                    child: Text(
+                      '買い物リストを登録する場所です。\n買うものを忘れないように\nメモしておきましょう。',
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        color: AppColors.stoxText,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                        height: 1.6,
+                      ),
+                    ),
+                  )
+                : CustomScrollView(
+                    slivers: [
+                      SliverPadding(
+                        padding: const EdgeInsets.only(bottom: 100), // Space for FAB
+                        sliver: SliverList(
+                          delegate: SliverChildListDelegate(_buildCategorizedItems(ref, currentItems)),
+                        ),
+                      ),
+                    ],
+                  ),
+            ),
+            _buildFooter(currentItems),
+          ],
+        );
+      },
+      loading: () => const Center(child: CircularProgressIndicator(color: AppColors.stoxPrimary)),
+      error: (err, stack) => Center(child: Text('Error: $err')),
     );
   }
 

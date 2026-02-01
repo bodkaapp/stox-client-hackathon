@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -36,14 +35,6 @@ final dailyMealPlanProvider = FutureProvider.autoDispose.family<List<MealPlanWit
   final mealPlanRepo = await ref.watch(mealPlanRepositoryProvider.future);
   final recipeRepo = await ref.watch(recipeRepositoryProvider.future);
 
-  // Watch for changes on the specific date
-  // Since we want reactive updates, we might want to use a StreamProvider instead, 
-  // but for now, we'll simpler fetch. If we want real-time, we can change to Stream.
-  // Actually, let's just use getByDateRange for the single day (start to end)
-  // or match the repository method. DriftMealPlanRepository has watchByDate.
-  // Let's use watchByDate logic if possible, but FutureProvider is easier for now.
-  // We can use Ref.watch on a stream provider if we define one.
-  
   // For simplicity:
   final startOfDay = DateTime(date.year, date.month, date.day);
   final endOfDay = DateTime(date.year, date.month, date.day, 23, 59, 59);
@@ -120,64 +111,129 @@ class _MenuPlanScreenState extends ConsumerState<MenuPlanScreen> {
           onPressed: () => Navigator.of(context).pop(),
         ),
         actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 16.0),
-            child: IconButton(
-              onPressed: () {
-                setState(() {
-                  _isMonthlyView = !_isMonthlyView;
-                });
-              },
-              icon: const Icon(Icons.calendar_month, color: Color(0xFF57534E)),
-              style: IconButton.styleFrom(
-                backgroundColor: _isMonthlyView ? AppColors.stoxPrimary.withOpacity(0.1) : const Color(0xFFF5F5F4), // bg-stone-100 or active tint
-              ),
-            ),
+          // Only show toggle in Mobile
+          LayoutBuilder(
+            builder: (context, constraints) {
+               // We don't have parent constraints in Actions list really, but we can check checking MediaQuery
+               final isTablet = MediaQuery.of(context).size.width >= 600;
+               if (!isTablet) {
+                 return Padding(
+                    padding: const EdgeInsets.only(right: 16.0),
+                    child: IconButton(
+                      onPressed: () {
+                        setState(() {
+                          _isMonthlyView = !_isMonthlyView;
+                        });
+                      },
+                      icon: const Icon(Icons.calendar_month, color: Color(0xFF57534E)),
+                      style: IconButton.styleFrom(
+                        backgroundColor: _isMonthlyView ? AppColors.stoxPrimary.withOpacity(0.1) : const Color(0xFFF5F5F4), // bg-stone-100 or active tint
+                      ),
+                    ),
+                  );
+               }
+               return const SizedBox.shrink();
+            }
           ),
         ],
       ),
-      body: Column(
-        children: [
-          // Date Strip or Calendar
-          _isMonthlyView 
-            ? MonthlyCalendarView(
-                selectedDate: selectedDate,
-                focusedMonth: _focusedMonth,
-                onDateSelected: (date) {
-                  ref.read(selectedDateProvider.notifier).state = date;
-                  // Optional: switch back to week view? Or keep in month view?
-                  // Keeping in month view as per standard behavior unless requested.
-                },
-                onPageChanged: (date) {
-                  setState(() {
-                    _focusedMonth = date;
-                  });
-                },
-              )
-            : WeeklyCalendarStrip(
-                selectedDate: selectedDate,
-                onDateSelected: (date) {
-                  ref.read(selectedDateProvider.notifier).state = date;
-                },
-                scrollController: _dateScrollController,
-              ),
-          
-          const Divider(height: 1, color: Color(0xFFF5F5F4)),
-
-          // Main Content
-          Expanded(
-            child: mealPlansAsync.when(
-              data: (data) => _buildMealSections(data),
-              loading: () => const Center(child: CircularProgressIndicator(color: AppColors.stoxPrimary)),
-              error: (err, stack) => Center(child: Text('Error: $err')),
-            ),
-          ),
-        ],
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          if (constraints.maxWidth >= 600) {
+            return _buildTabletLayout(selectedDate, mealPlansAsync);
+          }
+          return _buildMobileLayout(selectedDate, mealPlansAsync);
+        },
       ),
     );
   }
 
+  Widget _buildMobileLayout(DateTime selectedDate, AsyncValue<List<MealPlanWithRecipe>> mealPlansAsync) {
+    return Column(
+      children: [
+        // Date Strip or Calendar
+        _isMonthlyView 
+          ? MonthlyCalendarView(
+              selectedDate: selectedDate,
+              focusedMonth: _focusedMonth,
+              onDateSelected: (date) {
+                ref.read(selectedDateProvider.notifier).state = date;
+              },
+              onPageChanged: (date) {
+                setState(() {
+                  _focusedMonth = date;
+                });
+              },
+            )
+          : WeeklyCalendarStrip(
+              selectedDate: selectedDate,
+              onDateSelected: (date) {
+                ref.read(selectedDateProvider.notifier).state = date;
+              },
+              scrollController: _dateScrollController,
+            ),
+        
+        const Divider(height: 1, color: Color(0xFFF5F5F4)),
 
+        // Main Content
+        Expanded(
+          child: mealPlansAsync.when(
+            data: (data) => _buildMealSections(data),
+            loading: () => const Center(child: CircularProgressIndicator(color: AppColors.stoxPrimary)),
+            error: (err, stack) => Center(child: Text('Error: $err')),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTabletLayout(DateTime selectedDate, AsyncValue<List<MealPlanWithRecipe>> mealPlansAsync) {
+     return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Left Column: Calendar
+        Container(
+          width: 360,
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            border: Border(right: BorderSide(color: Color(0xFFF5F5F4))),
+          ),
+          child: Column(
+            children: [
+               Expanded(
+                 child: SingleChildScrollView( // Allow scrolling if calendar is tall
+                   child: Padding(
+                     padding: const EdgeInsets.only(top: 16.0),
+                     child: MonthlyCalendarView(
+                        selectedDate: selectedDate,
+                        focusedMonth: _focusedMonth,
+                        onDateSelected: (date) {
+                          ref.read(selectedDateProvider.notifier).state = date;
+                        },
+                        onPageChanged: (date) {
+                          setState(() {
+                            _focusedMonth = date;
+                          });
+                        },
+                      ),
+                   ),
+                 ),
+               ),
+            ],
+          ),
+        ),
+
+        // Right Column: Meal Plans
+        Expanded(
+          child: mealPlansAsync.when(
+            data: (data) => _buildMealSections(data),
+            loading: () => const Center(child: CircularProgressIndicator(color: AppColors.stoxPrimary)),
+            error: (err, stack) => Center(child: Text('Error: $err')),
+          ),
+        ),
+      ],
+    );
+  }
 
   Widget _buildMealSections(List<MealPlanWithRecipe> plans) {
     // Group by MealType
@@ -207,7 +263,7 @@ class _MenuPlanScreenState extends ConsumerState<MenuPlanScreen> {
           bgColor: const Color(0xFFFFEDD5), // orange-100
           textColor: const Color(0xFFC2410C), // orange-700
           items: lunch,
-          isHorizontal: false, // Changed from previous view but let's keep it as is if I didn't mean to change horizontal flow. Wait, previous code says isHorizontal: false for lunch/dinner.
+          isHorizontal: false, 
           type: MealType.lunch,
         ),
         const SizedBox(height: 24),
@@ -609,12 +665,9 @@ class _MenuPlanScreenState extends ConsumerState<MenuPlanScreen> {
                 ),
                 const SizedBox(height: 4),
                  if (recipe != null)
-                 // Mock tags or real tags if available. Recipe doesn't seem to have tags in provided model view.
-                 // Using placeholder or nothing.
                  const Row(
                    children: [
                       // Example tag
-                      
                    ],
                  )
               ],

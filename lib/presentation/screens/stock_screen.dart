@@ -5,14 +5,10 @@ import '../../config/app_colors.dart';
 import '../../domain/models/ingredient.dart';
 import '../viewmodels/stock_viewmodel.dart';
 import 'package:image_picker/image_picker.dart';
-import '../../infrastructure/repositories/ai_recipe_repository.dart';
-import 'ai_analyzed_stock_screen.dart';
 import 'photo_stock_location_screen.dart';
-import 'dart:typed_data';
 import '../widgets/ingredient_add_modal.dart';
 import '../widgets/voice_shopping_modal.dart';
 import '../components/circle_action_button.dart';
-
 
 class StockScreen extends ConsumerStatefulWidget {
   const StockScreen({super.key});
@@ -161,235 +157,118 @@ class _StockScreenState extends ConsumerState<StockScreen> {
       backgroundColor: AppColors.stoxBackground,
       body: SafeArea(
         bottom: false,
-        child: Stack(
-          children: [
-            Column(
-              children: [
-                stateAvg.when(
-                  data: (items) => _buildHeader(items),
-                  loading: () => _buildHeader([]), // Show header even while loading, empty items
-                  error: (_, __) => _buildHeader([]),
-                ),
-                
-                // Hide filter/search bar in selection mode to avoid clutter or confusion?
-                // Or maybe keep it to allow filtering while selecting? 
-                // Usually keeping it is fine.
-                AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 300),
-                  child: _isSearching 
-                    ? _buildSearchBar()
-                    : _buildFilterBar(),
-                ),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            String layout = 'mobile';
+            if (constraints.maxWidth >= 600) {
+              layout = 'tablet';
+            }
 
-                Expanded(
-                  child: stateAvg.when(
-                    data: (items) {
-                      final filteredItems = _filterItems(items);
-                      
-                      return Column(
-                        children: [
-                          if (filteredItems.isNotEmpty) _buildListHeader(),
-                          Expanded(
-                            child: filteredItems.isEmpty
-                              ? Center(
-                                  child: Text(
-                                    _isSearching
-                                      ? '検索結果がありません'
-                                      : '家の中にある\n「買ったもの」「もらったもの」\nを登録して見る場所です。',
-                                    textAlign: TextAlign.center,
-                                    style: const TextStyle(
-                                      color: AppColors.stoxText,
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w500,
-                                      height: 1.6,
-                                    ),
-                                  ),
-                                )
-                              : ListView.separated(
-                                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 160), // Increased padding for FAB/Footer
-                                  itemCount: filteredItems.length,
-                                  separatorBuilder: (context, index) => const Divider(height: 1, color: AppColors.stoxBorder),
-                                  itemBuilder: (context, index) {
-                                    return _buildListItem(filteredItems[index]);
-                                  },
-                                ),
-                          ),
-                          _buildFooter(items),
-                        ],
-                      );
-                    },
-                    error: (err, st) => Center(child: Text('Error: $err')),
-                    loading: () => const Center(child: CircularProgressIndicator()),
-                  ),
-                ),
-              ],
+            if (layout == 'tablet') {
+              return _buildTabletLayout(stateAvg);
+            }
+            return _buildMobileLayout(stateAvg);
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMobileLayout(AsyncValue<List<Ingredient>> stateAvg) {
+    return Stack(
+      children: [
+        Column(
+          children: [
+            stateAvg.when(
+              data: (items) => _buildHeader(items),
+              loading: () => _buildHeader([]),
+              error: (_, __) => _buildHeader([]),
             ),
             
-            // Dimmed Background Overlay
-            if (_isMenuOpen)
-              Positioned.fill(
-                child: GestureDetector(
-                  onTap: _toggleMenu,
-                  child: AnimatedOpacity(
-                    opacity: _isMenuOpen ? 1.0 : 0.0,
-                    duration: const Duration(milliseconds: 200),
-                    child: Container(
-                      color: const Color(0xB3000000), // Darker overlay like X or design
-                    ),
-                  ),
-                ),
-              ),
-
-            if (_isAnalyzing)
-               Positioned.fill(
-                 child: Container(
-                   color: Colors.black45,
-                   child: const Center(
-                     child: CircularProgressIndicator(color: AppColors.stoxPrimary),
-                   ),
-                 ),
-               ),
-
-            // Guide Bubble
-            stateAvg.when(
-                data: (items) {
-                  // Hide guide in selection mode
-                  if (_isSelectionMode) return const SizedBox.shrink();
-
-                  // Hide guide if menu is open
-                  if (_isMenuOpen) return const SizedBox.shrink();
-
-                  // Only show guide if total items are empty, not just filtered results
-                  // But request says "If registered stock data is empty".
-                  if (items.isNotEmpty) return const SizedBox.shrink();
-                  
-                  return Positioned(
-                    bottom: 100, // Adjust position to be above FAB
-                    left: 0,
-                    right: 0,
-                    child: Center(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                            decoration: BoxDecoration(
-                              color: AppColors.stoxPrimary,
-                              borderRadius: BorderRadius.circular(30),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.1),
-                                  blurRadius: 8,
-                                  offset: const Offset(0, 4),
-                                )
-                              ],
-                            ),
-                            child: const Text(
-                              'ここをタップして在庫を追加します',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 12,
-                              ),
-                            ),
-                          ),
-                          CustomPaint(
-                            size: const Size(12, 6),
-                            painter: _TrianglePainter(color: AppColors.stoxPrimary),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                },
-                loading: () => const SizedBox.shrink(),
-                error: (_, __) => const SizedBox.shrink(),
+            AnimatedSwitcher(
+              duration: const Duration(milliseconds: 300),
+              child: _isSearching 
+                ? _buildSearchBar()
+                : _buildFilterBar(),
             ),
 
-             // Menu Items
-              AnimatedPositioned(
-                duration: const Duration(milliseconds: 250),
-                curve: Curves.easeOutBack,
-                bottom: _isMenuOpen ? 90 : 20, // Moves up when open
-                left: 0,
-                right: 0,
-                child: AnimatedOpacity(
-                  opacity: _isMenuOpen ? 1.0 : 0.0,
-                  duration: const Duration(milliseconds: 200),
-                  child: IgnorePointer(
-                    ignoring: !_isMenuOpen,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        _buildMenuButton(
-                          Icons.shopping_cart, 
-                          '買い物リストへ追加する', 
-                          onTap: () {
-                            print('Add to shopping list');
-                            _toggleMenu();
-                          }
-                        ),
-                        const SizedBox(height: 12),
-                        _buildMenuButton(
-                          Icons.edit, 
-                          '文字を入力して在庫を追加', 
-                          onTap: () {
-                            _toggleMenu();
-                            showModalBottomSheet(
-                              context: context,
-                              isScrollControlled: true,
-                              backgroundColor: Colors.transparent,
-                              builder: (context) => IngredientAddModal(
-                                title: '在庫を追加',
-                                targetStatus: IngredientStatus.stock,
-                                onSaved: () {
-                                  ref.invalidate(stockViewModelProvider);
-                                },
+            Expanded(
+              child: stateAvg.when(
+                data: (items) {
+                  final filteredItems = _filterItems(items);
+                  
+                  return Column(
+                    children: [
+                      if (filteredItems.isNotEmpty) _buildListHeader(),
+                      Expanded(
+                        child: filteredItems.isEmpty
+                          ? Center(
+                              child: Text(
+                                _isSearching
+                                  ? '検索結果がありません'
+                                  : '家の中にある\n「買ったもの」「もらったもの」\nを登録して見る場所です。',
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(
+                                  color: AppColors.stoxText,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w500,
+                                  height: 1.6,
+                                ),
                               ),
-                            );
-                          }
-                        ),
-                        const SizedBox(height: 12),
-                        _buildMenuButton(
-                          Icons.mic, 
-                          '声で操作する', 
-                          onTap: () async {
-                             _toggleMenu();
-                             await showModalBottomSheet(
-                               context: context, 
-                               isScrollControlled: true,
-                               backgroundColor: Colors.transparent,
-                               builder: (context) => const VoiceShoppingModal(targetStatus: IngredientStatus.stock),
-                             );
-                             ref.invalidate(stockViewModelProvider);
-                          }
-                        ),
-                        const SizedBox(height: 12),
-                        _buildMenuButton(
-                          Icons.photo_camera, 
-                          '写真を撮影して在庫を追加', 
-                          onTap: () {
-                             _toggleMenu();
-                             _onPhotoBtnTap();
-                          }
-                        ),
-                        const SizedBox(height: 12),
-                        // New: Select and Delete
-                        _buildMenuButton(
-                          Icons.delete_outline,
-                          '商品を選んで削除する',
-                          onTap: _toggleSelectionMode,
-                        ),
-                      ],
-                    ),
-                  ),
+                            )
+                          : ListView.separated(
+                              padding: const EdgeInsets.fromLTRB(16, 0, 16, 160),
+                              itemCount: filteredItems.length,
+                              separatorBuilder: (context, index) => const Divider(height: 1, color: AppColors.stoxBorder),
+                              itemBuilder: (context, index) {
+                                return _buildListItem(filteredItems[index]);
+                              },
+                            ),
+                      ),
+                      _buildFooter(items),
+                    ],
+                  );
+                },
+                error: (err, st) => Center(child: Text('Error: $err')),
+                loading: () => const Center(child: CircularProgressIndicator()),
+              ),
+            ),
+          ],
+        ),
+        
+        // Dimmed Background Overlay
+        if (_isMenuOpen)
+          Positioned.fill(
+            child: GestureDetector(
+              onTap: _toggleMenu,
+              child: AnimatedOpacity(
+                opacity: _isMenuOpen ? 1.0 : 0.0,
+                duration: const Duration(milliseconds: 200),
+                child: Container(
+                  color: const Color(0xB3000000),
                 ),
               ),
+            ),
+          ),
 
-            // Guide Bubble for Delete
-            if (_isSelectionMode && _selectedItemIds.isNotEmpty)
-              Positioned(
+        if (_isAnalyzing)
+           Positioned.fill(
+             child: Container(
+               color: Colors.black45,
+               child: const Center(
+                 child: CircularProgressIndicator(color: AppColors.stoxPrimary),
+               ),
+             ),
+           ),
+
+        // Guide Bubble
+        stateAvg.when(
+            data: (items) {
+              if (_isSelectionMode) return const SizedBox.shrink();
+              if (_isMenuOpen) return const SizedBox.shrink();
+              if (items.isNotEmpty) return const SizedBox.shrink();
+              
+              return Positioned(
                 bottom: 100,
                 left: 0,
                 right: 0,
@@ -400,7 +279,7 @@ class _StockScreenState extends ConsumerState<StockScreen> {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                         decoration: BoxDecoration(
-                          color: Colors.red, // Match delete button color
+                          color: AppColors.stoxPrimary,
                           borderRadius: BorderRadius.circular(30),
                           boxShadow: [
                             BoxShadow(
@@ -411,7 +290,7 @@ class _StockScreenState extends ConsumerState<StockScreen> {
                           ],
                         ),
                         child: const Text(
-                          'ここをタップして削除します',
+                          'ここをタップして在庫を追加します',
                           style: TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
@@ -421,84 +300,393 @@ class _StockScreenState extends ConsumerState<StockScreen> {
                       ),
                       CustomPaint(
                         size: const Size(12, 6),
-                        painter: _TrianglePainter(color: Colors.red),
+                        painter: _TrianglePainter(color: AppColors.stoxPrimary),
                       ),
                     ],
                   ),
                 ),
-              ),
-
-            // FAB / Delete Button
-            if (_isSelectionMode)
-               Positioned(
-                bottom: 24,
-                left: 0,
-                right: 0,
-                child: Center(
-                  child: GestureDetector(
-                    onTap: _selectedItemIds.isEmpty ? null : _deleteSelectedItems,
-                    child: Container(
-                      width: 64,
-                      height: 64,
-                      decoration: BoxDecoration(
-                        color: _selectedItemIds.isEmpty ? Colors.grey : Colors.red,
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: (_selectedItemIds.isEmpty ? Colors.grey : Colors.red).withOpacity(0.3),
-                            blurRadius: 24,
-                            offset: const Offset(0, 8),
-                          )
-                        ],
-                      ),
-                      child: const Icon(Icons.delete_outline, color: Colors.white, size: 32),
-                    ),
-                  ),
-                ),
-              )
-            else
-              Positioned(
-                bottom: 24, // Adjust based on footer height or desired position
-                left: 0,
-                right: 0,
-                child: Center(
-                  child: GestureDetector(
-                    onTap: _toggleMenu,
-                    child: Container(
-                      width: 64,
-                      height: 64,
-                      decoration: BoxDecoration(
-                        color: AppColors.stoxPrimary,
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: AppColors.stoxPrimary.withOpacity(0.3),
-                            blurRadius: 24,
-                            offset: const Offset(0, 8),
-                          )
-                        ],
-                      ),
-                      child: AnimatedRotation(
-                         turns: _isMenuOpen ? 0.125 : 0, // 45 degrees rotation
-                         duration: const Duration(milliseconds: 200),
-                         child: const Icon(Icons.add, color: Colors.white, size: 32),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-          ],
+              );
+            },
+            loading: () => const SizedBox.shrink(),
+            error: (_, __) => const SizedBox.shrink(),
         ),
-      ),
+
+         // Menu Items
+          AnimatedPositioned(
+            duration: const Duration(milliseconds: 250),
+            curve: Curves.easeOutBack,
+            bottom: _isMenuOpen ? 90 : 20,
+            left: 0,
+            right: 0,
+            child: AnimatedOpacity(
+              opacity: _isMenuOpen ? 1.0 : 0.0,
+              duration: const Duration(milliseconds: 200),
+              child: IgnorePointer(
+                ignoring: !_isMenuOpen,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    _buildMenuButton(
+                      Icons.shopping_cart, 
+                      '買い物リストへ追加する', 
+                      onTap: () {
+                        _toggleMenu();
+                      }
+                    ),
+                    const SizedBox(height: 12),
+                    _buildMenuButton(
+                      Icons.edit, 
+                      '文字を入力して在庫を追加', 
+                      onTap: () {
+                        _toggleMenu();
+                        showModalBottomSheet(
+                          context: context,
+                          isScrollControlled: true,
+                          backgroundColor: Colors.transparent,
+                          builder: (context) => IngredientAddModal(
+                            title: '在庫を追加',
+                            targetStatus: IngredientStatus.stock,
+                            onSaved: () {
+                              ref.invalidate(stockViewModelProvider);
+                            },
+                          ),
+                        );
+                      }
+                    ),
+                    const SizedBox(height: 12),
+                    _buildMenuButton(
+                      Icons.mic, 
+                      '声で操作する', 
+                      onTap: () async {
+                         _toggleMenu();
+                         await showModalBottomSheet(
+                           context: context, 
+                           isScrollControlled: true,
+                           backgroundColor: Colors.transparent,
+                           builder: (context) => const VoiceShoppingModal(targetStatus: IngredientStatus.stock),
+                         );
+                         ref.invalidate(stockViewModelProvider);
+                      }
+                    ),
+                    const SizedBox(height: 12),
+                    _buildMenuButton(
+                      Icons.photo_camera, 
+                      '写真を撮影して在庫を追加', 
+                      onTap: () {
+                         _toggleMenu();
+                         _onPhotoBtnTap();
+                      }
+                    ),
+                    const SizedBox(height: 12),
+                    _buildMenuButton(
+                      Icons.delete_outline,
+                      '商品を選んで削除する',
+                      onTap: _toggleSelectionMode,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+
+        // Guide Bubble for Delete
+        if (_isSelectionMode && _selectedItemIds.isNotEmpty)
+          Positioned(
+            bottom: 100,
+            left: 0,
+            right: 0,
+            child: Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: Colors.red,
+                      borderRadius: BorderRadius.circular(30),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 8,
+                          offset: const Offset(0, 4),
+                        )
+                      ],
+                    ),
+                    child: const Text(
+                      'ここをタップして削除します',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ),
+                  CustomPaint(
+                    size: const Size(12, 6),
+                    painter: _TrianglePainter(color: Colors.red),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+        // FAB / Delete Button
+        if (_isSelectionMode)
+           Positioned(
+            bottom: 24,
+            left: 0,
+            right: 0,
+            child: Center(
+              child: GestureDetector(
+                onTap: _selectedItemIds.isEmpty ? null : _deleteSelectedItems,
+                child: Container(
+                  width: 64,
+                  height: 64,
+                  decoration: BoxDecoration(
+                    color: _selectedItemIds.isEmpty ? Colors.grey : Colors.red,
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: (_selectedItemIds.isEmpty ? Colors.grey : Colors.red).withOpacity(0.3),
+                        blurRadius: 24,
+                        offset: const Offset(0, 8),
+                      )
+                    ],
+                  ),
+                  child: const Icon(Icons.delete_outline, color: Colors.white, size: 32),
+                ),
+              ),
+            ),
+          )
+        else
+          Positioned(
+            bottom: 24, 
+            left: 0,
+            right: 0,
+            child: Center(
+              child: GestureDetector(
+                onTap: _toggleMenu,
+                child: Container(
+                  width: 64,
+                  height: 64,
+                  decoration: BoxDecoration(
+                    color: AppColors.stoxPrimary,
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.stoxPrimary.withOpacity(0.3),
+                        blurRadius: 24,
+                        offset: const Offset(0, 8),
+                      )
+                    ],
+                  ),
+                  child: AnimatedRotation(
+                     turns: _isMenuOpen ? 0.125 : 0,
+                     duration: const Duration(milliseconds: 200),
+                     child: const Icon(Icons.add, color: Colors.white, size: 32),
+                  ),
+                ),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildTabletLayout(AsyncValue<List<Ingredient>> stateAvg) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Left Column: Operations
+        Container(
+          width: 320,
+          color: Colors.white,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Header
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 20),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: AppColors.stoxPrimary.withOpacity(0.15),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Icon(Icons.inventory_2, color: AppColors.stoxPrimary, size: 22),
+                    ),
+                    const SizedBox(width: 8),
+                    const Text(
+                      '在庫一覧',
+                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.stoxText),
+                    ),
+                  ],
+                ),
+              ),
+              
+              // Search
+              _buildSearchBar(),
+              
+              const SizedBox(height: 16),
+              
+              Expanded(
+                child: ListView(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  children: [
+                    const Padding(
+                      padding: EdgeInsets.only(left: 8, bottom: 8),
+                      child: Text('カテゴリ', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.stoxSubText)),
+                    ),
+                    // Vertical Categories
+                    ...['すべて', '野菜・果物', '肉・魚', '乳製品', '調味料'].map((cat) {
+                      final isSelected = _selectedCategory == cat;
+                      return ListTile(
+                        title: Text(cat, style: TextStyle(
+                            fontSize: 14, 
+                            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                            color: isSelected ? AppColors.stoxPrimary : AppColors.stoxText
+                        )),
+                        selected: isSelected,
+                        selectedTileColor: AppColors.stoxPrimary.withOpacity(0.1),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        dense: true,
+                        onTap: () => setState(() => _selectedCategory = cat),
+                      );
+                    }).toList(),
+                    
+                    const Divider(height: 32),
+                    
+                    const Padding(
+                      padding: EdgeInsets.only(left: 8, bottom: 8),
+                      child: Text('操作', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.stoxSubText)),
+                    ),
+                    
+                    ListTile(
+                      leading: const Icon(Icons.edit, size: 20, color: AppColors.stoxText),
+                      title: const Text('文字入力で追加', style: TextStyle(fontSize: 14)),
+                      dense: true,
+                      onTap: () {
+                        showModalBottomSheet(
+                          context: context,
+                          isScrollControlled: true,
+                          backgroundColor: Colors.transparent,
+                          builder: (context) => IngredientAddModal(
+                            title: '在庫を追加',
+                            targetStatus: IngredientStatus.stock,
+                            onSaved: () {
+                              ref.invalidate(stockViewModelProvider);
+                            },
+                          ),
+                        );
+                      },
+                    ),
+                    ListTile(
+                      leading: const Icon(Icons.mic, size: 20, color: AppColors.stoxText),
+                      title: const Text('音声入力で追加', style: TextStyle(fontSize: 14)),
+                      dense: true,
+                      onTap: () async {
+                         await showModalBottomSheet(
+                           context: context, 
+                           isScrollControlled: true,
+                           backgroundColor: Colors.transparent,
+                           builder: (context) => const VoiceShoppingModal(targetStatus: IngredientStatus.stock),
+                         );
+                         ref.invalidate(stockViewModelProvider);
+                      },
+                    ),
+                    ListTile(
+                      leading: const Icon(Icons.photo_camera, size: 20, color: AppColors.stoxText),
+                      title: const Text('写真撮影で追加', style: TextStyle(fontSize: 14)),
+                      dense: true,
+                      onTap: _onPhotoBtnTap,
+                    ),
+                    
+                    const Divider(height: 32),
+
+                    // Selection Mode Toggle
+                    ListTile(
+                      leading: Icon(_isSelectionMode ? Icons.close : Icons.delete_outline, 
+                          size: 20, color: _isSelectionMode ? AppColors.stoxText : Colors.red),
+                      title: Text(_isSelectionMode ? '選択をキャンセル' : '商品を選択して削除', 
+                          style: TextStyle(fontSize: 14, color: _isSelectionMode ? AppColors.stoxText : Colors.red)),
+                      dense: true,
+                      onTap: _toggleSelectionMode,
+                    ),
+                    
+                    if (_isSelectionMode)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 8.0),
+                        child: ElevatedButton.icon(
+                          onPressed: _selectedItemIds.isEmpty ? null : _deleteSelectedItems,
+                          icon: const Icon(Icons.delete_outline, size: 18),
+                          label: Text('削除する (${_selectedItemIds.length})'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.red,
+                            foregroundColor: Colors.white,
+                            disabledBackgroundColor: Colors.grey.shade300,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        
+        // Right Column: Content
+        Expanded(
+          child: stateAvg.when(
+            data: (items) {
+              final filteredItems = _filterItems(items);
+              
+              return Column(
+                children: [
+                  if (filteredItems.isNotEmpty) _buildListHeader(),
+                  Expanded(
+                    child: filteredItems.isEmpty
+                      ? Center(
+                          child: Text(
+                            _isSearching
+                              ? '検索結果がありません'
+                              : '家の中にある\n「買ったもの」「もらったもの」\nを登録して見る場所です。',
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              color: AppColors.stoxText,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                              height: 1.6,
+                            ),
+                          ),
+                        )
+                      : ListView.separated(
+                          padding: const EdgeInsets.all(16),
+                          itemCount: filteredItems.length,
+                          separatorBuilder: (context, index) => const Divider(height: 1, color: AppColors.stoxBorder),
+                          itemBuilder: (context, index) {
+                            return _buildListItem(filteredItems[index]);
+                          },
+                        ),
+                  ),
+                  _buildFooter(items),
+                ],
+              );
+            },
+            error: (err, st) => Center(child: Text('Error: $err')),
+            loading: () => const Center(child: CircularProgressIndicator()),
+          ),
+        ),
+        
+        if (_isAnalyzing)
+           const Center(child: CircularProgressIndicator()),
+      ],
     );
   }
 
   Widget _buildHeader(List<Ingredient> items) {
-    // Disable search if no items
-    final bool isEmpty = items.isEmpty;
-    
-    // In selection mode, header changes? 
-    // Maybe show "X selected" and "Cancel" button on right.
     if (_isSelectionMode) {
       return Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
@@ -518,6 +706,7 @@ class _StockScreenState extends ConsumerState<StockScreen> {
       );
     }
 
+    // Mobile Header
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
       child: Row(
@@ -554,9 +743,9 @@ class _StockScreenState extends ConsumerState<StockScreen> {
               CircleActionButton(
                 icon: Icons.search,
                 backgroundColor: Colors.white,
-                contentColor: isEmpty ? Colors.grey : (_isSearching ? AppColors.stoxPrimary : AppColors.stoxSubText),
-                borderColor: isEmpty ? Colors.grey.withOpacity(0.3) : AppColors.stoxBorder,
-                onTap: isEmpty ? null : () {
+                contentColor: items.isEmpty ? Colors.grey : (_isSearching ? AppColors.stoxPrimary : AppColors.stoxSubText),
+                borderColor: items.isEmpty ? Colors.grey.withOpacity(0.3) : AppColors.stoxBorder,
+                onTap: items.isEmpty ? null : () {
                   setState(() {
                     _isSearching = !_isSearching;
                     if (!_isSearching) {
@@ -573,15 +762,7 @@ class _StockScreenState extends ConsumerState<StockScreen> {
                  backgroundColor: Colors.white,
                  contentColor: AppColors.stoxSubText,
                  borderColor: AppColors.stoxBorder,
-                 onTap: _toggleMenu, // Add onTap here to make it work! The previous code didn't have onTap on menu button?
-                 // Wait, previous code:
-                 //  CircleActionButton(icon: Icons.menu, ...),
-                 // It did not assign _toggleMenu to onTap. It was missing!
-                 // The 'search' button had onTap but 'menu' button didn't in previous step?
-                 // Let's check history...
-                 // Yes, "CircleActionButton(icon: Icons.menu, ...)," no onTap.
-                 // So the menu button wasn't working before? The user said "Next, tap the hamburger menu next to it...".
-                 // Assuming I need to fix it now.
+                 onTap: _toggleMenu, 
                ),
             ],
           ),
@@ -609,7 +790,7 @@ class _StockScreenState extends ConsumerState<StockScreen> {
           Expanded(
             child: TextField(
               controller: _searchController,
-              autofocus: true,
+              autofocus: false, // Don't autofocus in tablet split view to avoid keyboard popup immediately
               style: const TextStyle(fontSize: 14, color: AppColors.stoxText),
               decoration: const InputDecoration(
                 hintText: '在庫を検索...',
@@ -821,9 +1002,6 @@ class _StockScreenState extends ConsumerState<StockScreen> {
   }
 
   Widget _buildFooter(List<Ingredient> allItems) {
-    // If filtering/searching, footer should maybe react?
-    // Leaving as is for now.
-    
     final total = allItems.length;
     final expiredCount = allItems.where((i) => _isExpiredOrClose(i.expiryDate)).length;
 
@@ -870,6 +1048,7 @@ class _StockScreenState extends ConsumerState<StockScreen> {
       return false; 
     }).toList();
   }
+
   Widget _buildMenuButton(IconData icon, String label, {required VoidCallback onTap}) {
     return GestureDetector(
       onTap: onTap,
