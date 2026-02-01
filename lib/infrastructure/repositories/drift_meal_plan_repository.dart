@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:drift/drift.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../domain/models/meal_plan.dart';
@@ -70,6 +71,7 @@ extension MealPlanEntityMapper on MealPlanEntity {
       date: date,
       mealType: MealType.values[mealType],
       isDone: isDone,
+      photos: (json.decode(photos) as List<dynamic>).map((e) => e.toString()).toList(),
     );
   }
 }
@@ -82,6 +84,7 @@ extension MealPlanDomainMapper on MealPlan {
       date: Value(mealPlan.date),
       mealType: Value(mealPlan.mealType.index),
       isDone: Value(mealPlan.isDone),
+      photos: Value(json.encode(mealPlan.photos)),
     );
   }
 }

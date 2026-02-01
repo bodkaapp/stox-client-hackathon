@@ -16,6 +16,9 @@ class RecipeScheduleScreen extends ConsumerStatefulWidget {
   final String url;
   final String? imageUrl;
   final String initialMemo;
+  final DateTime? initialDate;
+  final MealType? initialMealType;
+  final String? existingRecipeId;
 
   const RecipeScheduleScreen({
     super.key,
@@ -23,6 +26,9 @@ class RecipeScheduleScreen extends ConsumerStatefulWidget {
     required this.url,
     this.imageUrl,
     this.initialMemo = '',
+    this.initialDate,
+    this.initialMealType,
+    this.existingRecipeId,
   });
 
   @override
@@ -49,6 +55,25 @@ class _RecipeScheduleScreenState extends ConsumerState<RecipeScheduleScreen> {
   void initState() {
     super.initState();
     _memoController = TextEditingController(text: widget.initialMemo);
+    if (widget.initialDate != null) {
+      _selectedDate = widget.initialDate;
+      _focusedMonth = widget.initialDate!;
+    }
+    if (widget.initialMealType != null) {
+      _selectedTimeSlot = _getSlotFromMealType(widget.initialMealType!);
+    }
+  }
+
+  String? _getSlotFromMealType(MealType type) {
+    switch (type) {
+      case MealType.breakfast: return 'morning';
+      case MealType.lunch: return 'noon';
+      case MealType.dinner: return 'night';
+      case MealType.snack: return 'snack';
+      case MealType.preMade: return 'prep';
+      case MealType.other: return 'appetizer';
+      default: return null;
+    }
   }
 
   @override
@@ -89,16 +114,30 @@ class _RecipeScheduleScreenState extends ConsumerState<RecipeScheduleScreen> {
       final recipeRepo = await ref.read(recipeRepositoryProvider.future);
       final mealPlanRepo = await ref.read(mealPlanRepositoryProvider.future);
       
-      final recipeId = DateTime.now().microsecondsSinceEpoch.toString();
-      final recipe = Recipe(
-        id: recipeId,
-        title: widget.title,
-        pageUrl: widget.url,
-        ogpImageUrl: widget.imageUrl ?? '',
-        createdAt: DateTime.now(),
-        memo: _memoController.text, 
-      );
-      await recipeRepo.save(recipe);
+      final recipeId = widget.existingRecipeId ?? DateTime.now().microsecondsSinceEpoch.toString();
+      
+      if (widget.existingRecipeId == null) {
+        final recipe = Recipe(
+          id: recipeId,
+          title: widget.title,
+          pageUrl: widget.url,
+          ogpImageUrl: widget.imageUrl ?? '',
+          createdAt: DateTime.now(),
+          memo: _memoController.text, 
+        );
+        await recipeRepo.save(recipe);
+      } else {
+        // If recipe already exists (manual entry), should we update memo?
+        // Let's update memo if changed, but keep ingredients if implementation_plan suggests.
+        // For now, simpler: if existing, assume it's fresh and just use ID.
+        // Or if we want to allow editing memo here:
+        final existing = await recipeRepo.getById(recipeId);
+        if (existing != null && _memoController.text != widget.initialMemo) {
+           // Merging logic might be needed if we don't want to overwrite ingredients stored in memo (old plan)
+           // But new plan uses separate table. So updating memo on Recipe entity is safe!
+           await recipeRepo.save(existing.copyWith(memo: _memoController.text));
+        }
+      }
 
       if (_selectedDate != null && _selectedTimeSlot != null) {
           final mealType = _getMealType(_selectedTimeSlot!);

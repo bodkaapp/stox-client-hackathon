@@ -6,10 +6,19 @@ import 'recipe_webview_screen.dart';
 import '../components/recipe_list_card.dart';
 import '../components/large_recipe_list_card.dart';
 
+import '../../domain/models/meal_plan.dart';
+
 class RecipeSearchResultsScreen extends StatefulWidget {
   final String searchQuery;
+  final DateTime? initialDate;
+  final MealType? initialMealType;
 
-  const RecipeSearchResultsScreen({super.key, required this.searchQuery});
+  const RecipeSearchResultsScreen({
+    super.key,
+    required this.searchQuery,
+    this.initialDate,
+    this.initialMealType,
+  });
 
   @override
   State<RecipeSearchResultsScreen> createState() => _RecipeSearchResultsScreenState();
@@ -180,6 +189,8 @@ class _RecipeSearchResultsScreenState extends State<RecipeSearchResultsScreen> {
                   url: link,
                   title: title,
                   imageUrl: imageUrl,
+                  initialDate: widget.initialDate,
+                  initialMealType: widget.initialMealType,
                 ),
               ),
             ),
@@ -197,6 +208,8 @@ class _RecipeSearchResultsScreenState extends State<RecipeSearchResultsScreen> {
                 url: link,
                 title: title,
                 imageUrl: imageUrl,
+                initialDate: widget.initialDate,
+                initialMealType: widget.initialMealType,
               ),
             ),
           ),

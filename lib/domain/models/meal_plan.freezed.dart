@@ -25,6 +25,7 @@ mixin _$MealPlan {
   DateTime get date => throw _privateConstructorUsedError;
   MealType get mealType => throw _privateConstructorUsedError;
   bool get isDone => throw _privateConstructorUsedError;
+  List<String> get photos => throw _privateConstructorUsedError;
 
   /// Serializes this MealPlan to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -46,7 +47,8 @@ abstract class $MealPlanCopyWith<$Res> {
       String recipeId,
       DateTime date,
       MealType mealType,
-      bool isDone});
+      bool isDone,
+      List<String> photos});
 }
 
 /// @nodoc
@@ -69,6 +71,7 @@ class _$MealPlanCopyWithImpl<$Res, $Val extends MealPlan>
     Object? date = null,
     Object? mealType = null,
     Object? isDone = null,
+    Object? photos = null,
   }) {
     return _then(_value.copyWith(
       id: null == id
@@ -91,6 +94,10 @@ class _$MealPlanCopyWithImpl<$Res, $Val extends MealPlan>
           ? _value.isDone
           : isDone // ignore: cast_nullable_to_non_nullable
               as bool,
+      photos: null == photos
+          ? _value.photos
+          : photos // ignore: cast_nullable_to_non_nullable
+              as List<String>,
     ) as $Val);
   }
 }
@@ -108,7 +115,8 @@ abstract class _$$MealPlanImplCopyWith<$Res>
       String recipeId,
       DateTime date,
       MealType mealType,
-      bool isDone});
+      bool isDone,
+      List<String> photos});
 }
 
 /// @nodoc
@@ -129,6 +137,7 @@ class __$$MealPlanImplCopyWithImpl<$Res>
     Object? date = null,
     Object? mealType = null,
     Object? isDone = null,
+    Object? photos = null,
   }) {
     return _then(_$MealPlanImpl(
       id: null == id
@@ -151,6 +160,10 @@ class __$$MealPlanImplCopyWithImpl<$Res>
           ? _value.isDone
           : isDone // ignore: cast_nullable_to_non_nullable
               as bool,
+      photos: null == photos
+          ? _value._photos
+          : photos // ignore: cast_nullable_to_non_nullable
+              as List<String>,
     ));
   }
 }
@@ -163,7 +176,9 @@ class _$MealPlanImpl implements _MealPlan {
       required this.recipeId,
       required this.date,
       required this.mealType,
-      this.isDone = false});
+      this.isDone = false,
+      final List<String> photos = const []})
+      : _photos = photos;
 
   factory _$MealPlanImpl.fromJson(Map<String, dynamic> json) =>
       _$$MealPlanImplFromJson(json);
@@ -179,10 +194,18 @@ class _$MealPlanImpl implements _MealPlan {
   @override
   @JsonKey()
   final bool isDone;
+  final List<String> _photos;
+  @override
+  @JsonKey()
+  List<String> get photos {
+    if (_photos is EqualUnmodifiableListView) return _photos;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_photos);
+  }
 
   @override
   String toString() {
-    return 'MealPlan(id: $id, recipeId: $recipeId, date: $date, mealType: $mealType, isDone: $isDone)';
+    return 'MealPlan(id: $id, recipeId: $recipeId, date: $date, mealType: $mealType, isDone: $isDone, photos: $photos)';
   }
 
   @override
@@ -196,13 +219,14 @@ class _$MealPlanImpl implements _MealPlan {
             (identical(other.date, date) || other.date == date) &&
             (identical(other.mealType, mealType) ||
                 other.mealType == mealType) &&
-            (identical(other.isDone, isDone) || other.isDone == isDone));
+            (identical(other.isDone, isDone) || other.isDone == isDone) &&
+            const DeepCollectionEquality().equals(other._photos, _photos));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode =>
-      Object.hash(runtimeType, id, recipeId, date, mealType, isDone);
+  int get hashCode => Object.hash(runtimeType, id, recipeId, date, mealType,
+      isDone, const DeepCollectionEquality().hash(_photos));
 
   /// Create a copy of MealPlan
   /// with the given fields replaced by the non-null parameter values.
@@ -226,7 +250,8 @@ abstract class _MealPlan implements MealPlan {
       required final String recipeId,
       required final DateTime date,
       required final MealType mealType,
-      final bool isDone}) = _$MealPlanImpl;
+      final bool isDone,
+      final List<String> photos}) = _$MealPlanImpl;
 
   factory _MealPlan.fromJson(Map<String, dynamic> json) =
       _$MealPlanImpl.fromJson;
@@ -241,6 +266,8 @@ abstract class _MealPlan implements MealPlan {
   MealType get mealType;
   @override
   bool get isDone;
+  @override
+  List<String> get photos;
 
   /// Create a copy of MealPlan
   /// with the given fields replaced by the non-null parameter values.

@@ -20,6 +20,7 @@ class MealPlan with _$MealPlan {
     required DateTime date,
     required MealType mealType,
     @Default(false) bool isDone,
+    @Default([]) List<String> photos,
   }) = _MealPlan;
 
   factory MealPlan.fromJson(Map<String, dynamic> json) => _$MealPlanFromJson(json);

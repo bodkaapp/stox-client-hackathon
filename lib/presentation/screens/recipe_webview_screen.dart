@@ -10,17 +10,22 @@ import '../../infrastructure/repositories/drift_recipe_repository.dart';
 import 'ai_ingredient_list_screen.dart';
 import 'recipe_schedule_screen.dart';
 import '../mixins/ad_manager_mixin.dart';
+import '../../domain/models/meal_plan.dart';
 
 class RecipeWebViewScreen extends ConsumerStatefulWidget {
   final String url;
   final String title;
   final String? imageUrl;
+  final DateTime? initialDate;
+  final MealType? initialMealType;
 
   const RecipeWebViewScreen({
     super.key,
     required this.url,
     required this.title,
     this.imageUrl,
+    this.initialDate,
+    this.initialMealType,
   });
 
   @override
@@ -239,6 +244,8 @@ class _RecipeWebViewScreenState extends ConsumerState<RecipeWebViewScreen> with 
                     url: currentUrl ?? widget.url,
                     title: _currentTitle,
                     imageUrl: finalImageUrl,
+                    initialDate: widget.initialDate,
+                    initialMealType: widget.initialMealType,
                   ),
                 ),
               );

@@ -3,6 +3,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../domain/models/recipe.dart';
 import '../../domain/repositories/recipe_repository.dart';
 import '../datasources/app_database.dart';
+import '../../domain/models/recipe_ingredient.dart';
 import '../datasources/drift_database_provider.dart';
 
 part 'drift_recipe_repository.g.dart';
@@ -15,29 +16,73 @@ class DriftRecipeRepository implements RecipeRepository {
   @override
   Future<List<Recipe>> getAll() async {
     final entities = await db.select(db.recipes).get();
-    return entities.map((e) => e.toDomain()).toList();
+    
+    // Performance note: N+1 query. For many recipes, should fetch all ingredients and map in memory.
+    // For now, simple loop or batch fetch.
+    // Since expected number of saved recipes isn't huge yet, let's keep it simple or do 2 queries.
+    // 2 queries approach:
+    final recipeIds = entities.map((e) => e.originalId).toList();
+    final allIngredients = await (db.select(db.recipeIngredients)..where((t) => t.recipeId.isIn(recipeIds))).get();
+    
+    final ingredientMap = <String, List<RecipeIngredientEntity>>{};
+    for (var ing in allIngredients) {
+      if (!ingredientMap.containsKey(ing.recipeId)) {
+        ingredientMap[ing.recipeId] = [];
+      }
+      ingredientMap[ing.recipeId]!.add(ing);
+    }
+
+    return entities.map((e) {
+      final ingredients = ingredientMap[e.originalId] ?? [];
+      ingredients.sort((a, b) => a.index.compareTo(b.index));
+      return e.toDomain(ingredients: ingredients);
+    }).toList();
   }
 
   @override
   Future<Recipe?> getById(String id) async {
     final entity = await (db.select(db.recipes)..where((t) => t.originalId.equals(id))).getSingleOrNull();
-    return entity?.toDomain();
+    if (entity == null) return null;
+
+    final ingredients = await (db.select(db.recipeIngredients)
+      ..where((t) => t.recipeId.equals(id))
+      ..orderBy([(t) => OrderingTerm(expression: t.index, mode: OrderingMode.asc)]))
+      .get();
+      
+    return entity.toDomain(ingredients: ingredients);
   }
 
   @override
   Future<void> save(Recipe recipe) async {
     final companion = RecipeDomainMapper.fromDomain(recipe);
     
-    final existing = await (db.select(db.recipes)..where((t) => t.originalId.equals(recipe.id))).getSingleOrNull();
-    
-    if (existing != null) {
-      // Update using companion on the existing row
-      // We can use update statement
-      await (db.update(db.recipes)..where((t) => t.id.equals(existing.id))).write(companion);
-    } else {
-      // Insert
-      await db.into(db.recipes).insert(companion);
-    }
+    await db.transaction(() async {
+      final existing = await (db.select(db.recipes)..where((t) => t.originalId.equals(recipe.id))).getSingleOrNull();
+
+      if (existing != null) {
+        await (db.update(db.recipes)..where((t) => t.originalId.equals(recipe.id))).write(companion);
+        // Delete existing ingredients
+        await (db.delete(db.recipeIngredients)..where((t) => t.recipeId.equals(recipe.id))).go();
+      } else {
+        await db.into(db.recipes).insert(companion);
+      }
+
+      // Insert new ingredients
+      if (recipe.ingredients.isNotEmpty) {
+        final ingredients = recipe.ingredients.asMap().entries.map((e) {
+          return RecipeIngredientsCompanion(
+            recipeId: Value(recipe.id),
+            name: Value(e.value.name),
+            amount: Value(e.value.amount),
+            index: Value(e.key),
+          );
+        }).toList();
+        
+        await db.batch((batch) {
+          batch.insertAll(db.recipeIngredients, ingredients);
+        });
+      }
+    });
   }
 
   @override
@@ -48,7 +93,28 @@ class DriftRecipeRepository implements RecipeRepository {
   @override
   Future<List<Recipe>> search(String query) async {
     final entities = await (db.select(db.recipes)..where((t) => t.title.contains(query) | t.memo.contains(query))).get();
-    return entities.map((e) => e.toDomain()).toList();
+    
+    // For search results, we also need ingredients if we want to show them?
+    // Maybe not necessary for list view, but toDomain requires matching signature.
+    // Reusing logic from getAll efficiently:
+    if (entities.isEmpty) return [];
+
+    final recipeIds = entities.map((e) => e.originalId).toList();
+    final allIngredients = await (db.select(db.recipeIngredients)..where((t) => t.recipeId.isIn(recipeIds))).get();
+    
+    final ingredientMap = <String, List<RecipeIngredientEntity>>{};
+    for (var ing in allIngredients) {
+      if (!ingredientMap.containsKey(ing.recipeId)) {
+        ingredientMap[ing.recipeId] = [];
+      }
+      ingredientMap[ing.recipeId]!.add(ing);
+    }
+
+    return entities.map((e) {
+      final ingredients = ingredientMap[e.originalId] ?? [];
+      ingredients.sort((a, b) => a.index.compareTo(b.index));
+      return e.toDomain(ingredients: ingredients);
+    }).toList();
   }
 
   @override
@@ -61,7 +127,7 @@ class DriftRecipeRepository implements RecipeRepository {
 
 // Mappers
 extension RecipeEntityMapper on RecipeEntity {
-  Recipe toDomain() {
+  Recipe toDomain({List<RecipeIngredientEntity> ingredients = const []}) {
     return Recipe(
       id: originalId,
       title: title,
@@ -74,6 +140,7 @@ extension RecipeEntityMapper on RecipeEntity {
       lastCookedAt: lastCookedAt,
       isDeleted: isDeleted,
       memo: memo,
+      ingredients: ingredients.map((e) => RecipeIngredient(name: e.name, amount: e.amount)).toList(),
     );
   }
 }

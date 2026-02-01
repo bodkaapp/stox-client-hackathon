@@ -31,6 +31,7 @@ mixin _$Recipe {
   DateTime? get lastCookedAt => throw _privateConstructorUsedError;
   bool get isDeleted => throw _privateConstructorUsedError;
   String get memo => throw _privateConstructorUsedError;
+  List<RecipeIngredient> get ingredients => throw _privateConstructorUsedError;
 
   /// Serializes this Recipe to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -57,7 +58,8 @@ abstract class $RecipeCopyWith<$Res> {
       int rating,
       DateTime? lastCookedAt,
       bool isDeleted,
-      String memo});
+      String memo,
+      List<RecipeIngredient> ingredients});
 }
 
 /// @nodoc
@@ -86,6 +88,7 @@ class _$RecipeCopyWithImpl<$Res, $Val extends Recipe>
     Object? lastCookedAt = freezed,
     Object? isDeleted = null,
     Object? memo = null,
+    Object? ingredients = null,
   }) {
     return _then(_value.copyWith(
       id: null == id
@@ -132,6 +135,10 @@ class _$RecipeCopyWithImpl<$Res, $Val extends Recipe>
           ? _value.memo
           : memo // ignore: cast_nullable_to_non_nullable
               as String,
+      ingredients: null == ingredients
+          ? _value.ingredients
+          : ingredients // ignore: cast_nullable_to_non_nullable
+              as List<RecipeIngredient>,
     ) as $Val);
   }
 }
@@ -154,7 +161,8 @@ abstract class _$$RecipeImplCopyWith<$Res> implements $RecipeCopyWith<$Res> {
       int rating,
       DateTime? lastCookedAt,
       bool isDeleted,
-      String memo});
+      String memo,
+      List<RecipeIngredient> ingredients});
 }
 
 /// @nodoc
@@ -181,6 +189,7 @@ class __$$RecipeImplCopyWithImpl<$Res>
     Object? lastCookedAt = freezed,
     Object? isDeleted = null,
     Object? memo = null,
+    Object? ingredients = null,
   }) {
     return _then(_$RecipeImpl(
       id: null == id
@@ -227,6 +236,10 @@ class __$$RecipeImplCopyWithImpl<$Res>
           ? _value.memo
           : memo // ignore: cast_nullable_to_non_nullable
               as String,
+      ingredients: null == ingredients
+          ? _value._ingredients
+          : ingredients // ignore: cast_nullable_to_non_nullable
+              as List<RecipeIngredient>,
     ));
   }
 }
@@ -245,7 +258,9 @@ class _$RecipeImpl implements _Recipe {
       this.rating = 0,
       this.lastCookedAt,
       this.isDeleted = false,
-      this.memo = ''});
+      this.memo = '',
+      final List<RecipeIngredient> ingredients = const []})
+      : _ingredients = ingredients;
 
   factory _$RecipeImpl.fromJson(Map<String, dynamic> json) =>
       _$$RecipeImplFromJson(json);
@@ -277,10 +292,18 @@ class _$RecipeImpl implements _Recipe {
   @override
   @JsonKey()
   final String memo;
+  final List<RecipeIngredient> _ingredients;
+  @override
+  @JsonKey()
+  List<RecipeIngredient> get ingredients {
+    if (_ingredients is EqualUnmodifiableListView) return _ingredients;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_ingredients);
+  }
 
   @override
   String toString() {
-    return 'Recipe(id: $id, title: $title, pageUrl: $pageUrl, ogpImageUrl: $ogpImageUrl, createdAt: $createdAt, cookedCount: $cookedCount, defaultServings: $defaultServings, rating: $rating, lastCookedAt: $lastCookedAt, isDeleted: $isDeleted, memo: $memo)';
+    return 'Recipe(id: $id, title: $title, pageUrl: $pageUrl, ogpImageUrl: $ogpImageUrl, createdAt: $createdAt, cookedCount: $cookedCount, defaultServings: $defaultServings, rating: $rating, lastCookedAt: $lastCookedAt, isDeleted: $isDeleted, memo: $memo, ingredients: $ingredients)';
   }
 
   @override
@@ -304,7 +327,9 @@ class _$RecipeImpl implements _Recipe {
                 other.lastCookedAt == lastCookedAt) &&
             (identical(other.isDeleted, isDeleted) ||
                 other.isDeleted == isDeleted) &&
-            (identical(other.memo, memo) || other.memo == memo));
+            (identical(other.memo, memo) || other.memo == memo) &&
+            const DeepCollectionEquality()
+                .equals(other._ingredients, _ingredients));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -321,7 +346,8 @@ class _$RecipeImpl implements _Recipe {
       rating,
       lastCookedAt,
       isDeleted,
-      memo);
+      memo,
+      const DeepCollectionEquality().hash(_ingredients));
 
   /// Create a copy of Recipe
   /// with the given fields replaced by the non-null parameter values.
@@ -351,7 +377,8 @@ abstract class _Recipe implements Recipe {
       final int rating,
       final DateTime? lastCookedAt,
       final bool isDeleted,
-      final String memo}) = _$RecipeImpl;
+      final String memo,
+      final List<RecipeIngredient> ingredients}) = _$RecipeImpl;
 
   factory _Recipe.fromJson(Map<String, dynamic> json) = _$RecipeImpl.fromJson;
 
@@ -377,6 +404,8 @@ abstract class _Recipe implements Recipe {
   bool get isDeleted;
   @override
   String get memo;
+  @override
+  List<RecipeIngredient> get ingredients;
 
   /// Create a copy of Recipe
   /// with the given fields replaced by the non-null parameter values.

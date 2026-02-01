@@ -1,17 +1,19 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import '../../config/app_colors.dart';
 import '../../domain/models/meal_plan.dart';
 import '../../domain/models/recipe.dart';
-import '../../domain/repositories/meal_plan_repository.dart';
 import '../../infrastructure/repositories/drift_recipe_repository.dart';
 import '../../infrastructure/repositories/drift_meal_plan_repository.dart';
 import '../widgets/calendar/weekly_calendar_strip.dart';
 import '../widgets/calendar/monthly_calendar_view.dart';
 import 'recipe_webview_screen.dart';
+import 'dart:io';
+import 'package:image_picker/image_picker.dart';
+import '../widgets/search_modal.dart';
+import 'cooking_mode_screen.dart';
 
 // -----------------------------------------------------------------------------
 // Models
@@ -195,6 +197,7 @@ class _MenuPlanScreenState extends ConsumerState<MenuPlanScreen> {
           textColor: const Color(0xFFB45309), // amber-700
           items: breakfast,
           isHorizontal: true,
+          type: MealType.breakfast,
         ),
         const SizedBox(height: 24),
         _buildSection(
@@ -204,7 +207,8 @@ class _MenuPlanScreenState extends ConsumerState<MenuPlanScreen> {
           bgColor: const Color(0xFFFFEDD5), // orange-100
           textColor: const Color(0xFFC2410C), // orange-700
           items: lunch,
-          isHorizontal: false,
+          isHorizontal: false, // Changed from previous view but let's keep it as is if I didn't mean to change horizontal flow. Wait, previous code says isHorizontal: false for lunch/dinner.
+          type: MealType.lunch,
         ),
         const SizedBox(height: 24),
         _buildSection(
@@ -215,6 +219,7 @@ class _MenuPlanScreenState extends ConsumerState<MenuPlanScreen> {
           textColor: const Color(0xFFBE123C), // rose-700
           items: dinner,
           isHorizontal: false,
+          type: MealType.dinner,
         ),
         const SizedBox(height: 24),
         _buildPreMadeSection(
@@ -233,6 +238,7 @@ class _MenuPlanScreenState extends ConsumerState<MenuPlanScreen> {
     required Color textColor,
     required List<MealPlanWithRecipe> items,
     required bool isHorizontal,
+    required MealType type,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -272,18 +278,38 @@ class _MenuPlanScreenState extends ConsumerState<MenuPlanScreen> {
                   ),
                 ],
               ),
-              TextButton.icon(
-                onPressed: () {
-                  // Add item logic
-                },
-                icon: const Icon(Icons.add_circle_outline, size: 16),
-                label: const Text('追加', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-                style: TextButton.styleFrom(
-                  foregroundColor: AppColors.stoxPrimary,
-                  padding: EdgeInsets.zero,
-                  minimumSize: Size.zero,
-                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                ),
+              Row(
+                children: [
+                   // Made It Button (Secondary)
+                   if (items.any((e) => e.recipe != null)) ...[
+                     TextButton.icon(
+                      onPressed: () => _onMadeIt(items),
+                      icon: const Icon(Icons.check_circle_outline, size: 16),
+                      label: const Text('作った', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                      style: TextButton.styleFrom(
+                        foregroundColor: const Color(0xFF78716C), // stone-500
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        minimumSize: Size.zero,
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                     // Cook Button (Primary)
+                     // Hide if all recipes are manual entry (empty URL)
+                     if (items.any((e) => e.recipe != null && e.recipe!.pageUrl.isNotEmpty))
+                       TextButton.icon(
+                        onPressed: () => _onCook(items),
+                        icon: const Icon(Icons.restaurant_menu, size: 16),
+                        label: const Text('料理する', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                        style: TextButton.styleFrom(
+                          foregroundColor: AppColors.stoxPrimary, // Primary Color
+                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                          minimumSize: Size.zero,
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        ),
+                      ),
+                   ],
+                ],
               ),
             ],
           ),
@@ -325,6 +351,44 @@ class _MenuPlanScreenState extends ConsumerState<MenuPlanScreen> {
               return _buildVerticalCard(items[index]);
             },
           ),
+          
+        // Photos
+        if (items.any((e) => e.mealPlan.photos.isNotEmpty))
+           Container(
+             height: 100,
+             margin: const EdgeInsets.only(top: 12),
+             child: ListView(
+               scrollDirection: Axis.horizontal,
+               children: items.expand((e) => e.mealPlan.photos).map((path) {
+                 return Padding(
+                   padding: const EdgeInsets.only(right: 8),
+                   child: ClipRRect(
+                     borderRadius: BorderRadius.circular(8),
+                     child: Image.file(File(path), width: 100, height: 100, fit: BoxFit.cover),
+                   ),
+                 );
+               }).toList(),
+             ),
+           ),
+
+        // Add Dish Button at bottom right
+        Align(
+          alignment: Alignment.centerRight,
+          child: Padding(
+            padding: const EdgeInsets.only(top: 8.0),
+            child: TextButton.icon(
+              onPressed: () => _onAddDish(type),
+              icon: const Icon(Icons.add_circle_outline, size: 16),
+              label: const Text('料理を追加する', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+              style: TextButton.styleFrom(
+                foregroundColor: AppColors.stoxPrimary,
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                minimumSize: Size.zero,
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
+            ),
+          ),
+        ),
       ],
     );
   }
@@ -558,6 +622,94 @@ class _MenuPlanScreenState extends ConsumerState<MenuPlanScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  void _onMadeIt(List<MealPlanWithRecipe> items) {
+    if (items.isEmpty) return;
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('お料理お疲れ様でした！'),
+          content: const Text('もし作った料理を撮影した写真があったら、写真を貼っておくことで、後で見返すのが楽になります✨'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('キャンセル'),
+            ),
+            TextButton(
+              onPressed: () async {
+                 Navigator.pop(context);
+                 _pickAndSaveImage(items, ImageSource.gallery);
+              },
+              child: const Text('撮った写真を貼る'),
+            ),
+            TextButton(
+              onPressed: () async {
+                Navigator.pop(context);
+                _pickAndSaveImage(items, ImageSource.camera);
+              },
+              child: const Text('撮影する'),
+            ),
+             TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text('写真を貼らずに完了する'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _pickAndSaveImage(List<MealPlanWithRecipe> items, ImageSource source) async {
+    final picker = ImagePicker();
+    final XFile? image = await picker.pickImage(source: source);
+
+    if (image != null) {
+      if (items.isNotEmpty) {
+        final target = items.first;
+        try {
+           final repo = await ref.read(mealPlanRepositoryProvider.future);
+           final updatedPhotos = List<String>.from(target.mealPlan.photos)..add(image.path);
+           final updatedPlan = target.mealPlan.copyWith(photos: updatedPhotos, isDone: true);
+           await repo.save(updatedPlan);
+           
+           ref.invalidate(dailyMealPlanProvider);
+        } catch (e) {
+          if (mounted) {
+             ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('画像の保存に失敗しました: $e')));
+          }
+        }
+      }
+    }
+  }
+
+  void _onCook(List<MealPlanWithRecipe> items) {
+    if (items.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('レシピがありません')));
+      return;
+    }
+    
+    final recipes = items.map((e) => e.recipe).whereType<Recipe>().toList();
+    if (recipes.isNotEmpty) {
+      Navigator.of(context, rootNavigator: true).push(
+        MaterialPageRoute(
+          builder: (context) => CookingModeScreen(recipes: recipes),
+        ),
+      );
+    }
+  }
+
+  void _onAddDish(MealType type) {
+    final date = ref.read(selectedDateProvider);
+    SearchModal.show(
+      context,
+      initialDate: date,
+      initialMealType: type,
     );
   }
 }

@@ -20,6 +20,10 @@ _$RecipeImpl _$$RecipeImplFromJson(Map<String, dynamic> json) => _$RecipeImpl(
           : DateTime.parse(json['lastCookedAt'] as String),
       isDeleted: json['isDeleted'] as bool? ?? false,
       memo: json['memo'] as String? ?? '',
+      ingredients: (json['ingredients'] as List<dynamic>?)
+              ?.map((e) => RecipeIngredient.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          const [],
     );
 
 Map<String, dynamic> _$$RecipeImplToJson(_$RecipeImpl instance) =>
@@ -35,4 +39,5 @@ Map<String, dynamic> _$$RecipeImplToJson(_$RecipeImpl instance) =>
       'lastCookedAt': instance.lastCookedAt?.toIso8601String(),
       'isDeleted': instance.isDeleted,
       'memo': instance.memo,
+      'ingredients': instance.ingredients,
     };

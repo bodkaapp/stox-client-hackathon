@@ -1290,9 +1290,16 @@ class $MealPlansTable extends MealPlans
       defaultConstraints:
           GeneratedColumn.constraintIsAlways('CHECK ("is_done" IN (0, 1))'),
       defaultValue: const Constant(false));
+  static const VerificationMeta _photosMeta = const VerificationMeta('photos');
+  @override
+  late final GeneratedColumn<String> photos = GeneratedColumn<String>(
+      'photos', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: false,
+      defaultValue: const Constant('[]'));
   @override
   List<GeneratedColumn> get $columns =>
-      [id, originalId, recipeId, date, mealType, isDone];
+      [id, originalId, recipeId, date, mealType, isDone, photos];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -1336,6 +1343,10 @@ class $MealPlansTable extends MealPlans
       context.handle(_isDoneMeta,
           isDone.isAcceptableOrUnknown(data['is_done']!, _isDoneMeta));
     }
+    if (data.containsKey('photos')) {
+      context.handle(_photosMeta,
+          photos.isAcceptableOrUnknown(data['photos']!, _photosMeta));
+    }
     return context;
   }
 
@@ -1357,6 +1368,8 @@ class $MealPlansTable extends MealPlans
           .read(DriftSqlType.int, data['${effectivePrefix}meal_type'])!,
       isDone: attachedDatabase.typeMapping
           .read(DriftSqlType.bool, data['${effectivePrefix}is_done'])!,
+      photos: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}photos'])!,
     );
   }
 
@@ -1373,13 +1386,15 @@ class MealPlanEntity extends DataClass implements Insertable<MealPlanEntity> {
   final DateTime date;
   final int mealType;
   final bool isDone;
+  final String photos;
   const MealPlanEntity(
       {required this.id,
       required this.originalId,
       required this.recipeId,
       required this.date,
       required this.mealType,
-      required this.isDone});
+      required this.isDone,
+      required this.photos});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -1389,6 +1404,7 @@ class MealPlanEntity extends DataClass implements Insertable<MealPlanEntity> {
     map['date'] = Variable<DateTime>(date);
     map['meal_type'] = Variable<int>(mealType);
     map['is_done'] = Variable<bool>(isDone);
+    map['photos'] = Variable<String>(photos);
     return map;
   }
 
@@ -1400,6 +1416,7 @@ class MealPlanEntity extends DataClass implements Insertable<MealPlanEntity> {
       date: Value(date),
       mealType: Value(mealType),
       isDone: Value(isDone),
+      photos: Value(photos),
     );
   }
 
@@ -1413,6 +1430,7 @@ class MealPlanEntity extends DataClass implements Insertable<MealPlanEntity> {
       date: serializer.fromJson<DateTime>(json['date']),
       mealType: serializer.fromJson<int>(json['mealType']),
       isDone: serializer.fromJson<bool>(json['isDone']),
+      photos: serializer.fromJson<String>(json['photos']),
     );
   }
   @override
@@ -1425,6 +1443,7 @@ class MealPlanEntity extends DataClass implements Insertable<MealPlanEntity> {
       'date': serializer.toJson<DateTime>(date),
       'mealType': serializer.toJson<int>(mealType),
       'isDone': serializer.toJson<bool>(isDone),
+      'photos': serializer.toJson<String>(photos),
     };
   }
 
@@ -1434,7 +1453,8 @@ class MealPlanEntity extends DataClass implements Insertable<MealPlanEntity> {
           String? recipeId,
           DateTime? date,
           int? mealType,
-          bool? isDone}) =>
+          bool? isDone,
+          String? photos}) =>
       MealPlanEntity(
         id: id ?? this.id,
         originalId: originalId ?? this.originalId,
@@ -1442,6 +1462,7 @@ class MealPlanEntity extends DataClass implements Insertable<MealPlanEntity> {
         date: date ?? this.date,
         mealType: mealType ?? this.mealType,
         isDone: isDone ?? this.isDone,
+        photos: photos ?? this.photos,
       );
   MealPlanEntity copyWithCompanion(MealPlansCompanion data) {
     return MealPlanEntity(
@@ -1452,6 +1473,7 @@ class MealPlanEntity extends DataClass implements Insertable<MealPlanEntity> {
       date: data.date.present ? data.date.value : this.date,
       mealType: data.mealType.present ? data.mealType.value : this.mealType,
       isDone: data.isDone.present ? data.isDone.value : this.isDone,
+      photos: data.photos.present ? data.photos.value : this.photos,
     );
   }
 
@@ -1463,14 +1485,15 @@ class MealPlanEntity extends DataClass implements Insertable<MealPlanEntity> {
           ..write('recipeId: $recipeId, ')
           ..write('date: $date, ')
           ..write('mealType: $mealType, ')
-          ..write('isDone: $isDone')
+          ..write('isDone: $isDone, ')
+          ..write('photos: $photos')
           ..write(')'))
         .toString();
   }
 
   @override
   int get hashCode =>
-      Object.hash(id, originalId, recipeId, date, mealType, isDone);
+      Object.hash(id, originalId, recipeId, date, mealType, isDone, photos);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -1480,7 +1503,8 @@ class MealPlanEntity extends DataClass implements Insertable<MealPlanEntity> {
           other.recipeId == this.recipeId &&
           other.date == this.date &&
           other.mealType == this.mealType &&
-          other.isDone == this.isDone);
+          other.isDone == this.isDone &&
+          other.photos == this.photos);
 }
 
 class MealPlansCompanion extends UpdateCompanion<MealPlanEntity> {
@@ -1490,6 +1514,7 @@ class MealPlansCompanion extends UpdateCompanion<MealPlanEntity> {
   final Value<DateTime> date;
   final Value<int> mealType;
   final Value<bool> isDone;
+  final Value<String> photos;
   const MealPlansCompanion({
     this.id = const Value.absent(),
     this.originalId = const Value.absent(),
@@ -1497,6 +1522,7 @@ class MealPlansCompanion extends UpdateCompanion<MealPlanEntity> {
     this.date = const Value.absent(),
     this.mealType = const Value.absent(),
     this.isDone = const Value.absent(),
+    this.photos = const Value.absent(),
   });
   MealPlansCompanion.insert({
     this.id = const Value.absent(),
@@ -1505,6 +1531,7 @@ class MealPlansCompanion extends UpdateCompanion<MealPlanEntity> {
     required DateTime date,
     required int mealType,
     this.isDone = const Value.absent(),
+    this.photos = const Value.absent(),
   })  : originalId = Value(originalId),
         recipeId = Value(recipeId),
         date = Value(date),
@@ -1516,6 +1543,7 @@ class MealPlansCompanion extends UpdateCompanion<MealPlanEntity> {
     Expression<DateTime>? date,
     Expression<int>? mealType,
     Expression<bool>? isDone,
+    Expression<String>? photos,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -1524,6 +1552,7 @@ class MealPlansCompanion extends UpdateCompanion<MealPlanEntity> {
       if (date != null) 'date': date,
       if (mealType != null) 'meal_type': mealType,
       if (isDone != null) 'is_done': isDone,
+      if (photos != null) 'photos': photos,
     });
   }
 
@@ -1533,7 +1562,8 @@ class MealPlansCompanion extends UpdateCompanion<MealPlanEntity> {
       Value<String>? recipeId,
       Value<DateTime>? date,
       Value<int>? mealType,
-      Value<bool>? isDone}) {
+      Value<bool>? isDone,
+      Value<String>? photos}) {
     return MealPlansCompanion(
       id: id ?? this.id,
       originalId: originalId ?? this.originalId,
@@ -1541,6 +1571,7 @@ class MealPlansCompanion extends UpdateCompanion<MealPlanEntity> {
       date: date ?? this.date,
       mealType: mealType ?? this.mealType,
       isDone: isDone ?? this.isDone,
+      photos: photos ?? this.photos,
     );
   }
 
@@ -1565,6 +1596,9 @@ class MealPlansCompanion extends UpdateCompanion<MealPlanEntity> {
     if (isDone.present) {
       map['is_done'] = Variable<bool>(isDone.value);
     }
+    if (photos.present) {
+      map['photos'] = Variable<String>(photos.value);
+    }
     return map;
   }
 
@@ -1576,7 +1610,8 @@ class MealPlansCompanion extends UpdateCompanion<MealPlanEntity> {
           ..write('recipeId: $recipeId, ')
           ..write('date: $date, ')
           ..write('mealType: $mealType, ')
-          ..write('isDone: $isDone')
+          ..write('isDone: $isDone, ')
+          ..write('photos: $photos')
           ..write(')'))
         .toString();
   }
@@ -2901,6 +2936,304 @@ class NotificationsCompanion extends UpdateCompanion<NotificationEntity> {
   }
 }
 
+class $RecipeIngredientsTable extends RecipeIngredients
+    with TableInfo<$RecipeIngredientsTable, RecipeIngredientEntity> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $RecipeIngredientsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+      'id', aliasedName, false,
+      hasAutoIncrement: true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+  static const VerificationMeta _recipeIdMeta =
+      const VerificationMeta('recipeId');
+  @override
+  late final GeneratedColumn<String> recipeId = GeneratedColumn<String>(
+      'recipe_id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+      'name', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _amountMeta = const VerificationMeta('amount');
+  @override
+  late final GeneratedColumn<String> amount = GeneratedColumn<String>(
+      'amount', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _indexMeta = const VerificationMeta('index');
+  @override
+  late final GeneratedColumn<int> index = GeneratedColumn<int>(
+      'index', aliasedName, false,
+      type: DriftSqlType.int, requiredDuringInsert: true);
+  @override
+  List<GeneratedColumn> get $columns => [id, recipeId, name, amount, index];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'recipe_ingredients';
+  @override
+  VerificationContext validateIntegrity(
+      Insertable<RecipeIngredientEntity> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('recipe_id')) {
+      context.handle(_recipeIdMeta,
+          recipeId.isAcceptableOrUnknown(data['recipe_id']!, _recipeIdMeta));
+    } else if (isInserting) {
+      context.missing(_recipeIdMeta);
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+          _nameMeta, name.isAcceptableOrUnknown(data['name']!, _nameMeta));
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('amount')) {
+      context.handle(_amountMeta,
+          amount.isAcceptableOrUnknown(data['amount']!, _amountMeta));
+    } else if (isInserting) {
+      context.missing(_amountMeta);
+    }
+    if (data.containsKey('index')) {
+      context.handle(
+          _indexMeta, index.isAcceptableOrUnknown(data['index']!, _indexMeta));
+    } else if (isInserting) {
+      context.missing(_indexMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  RecipeIngredientEntity map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return RecipeIngredientEntity(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      recipeId: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}recipe_id'])!,
+      name: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
+      amount: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}amount'])!,
+      index: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}index'])!,
+    );
+  }
+
+  @override
+  $RecipeIngredientsTable createAlias(String alias) {
+    return $RecipeIngredientsTable(attachedDatabase, alias);
+  }
+}
+
+class RecipeIngredientEntity extends DataClass
+    implements Insertable<RecipeIngredientEntity> {
+  final int id;
+  final String recipeId;
+  final String name;
+  final String amount;
+  final int index;
+  const RecipeIngredientEntity(
+      {required this.id,
+      required this.recipeId,
+      required this.name,
+      required this.amount,
+      required this.index});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['recipe_id'] = Variable<String>(recipeId);
+    map['name'] = Variable<String>(name);
+    map['amount'] = Variable<String>(amount);
+    map['index'] = Variable<int>(index);
+    return map;
+  }
+
+  RecipeIngredientsCompanion toCompanion(bool nullToAbsent) {
+    return RecipeIngredientsCompanion(
+      id: Value(id),
+      recipeId: Value(recipeId),
+      name: Value(name),
+      amount: Value(amount),
+      index: Value(index),
+    );
+  }
+
+  factory RecipeIngredientEntity.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return RecipeIngredientEntity(
+      id: serializer.fromJson<int>(json['id']),
+      recipeId: serializer.fromJson<String>(json['recipeId']),
+      name: serializer.fromJson<String>(json['name']),
+      amount: serializer.fromJson<String>(json['amount']),
+      index: serializer.fromJson<int>(json['index']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'recipeId': serializer.toJson<String>(recipeId),
+      'name': serializer.toJson<String>(name),
+      'amount': serializer.toJson<String>(amount),
+      'index': serializer.toJson<int>(index),
+    };
+  }
+
+  RecipeIngredientEntity copyWith(
+          {int? id,
+          String? recipeId,
+          String? name,
+          String? amount,
+          int? index}) =>
+      RecipeIngredientEntity(
+        id: id ?? this.id,
+        recipeId: recipeId ?? this.recipeId,
+        name: name ?? this.name,
+        amount: amount ?? this.amount,
+        index: index ?? this.index,
+      );
+  RecipeIngredientEntity copyWithCompanion(RecipeIngredientsCompanion data) {
+    return RecipeIngredientEntity(
+      id: data.id.present ? data.id.value : this.id,
+      recipeId: data.recipeId.present ? data.recipeId.value : this.recipeId,
+      name: data.name.present ? data.name.value : this.name,
+      amount: data.amount.present ? data.amount.value : this.amount,
+      index: data.index.present ? data.index.value : this.index,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('RecipeIngredientEntity(')
+          ..write('id: $id, ')
+          ..write('recipeId: $recipeId, ')
+          ..write('name: $name, ')
+          ..write('amount: $amount, ')
+          ..write('index: $index')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, recipeId, name, amount, index);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is RecipeIngredientEntity &&
+          other.id == this.id &&
+          other.recipeId == this.recipeId &&
+          other.name == this.name &&
+          other.amount == this.amount &&
+          other.index == this.index);
+}
+
+class RecipeIngredientsCompanion
+    extends UpdateCompanion<RecipeIngredientEntity> {
+  final Value<int> id;
+  final Value<String> recipeId;
+  final Value<String> name;
+  final Value<String> amount;
+  final Value<int> index;
+  const RecipeIngredientsCompanion({
+    this.id = const Value.absent(),
+    this.recipeId = const Value.absent(),
+    this.name = const Value.absent(),
+    this.amount = const Value.absent(),
+    this.index = const Value.absent(),
+  });
+  RecipeIngredientsCompanion.insert({
+    this.id = const Value.absent(),
+    required String recipeId,
+    required String name,
+    required String amount,
+    required int index,
+  })  : recipeId = Value(recipeId),
+        name = Value(name),
+        amount = Value(amount),
+        index = Value(index);
+  static Insertable<RecipeIngredientEntity> custom({
+    Expression<int>? id,
+    Expression<String>? recipeId,
+    Expression<String>? name,
+    Expression<String>? amount,
+    Expression<int>? index,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (recipeId != null) 'recipe_id': recipeId,
+      if (name != null) 'name': name,
+      if (amount != null) 'amount': amount,
+      if (index != null) 'index': index,
+    });
+  }
+
+  RecipeIngredientsCompanion copyWith(
+      {Value<int>? id,
+      Value<String>? recipeId,
+      Value<String>? name,
+      Value<String>? amount,
+      Value<int>? index}) {
+    return RecipeIngredientsCompanion(
+      id: id ?? this.id,
+      recipeId: recipeId ?? this.recipeId,
+      name: name ?? this.name,
+      amount: amount ?? this.amount,
+      index: index ?? this.index,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (recipeId.present) {
+      map['recipe_id'] = Variable<String>(recipeId.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (amount.present) {
+      map['amount'] = Variable<String>(amount.value);
+    }
+    if (index.present) {
+      map['index'] = Variable<int>(index.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('RecipeIngredientsCompanion(')
+          ..write('id: $id, ')
+          ..write('recipeId: $recipeId, ')
+          ..write('name: $name, ')
+          ..write('amount: $amount, ')
+          ..write('index: $index')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -2913,6 +3246,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $IngredientAddHistoriesTable ingredientAddHistories =
       $IngredientAddHistoriesTable(this);
   late final $NotificationsTable notifications = $NotificationsTable(this);
+  late final $RecipeIngredientsTable recipeIngredients =
+      $RecipeIngredientsTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -2924,7 +3259,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
         searchHistories,
         userSettings,
         ingredientAddHistories,
-        notifications
+        notifications,
+        recipeIngredients
       ];
 }
 
@@ -3491,6 +3827,7 @@ typedef $$MealPlansTableCreateCompanionBuilder = MealPlansCompanion Function({
   required DateTime date,
   required int mealType,
   Value<bool> isDone,
+  Value<String> photos,
 });
 typedef $$MealPlansTableUpdateCompanionBuilder = MealPlansCompanion Function({
   Value<int> id,
@@ -3499,6 +3836,7 @@ typedef $$MealPlansTableUpdateCompanionBuilder = MealPlansCompanion Function({
   Value<DateTime> date,
   Value<int> mealType,
   Value<bool> isDone,
+  Value<String> photos,
 });
 
 class $$MealPlansTableFilterComposer
@@ -3527,6 +3865,9 @@ class $$MealPlansTableFilterComposer
 
   ColumnFilters<bool> get isDone => $composableBuilder(
       column: $table.isDone, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get photos => $composableBuilder(
+      column: $table.photos, builder: (column) => ColumnFilters(column));
 }
 
 class $$MealPlansTableOrderingComposer
@@ -3555,6 +3896,9 @@ class $$MealPlansTableOrderingComposer
 
   ColumnOrderings<bool> get isDone => $composableBuilder(
       column: $table.isDone, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get photos => $composableBuilder(
+      column: $table.photos, builder: (column) => ColumnOrderings(column));
 }
 
 class $$MealPlansTableAnnotationComposer
@@ -3583,6 +3927,9 @@ class $$MealPlansTableAnnotationComposer
 
   GeneratedColumn<bool> get isDone =>
       $composableBuilder(column: $table.isDone, builder: (column) => column);
+
+  GeneratedColumn<String> get photos =>
+      $composableBuilder(column: $table.photos, builder: (column) => column);
 }
 
 class $$MealPlansTableTableManager extends RootTableManager<
@@ -3617,6 +3964,7 @@ class $$MealPlansTableTableManager extends RootTableManager<
             Value<DateTime> date = const Value.absent(),
             Value<int> mealType = const Value.absent(),
             Value<bool> isDone = const Value.absent(),
+            Value<String> photos = const Value.absent(),
           }) =>
               MealPlansCompanion(
             id: id,
@@ -3625,6 +3973,7 @@ class $$MealPlansTableTableManager extends RootTableManager<
             date: date,
             mealType: mealType,
             isDone: isDone,
+            photos: photos,
           ),
           createCompanionCallback: ({
             Value<int> id = const Value.absent(),
@@ -3633,6 +3982,7 @@ class $$MealPlansTableTableManager extends RootTableManager<
             required DateTime date,
             required int mealType,
             Value<bool> isDone = const Value.absent(),
+            Value<String> photos = const Value.absent(),
           }) =>
               MealPlansCompanion.insert(
             id: id,
@@ -3641,6 +3991,7 @@ class $$MealPlansTableTableManager extends RootTableManager<
             date: date,
             mealType: mealType,
             isDone: isDone,
+            photos: photos,
           ),
           withReferenceMapper: (p0) => p0
               .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
@@ -4382,6 +4733,177 @@ typedef $$NotificationsTableProcessedTableManager = ProcessedTableManager<
     ),
     NotificationEntity,
     PrefetchHooks Function()>;
+typedef $$RecipeIngredientsTableCreateCompanionBuilder
+    = RecipeIngredientsCompanion Function({
+  Value<int> id,
+  required String recipeId,
+  required String name,
+  required String amount,
+  required int index,
+});
+typedef $$RecipeIngredientsTableUpdateCompanionBuilder
+    = RecipeIngredientsCompanion Function({
+  Value<int> id,
+  Value<String> recipeId,
+  Value<String> name,
+  Value<String> amount,
+  Value<int> index,
+});
+
+class $$RecipeIngredientsTableFilterComposer
+    extends Composer<_$AppDatabase, $RecipeIngredientsTable> {
+  $$RecipeIngredientsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get recipeId => $composableBuilder(
+      column: $table.recipeId, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get name => $composableBuilder(
+      column: $table.name, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get amount => $composableBuilder(
+      column: $table.amount, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get index => $composableBuilder(
+      column: $table.index, builder: (column) => ColumnFilters(column));
+}
+
+class $$RecipeIngredientsTableOrderingComposer
+    extends Composer<_$AppDatabase, $RecipeIngredientsTable> {
+  $$RecipeIngredientsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get recipeId => $composableBuilder(
+      column: $table.recipeId, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get name => $composableBuilder(
+      column: $table.name, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get amount => $composableBuilder(
+      column: $table.amount, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get index => $composableBuilder(
+      column: $table.index, builder: (column) => ColumnOrderings(column));
+}
+
+class $$RecipeIngredientsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $RecipeIngredientsTable> {
+  $$RecipeIngredientsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get recipeId =>
+      $composableBuilder(column: $table.recipeId, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get amount =>
+      $composableBuilder(column: $table.amount, builder: (column) => column);
+
+  GeneratedColumn<int> get index =>
+      $composableBuilder(column: $table.index, builder: (column) => column);
+}
+
+class $$RecipeIngredientsTableTableManager extends RootTableManager<
+    _$AppDatabase,
+    $RecipeIngredientsTable,
+    RecipeIngredientEntity,
+    $$RecipeIngredientsTableFilterComposer,
+    $$RecipeIngredientsTableOrderingComposer,
+    $$RecipeIngredientsTableAnnotationComposer,
+    $$RecipeIngredientsTableCreateCompanionBuilder,
+    $$RecipeIngredientsTableUpdateCompanionBuilder,
+    (
+      RecipeIngredientEntity,
+      BaseReferences<_$AppDatabase, $RecipeIngredientsTable,
+          RecipeIngredientEntity>
+    ),
+    RecipeIngredientEntity,
+    PrefetchHooks Function()> {
+  $$RecipeIngredientsTableTableManager(
+      _$AppDatabase db, $RecipeIngredientsTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$RecipeIngredientsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$RecipeIngredientsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$RecipeIngredientsTableAnnotationComposer(
+                  $db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            Value<String> recipeId = const Value.absent(),
+            Value<String> name = const Value.absent(),
+            Value<String> amount = const Value.absent(),
+            Value<int> index = const Value.absent(),
+          }) =>
+              RecipeIngredientsCompanion(
+            id: id,
+            recipeId: recipeId,
+            name: name,
+            amount: amount,
+            index: index,
+          ),
+          createCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            required String recipeId,
+            required String name,
+            required String amount,
+            required int index,
+          }) =>
+              RecipeIngredientsCompanion.insert(
+            id: id,
+            recipeId: recipeId,
+            name: name,
+            amount: amount,
+            index: index,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$RecipeIngredientsTableProcessedTableManager = ProcessedTableManager<
+    _$AppDatabase,
+    $RecipeIngredientsTable,
+    RecipeIngredientEntity,
+    $$RecipeIngredientsTableFilterComposer,
+    $$RecipeIngredientsTableOrderingComposer,
+    $$RecipeIngredientsTableAnnotationComposer,
+    $$RecipeIngredientsTableCreateCompanionBuilder,
+    $$RecipeIngredientsTableUpdateCompanionBuilder,
+    (
+      RecipeIngredientEntity,
+      BaseReferences<_$AppDatabase, $RecipeIngredientsTable,
+          RecipeIngredientEntity>
+    ),
+    RecipeIngredientEntity,
+    PrefetchHooks Function()>;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -4401,4 +4923,6 @@ class $AppDatabaseManager {
           _db, _db.ingredientAddHistories);
   $$NotificationsTableTableManager get notifications =>
       $$NotificationsTableTableManager(_db, _db.notifications);
+  $$RecipeIngredientsTableTableManager get recipeIngredients =>
+      $$RecipeIngredientsTableTableManager(_db, _db.recipeIngredients);
 }

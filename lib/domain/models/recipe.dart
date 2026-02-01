@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'recipe_ingredient.dart';
 
 part 'recipe.freezed.dart';
 part 'recipe.g.dart';
@@ -17,6 +18,7 @@ class Recipe with _$Recipe {
     DateTime? lastCookedAt,
     @Default(false) bool isDeleted,
     @Default('') String memo,
+    @Default([]) List<RecipeIngredient> ingredients,
   }) = _Recipe;
 
   factory Recipe.fromJson(Map<String, dynamic> json) => _$RecipeFromJson(json);

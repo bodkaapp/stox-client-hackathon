@@ -23,6 +23,15 @@ class Recipes extends Table {
   ];
 }
 
+@DataClassName('RecipeIngredientEntity')
+class RecipeIngredients extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get recipeId => text()(); // Links to Recipes.originalId
+  TextColumn get name => text()();
+  TextColumn get amount => text()();
+  IntColumn get index => integer()();
+}
+
 @DataClassName('IngredientEntity')
 class Ingredients extends Table {
   IntColumn get id => integer().autoIncrement()();
@@ -53,6 +62,7 @@ class MealPlans extends Table {
   DateTimeColumn get date => dateTime()();
   IntColumn get mealType => integer()(); // Enum index
   BoolColumn get isDone => boolean().withDefault(const Constant(false))();
+  TextColumn get photos => text().withDefault(const Constant('[]'))(); // JSON list of strings
 
   @override
   List<String> get customConstraints => [

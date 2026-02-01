@@ -7,7 +7,7 @@ part of 'ai_recipe_repository.dart';
 // **************************************************************************
 
 String _$aiRecipeRepositoryHash() =>
-    r'2753f53a730adf1c50479bb03e8de8048e562516';
+    r'81059bbb49e9806013c838f0f67f29bde938cdfd';
 
 /// See also [aiRecipeRepository].
 @ProviderFor(aiRecipeRepository)
