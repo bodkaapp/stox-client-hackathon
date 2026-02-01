@@ -90,7 +90,7 @@ class _WeeklyCalendarStripState extends State<WeeklyCalendarStrip> {
                     style: TextStyle(
                       fontSize: 10,
                       fontWeight: FontWeight.bold,
-                      color: isSelected ? Colors.white : (isHoliday || date.weekday == 7 ? Colors.red : (date.weekday == 6 ? Colors.blue : const Color(0xFF78716C))),
+                      color: isSelected ? Colors.white : (date.weekday == 7 ? Colors.red : (date.weekday == 6 ? Colors.blue : const Color(0xFF78716C))),
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -99,7 +99,7 @@ class _WeeklyCalendarStripState extends State<WeeklyCalendarStrip> {
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
-                      color: isSelected ? Colors.white : (isHoliday ? Colors.red : const Color(0xFF292524)),
+                      color: isSelected ? Colors.white : (isHoliday || date.weekday == 7 ? Colors.red : (date.weekday == 6 ? Colors.blue : const Color(0xFF292524))),
                     ),
                   ),
                 ],
