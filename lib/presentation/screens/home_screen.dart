@@ -216,7 +216,7 @@ class HomeScreen extends ConsumerWidget {
                                               children: [
                                                 Text(
                                                   recipe.title,
-                                                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.stoxText),
+                                                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.stoxText),
                                                   maxLines: 2,
                                                   overflow: TextOverflow.ellipsis,
                                                 ),

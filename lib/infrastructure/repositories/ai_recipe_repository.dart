@@ -4,12 +4,14 @@ import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:http/http.dart' as http;
 import 'package:html/parser.dart' as html_parser;
+import '../../config/app_constants.dart';
 import '../datasources/recipe_parser.dart';
 import '../../domain/models/ingredient.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 part 'ai_recipe_repository.g.dart';
 
-final String _apiKey = 'AIzaSyAioUT4nuQ8KXOdt2TfXODP0ALBPWlON-s';
+// final String _apiKey = 'AIzaSyAioUT4nuQ8KXOdt2TfXODP0ALBPWlON-s'; // Removed hardcoded key
 
 class AiRecipeRepository {
   final GenerativeModel _model;
@@ -329,6 +331,7 @@ class AiRecipeAnalysisResult {
 
 @Riverpod(keepAlive: true)
 AiRecipeRepository aiRecipeRepository(AiRecipeRepositoryRef ref) {
-  final model = GenerativeModel(model: 'gemini-1.5-flash', apiKey: _apiKey);
+  final apiKey = dotenv.env['GEMINI_API_KEY'] ?? '';
+  final model = GenerativeModel(model: AppConstants.geminiModel, apiKey: apiKey);
   return AiRecipeRepository(model);
 }
