@@ -143,6 +143,46 @@ class _ShoppingReceiptResultScreenState extends ConsumerState<ShoppingReceiptRes
 
   @override
   Widget build(BuildContext context) {
+    if (widget.receiptItems.isEmpty) {
+      return Scaffold(
+        backgroundColor: AppColors.stoxBackground,
+        appBar: AppBar(title: const Text('レシート解析結果'), centerTitle: true),
+        body: SafeArea(
+          child: Column(
+            children: [
+              const Expanded(
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                       Icon(Icons.warning_amber_rounded, size: 48, color: AppColors.stoxSubText),
+                       SizedBox(height: 16),
+                       Text('商品が見つかりませんでした。', style: TextStyle(color: AppColors.stoxSubText, fontWeight: FontWeight.bold)),
+                    ],
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.pop(context, 'retake'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.stoxPrimary,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    child: const Text('もう一回撮影する', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     return Scaffold(
       backgroundColor: AppColors.stoxBackground,
       appBar: AppBar(title: const Text('レシート解析結果'), centerTitle: true),

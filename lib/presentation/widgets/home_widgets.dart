@@ -8,6 +8,12 @@ import '../viewmodels/home_viewmodel.dart';
 import '../viewmodels/shopping_viewmodel.dart';
 import '../viewmodels/recipe_book_viewmodel.dart';
 import '../viewmodels/notification_viewmodel.dart';
+import '../../infrastructure/repositories/ai_recipe_repository.dart';
+import 'package:google_mlkit_document_scanner/google_mlkit_document_scanner.dart';
+import '../screens/shopping_receipt_result_screen.dart';
+import '../mixins/ad_manager_mixin.dart';
+import '../mixins/receipt_scanner_mixin.dart';
+import 'dart:io';
 
 // --- Home Header ---
 class HomeHeader extends ConsumerWidget {
@@ -341,11 +347,29 @@ class ShoppingBanner extends ConsumerWidget {
 }
 
 // --- Home Action Grid ---
-class HomeActionGrid extends ConsumerWidget {
+class HomeActionGrid extends ConsumerStatefulWidget {
   const HomeActionGrid({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<HomeActionGrid> createState() => _HomeActionGridState();
+}
+
+class _HomeActionGridState extends ConsumerState<HomeActionGrid> with AdManagerMixin, ReceiptScannerMixin {
+  
+  @override
+  void initState() {
+    super.initState();
+    loadRewardedAd();
+  }
+
+  Future<void> _handleScan() async {
+     final homeState = await ref.read(homeViewModelProvider.future);
+     final currentList = homeState.shoppingList;
+     await startReceiptScanFlow(currentContextList: currentList);
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
       child: GridView.count(
@@ -357,10 +381,7 @@ class HomeActionGrid extends ConsumerWidget {
         childAspectRatio: 2.5,
         children: [
           _buildActionCard(Icons.inventory_2, '在庫チェック', Colors.green.shade50, Colors.green.shade600, () => context.push('/stock')),
-          _buildActionCard(Icons.receipt_long, 'レシート登録', Colors.blue.shade50, Colors.blue.shade600, () {
-            // Mock Receipt Scan
-            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Receipt Scanning Mock')));
-          }),
+          _buildActionCard(Icons.receipt_long, 'レシート登録', Colors.blue.shade50, Colors.blue.shade600, () => _handleScan()),
           _buildActionCard(Icons.shopping_basket, '買い物モード', Colors.orange.shade50, Colors.orange.shade600, () {
              ref.read(shoppingViewModelProvider.notifier).startShopping();
              context.push('/shopping');

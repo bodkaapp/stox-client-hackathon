@@ -1,7 +1,5 @@
-import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import '../../config/app_colors.dart';
 import '../../domain/models/ingredient.dart';
@@ -12,6 +10,7 @@ import '../../infrastructure/repositories/ai_recipe_repository.dart';
 import '../mixins/ad_manager_mixin.dart';
 import 'shopping_receipt_result_screen.dart';
 import '../widgets/voice_shopping_modal.dart';
+import '../mixins/receipt_scanner_mixin.dart';
 
 class ShoppingScreen extends ConsumerStatefulWidget {
   const ShoppingScreen({super.key});
@@ -20,10 +19,10 @@ class ShoppingScreen extends ConsumerStatefulWidget {
   ConsumerState<ShoppingScreen> createState() => _ShoppingScreenState();
 }
 
-class _ShoppingScreenState extends ConsumerState<ShoppingScreen> with AdManagerMixin {
+class _ShoppingScreenState extends ConsumerState<ShoppingScreen> with AdManagerMixin, ReceiptScannerMixin {
   bool _isMenuOpen = false;
   bool _isAnalyzing = false;
-  final ImagePicker _picker = ImagePicker();
+  // final ImagePicker _picker = ImagePicker(); // Removed
 
   @override
   void initState() {
@@ -38,13 +37,29 @@ class _ShoppingScreenState extends ConsumerState<ShoppingScreen> with AdManagerM
   }
 
   Future<void> _onReceiptBtnTap() async {
-    // 1. Pick Image
+    // Close menu if open
+    if (_isMenuOpen) {
+      _toggleMenu();
+    }
+    
     try {
-      final XFile? photo = await _picker.pickImage(source: ImageSource.camera, maxWidth: 1024);
-      if (photo == null) return;
+      // 1. Get current shopping list
+      final shoppingState = await ref.read(shoppingViewModelProvider.future);
+      final currentList = [...shoppingState.toBuyList, ...shoppingState.inCartList];
 
-      // 2. Play Ad & Analyze
-      await _analyzeReceipt(photo);
+      // 2. Start Scan Flow
+      await startReceiptScanFlow(currentContextList: currentList);
+      
+      // Note: We might want to ensure Shopping Mode is OFF? 
+      // The button text says "お買い物モードを終わる" implies it should finish shopping mode?
+      // But the logic before didn't explicitly finish checking out, it just did analysis.
+      // If we want to finish shopping mode, we should do it.
+      // Ref Code: "レシートを撮影する（お買い物モードを終わる）"
+      // Let's ensure we are not in shopping mode? Or user manually toggles?
+      // The UI says "(お買い物モードを終わる)". 
+      // The previous implementation didn't seem to enforce it in _onReceiptBtnTap explicitly, 
+      // but let's check. It seems it just did analysis.
+      // I will leave it as is for now (just scanning logic).
 
     } catch (e) {
       if (mounted) {
@@ -55,78 +70,7 @@ class _ShoppingScreenState extends ConsumerState<ShoppingScreen> with AdManagerM
     }
   }
 
-  Future<void> _analyzeReceipt(XFile photo) async {
-    // 2. Show Ad
-    final success = await showAdAndExecute(
-      context: context,
-      preAdTitle: 'AI解析を開始',
-      preAdContent: 'レシートを解析して在庫リストと照合します。\n広告を再生することで、この機能を無料でご利用いただけます。',
-      confirmButtonText: '広告を見て解析する',
-      postAdMessage: '解析が完了しました。\n続けて結果を確認してください。',
-      onConsent: () {
-        setState(() {
-          _isAnalyzing = true;
-          // Close menu if open
-          if (_isMenuOpen) _isMenuOpen = false;
-        });
-      },
-    );
-
-    if (!success) {
-      setState(() {
-        _isAnalyzing = false;
-      });
-      return;
-    }
-
-    // 3. Analyze
-    try {
-      final bytes = await photo.readAsBytes();
-      final aiRepo = ref.read(aiRecipeRepositoryProvider);
-      
-      final receiptItems = await aiRepo.analyzeReceiptImage(
-        bytes,
-        mimeType: photo.mimeType,
-      );
-
-      // Get current shopping list for comparison
-      // We need the *latest* state.
-      final shoppingState = await ref.read(shoppingViewModelProvider.future);
-      final currentList = [...shoppingState.toBuyList, ...shoppingState.inCartList];
-
-      if (!mounted) return;
-
-      // 4. Navigate to Result Screen
-      final result = await Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => ShoppingReceiptResultScreen(
-            receiptItems: receiptItems,
-            currentShoppingList: currentList,
-          ),
-        ),
-      );
-
-      setState(() {
-        _isAnalyzing = false;
-      });
-
-      if (result == true) {
-         // Success
-      }
-
-    } catch (e) {
-      debugPrint('Receipt Analysis Error: $e');
-      setState(() {
-         _isAnalyzing = false;
-      });
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('解析エラー: $e')),
-        );
-      }
-    }
-  }
+  // _analyzeReceipt removed as it is replaced by ReceiptScannerMixin
 
   @override
   Widget build(BuildContext context) {
