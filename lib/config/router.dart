@@ -12,6 +12,8 @@ import '../presentation/screens/notification_list_screen.dart';
 import '../presentation/screens/splash_screen.dart';
 import '../presentation/screens/tutorial_screen.dart';
 import '../presentation/screens/account_settings_screen.dart';
+import '../presentation/screens/food_camera_screen.dart';
+import '../presentation/screens/menu_plan_screen.dart';
 
 part 'router.g.dart';
 
@@ -65,13 +67,23 @@ GoRouter router(RouterRef ref) {
         parentNavigatorKey: _rootNavigatorKey,
         builder: (context, state) => const NotificationListScreen(),
       ),
-      GoRoute(
+    GoRoute(
         path: '/account_settings',
         parentNavigatorKey: _rootNavigatorKey,
         pageBuilder: (context, state) => const MaterialPage(
           fullscreenDialog: true,
           child: AccountSettingsScreen(),
         ),
+      ),
+      GoRoute(
+        path: '/food_camera',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => const FoodCameraScreen(),
+      ),
+      GoRoute(
+        path: '/menu_plan',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => const MenuPlanScreen(),
       ),
     ],
   );

@@ -389,6 +389,12 @@ class _HomeActionGridState extends ConsumerState<HomeActionGrid> with AdManagerM
           _buildActionCard(Icons.menu_book, 'マイレシピ帳', Colors.purple.shade50, Colors.purple.shade600, () {
              context.push('/recipe_book');
           }),
+          _buildActionCard(Icons.camera_alt, '料理を撮影', Colors.pink.shade50, Colors.pink.shade600, () {
+             context.push('/food_camera');
+          }),
+          _buildActionCard(Icons.calendar_month, '献立計画表を見る', Colors.cyan.shade50, Colors.cyan.shade600, () {
+             context.push('/menu_plan');
+          }),
         ],
       ),
     );

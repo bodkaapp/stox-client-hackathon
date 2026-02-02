@@ -13,6 +13,7 @@ import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 import '../widgets/search_modal.dart';
 import 'cooking_mode_screen.dart';
+import 'food_camera_screen.dart';
 
 // -----------------------------------------------------------------------------
 // Models
@@ -702,7 +703,7 @@ class _MenuPlanScreenState extends ConsumerState<MenuPlanScreen> {
             TextButton(
               onPressed: () async {
                 Navigator.pop(context);
-                _pickAndSaveImage(items, ImageSource.camera);
+                _openFoodCameraAndSave(items);
               },
               child: const Text('撮影する'),
             ),
@@ -718,16 +719,34 @@ class _MenuPlanScreenState extends ConsumerState<MenuPlanScreen> {
     );
   }
 
+  Future<void> _openFoodCameraAndSave(List<MealPlanWithRecipe> items) async {
+    // Navigate to FoodCameraScreen and wait for result (image path)
+    final result = await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => const FoodCameraScreen(),
+      ),
+    );
+
+    if (result != null && result is String) {
+      await _saveImageToPlan(items, result);
+    }
+  }
+
   Future<void> _pickAndSaveImage(List<MealPlanWithRecipe> items, ImageSource source) async {
     final picker = ImagePicker();
     final XFile? image = await picker.pickImage(source: source);
 
     if (image != null) {
+      await _saveImageToPlan(items, image.path);
+    }
+  }
+
+  Future<void> _saveImageToPlan(List<MealPlanWithRecipe> items, String imagePath) async {
       if (items.isNotEmpty) {
         final target = items.first;
         try {
            final repo = await ref.read(mealPlanRepositoryProvider.future);
-           final updatedPhotos = List<String>.from(target.mealPlan.photos)..add(image.path);
+           final updatedPhotos = List<String>.from(target.mealPlan.photos)..add(imagePath);
            final updatedPlan = target.mealPlan.copyWith(photos: updatedPhotos, isDone: true);
            await repo.save(updatedPlan);
            
@@ -738,7 +757,6 @@ class _MenuPlanScreenState extends ConsumerState<MenuPlanScreen> {
           }
         }
       }
-    }
   }
 
   void _onCook(List<MealPlanWithRecipe> items) {
