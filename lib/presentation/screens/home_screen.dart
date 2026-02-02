@@ -9,7 +9,7 @@ class HomeScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFCFAF8), // background-light
+      backgroundColor: AppColors.stoxBackground,
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {

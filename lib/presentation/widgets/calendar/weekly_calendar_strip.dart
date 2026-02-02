@@ -53,7 +53,7 @@ class _WeeklyCalendarStripState extends State<WeeklyCalendarStrip> {
 
     return Container(
       height: 90,
-      color: const Color(0xFFFFF7ED).withOpacity(0.3), // slight tint
+      color: AppColors.stoxBannerBg, // Changed from orange tint
       child: ListView.builder(
         controller: _internalScrollController,
         scrollDirection: Axis.horizontal,

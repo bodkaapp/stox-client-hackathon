@@ -417,7 +417,7 @@ class _AiIngredientListScreenState extends ConsumerState<AiIngredientListScreen>
       padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
       decoration: BoxDecoration(
         color: AppColors.stoxBackground.withOpacity(0.95),
-        border: const Border(bottom: BorderSide(color: Color(0xFFFFEBD5))),
+        border: const Border(bottom: BorderSide(color: AppColors.stoxBorder)),
       ),
       child: Column(
         children: [
@@ -429,7 +429,7 @@ class _AiIngredientListScreenState extends ConsumerState<AiIngredientListScreen>
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: const Color(0xFFFFEBD5)),
+              border: Border.all(color: AppColors.stoxBorder),
             ),
             child: Row(
               children: [
@@ -437,7 +437,7 @@ class _AiIngredientListScreenState extends ConsumerState<AiIngredientListScreen>
                   width: 48,
                   height: 48,
                   decoration: BoxDecoration(
-                    color: const Color(0xFFFFF7ED),
+                    color: AppColors.stoxBannerBg,
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: widget.imageUrl != null
@@ -480,7 +480,7 @@ class _AiIngredientListScreenState extends ConsumerState<AiIngredientListScreen>
   Widget _buildIngredientList() {
     return ListView.separated(
       itemCount: _ingredients.length,
-      separatorBuilder: (context, index) => const Divider(height: 1, color: Color(0xFFF0E7DE)),
+      separatorBuilder: (context, index) => const Divider(height: 1, color: AppColors.stoxBorder),
       itemBuilder: (context, index) {
         final item = _ingredients[index];
         return _buildIngredientRow(index, item);
@@ -537,7 +537,7 @@ class _AiIngredientListScreenState extends ConsumerState<AiIngredientListScreen>
                _buildToggleButton(
                 label: '買う',
                 isSelected: selection == AiSelection.toBuy,
-                activeColor: Colors.deepOrangeAccent,
+                activeColor: AppColors.stoxAccent,
                 onTap: () => _updateSelection(index, AiSelection.toBuy),
               ),
               const SizedBox(width: 8),
@@ -569,7 +569,7 @@ class _AiIngredientListScreenState extends ConsumerState<AiIngredientListScreen>
           color: isSelected ? activeColor.withOpacity(0.1) : Colors.white,
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
-            color: isSelected ? activeColor.withOpacity(0.3) : const Color(0xFFE8DDCE),
+            color: isSelected ? activeColor.withOpacity(0.3) : AppColors.stoxBorder,
           ),
         ),
         child: Center(
@@ -600,7 +600,7 @@ class _AiIngredientListScreenState extends ConsumerState<AiIngredientListScreen>
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: AppColors.stoxBackground.withOpacity(0.95),
-        border: const Border(top: BorderSide(color: Color(0xFFFFEBD5))),
+        border: const Border(top: BorderSide(color: AppColors.stoxBorder)),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -615,7 +615,7 @@ class _AiIngredientListScreenState extends ConsumerState<AiIngredientListScreen>
                   backgroundColor: Colors.white,
                   foregroundColor: AppColors.stoxText,
                   elevation: 0,
-                  side: const BorderSide(color: Color(0xFFE8DDCE)),
+                  side: const BorderSide(color: AppColors.stoxBorder),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,

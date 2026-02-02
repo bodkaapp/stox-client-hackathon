@@ -6,10 +6,10 @@ class AppTheme {
     return ThemeData(
       useMaterial3: true,
       scaffoldBackgroundColor: AppColors.stoxBackground,
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: AppColors.stoxPrimary,
+      primaryColor: AppColors.stoxPrimary,
+      colorScheme: ColorScheme.light(
         primary: AppColors.stoxPrimary,
-        background: AppColors.stoxBackground,
+        secondary: AppColors.stoxAccent,
         surface: AppColors.stoxCardBg,
         onSurface: AppColors.stoxText,
         outline: AppColors.stoxBorder,
@@ -30,17 +30,27 @@ class AppTheme {
       appBarTheme: const AppBarTheme(
         backgroundColor: AppColors.stoxBackground,
         scrolledUnderElevation: 0,
-        centerTitle: true, 
+        centerTitle: true,
+        iconTheme: IconThemeData(color: AppColors.stoxPrimary),
+        titleTextStyle: TextStyle(
+          color: AppColors.stoxPrimary,
+          fontSize: 20,
+          fontWeight: FontWeight.bold,
+        ),
       ),
       bottomNavigationBarTheme: const BottomNavigationBarThemeData(
          backgroundColor: AppColors.stoxCardBg,
-         selectedItemColor: AppColors.stoxPrimary,
+         selectedItemColor: AppColors.stoxAccent,
          unselectedItemColor: AppColors.stoxSubText,
          type: BottomNavigationBarType.fixed,
       ),
+      floatingActionButtonTheme: const FloatingActionButtonThemeData(
+        backgroundColor: AppColors.stoxAccent,
+        foregroundColor: Colors.white,
+      ),
       inputDecorationTheme: const InputDecorationTheme(
         filled: true,
-        fillColor: AppColors.stoxCardBg,
+        fillColor: AppColors.stoxBannerBg, // Use light grey for inputs
         border: OutlineInputBorder(
           borderSide: BorderSide(color: AppColors.stoxBorder),
           borderRadius: BorderRadius.all(Radius.circular(8)),

@@ -71,7 +71,7 @@ class FlyerScreen extends StatelessWidget {
                     style: TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.bold,
-                        color: AppColors.stoxPrimary,
+                        color: AppColors.stoxAccent,
                         letterSpacing: 1.0),
                   ),
                 ],

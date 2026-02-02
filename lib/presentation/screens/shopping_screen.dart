@@ -324,7 +324,7 @@ class _ShoppingScreenState extends ConsumerState<ShoppingScreen> with AdManagerM
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                         decoration: BoxDecoration(
-                          color: AppColors.stoxPrimary,
+                          color: AppColors.stoxAccent,
                           borderRadius: BorderRadius.circular(30),
                           boxShadow: [
                             BoxShadow(
@@ -345,7 +345,7 @@ class _ShoppingScreenState extends ConsumerState<ShoppingScreen> with AdManagerM
                       ),
                       CustomPaint(
                         size: const Size(12, 6),
-                        painter: _TrianglePainter(color: AppColors.stoxPrimary),
+                        painter: _TrianglePainter(color: AppColors.stoxAccent),
                       ),
                     ],
                   ),
@@ -595,7 +595,7 @@ class _ShoppingScreenState extends ConsumerState<ShoppingScreen> with AdManagerM
                   ),
                   Text(
                     'SHOPPING LIST',
-                    style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.stoxPrimary, letterSpacing: 1.0),
+                    style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.stoxAccent, letterSpacing: 1.0),
                   ),
                 ],
               ),

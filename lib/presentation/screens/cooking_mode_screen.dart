@@ -134,7 +134,7 @@ class _CookingModeScreenState extends State<CookingModeScreen> with TickerProvid
               Container(
                 decoration: const BoxDecoration(
                   color: Colors.white,
-                  border: Border(bottom: BorderSide(color: Color(0xFFE7E5E4))), // stone-200
+                  border: Border(bottom: BorderSide(color: AppColors.stoxBorder)),
                 ),
                 child: TabBar(
                   controller: _tabController,
@@ -198,7 +198,7 @@ class _CookingModeScreenState extends State<CookingModeScreen> with TickerProvid
             child: Container(
               decoration: BoxDecoration(
                 border: Border(
-                  right: BorderSide(color: Colors.grey.shade300),
+                  right: BorderSide(color: AppColors.stoxBorder),
                 ),
               ),
               child: Column(
@@ -206,7 +206,7 @@ class _CookingModeScreenState extends State<CookingModeScreen> with TickerProvid
                   Container(
                     width: double.infinity,
                     padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-                    color: const Color(0xFFF5F5F4), // stone-100
+                    color: AppColors.stoxBannerBg, // stone-100
                     child: Text(
                       recipe.title,
                       style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppColors.stoxText),

@@ -287,7 +287,7 @@ class ShoppingBanner extends ConsumerWidget {
         data: (state) => Container(
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
-            color: const Color(0xFFFDF3E7), // bg-[#fdf3e7]
+            color: AppColors.stoxBannerBg, // Changed from hardcoded orange tint
             borderRadius: BorderRadius.circular(12),
             border: Border.all(color: AppColors.stoxPrimary.withOpacity(0.2)),
           ),

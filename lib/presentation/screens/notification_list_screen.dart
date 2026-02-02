@@ -14,7 +14,7 @@ class NotificationListScreen extends ConsumerWidget {
     final notificationsAsync = ref.watch(notificationStreamProvider);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFFCFAF8), // background-light
+      backgroundColor: AppColors.stoxBackground,
       body: SafeArea(
         child: Column(
           children: [
@@ -22,8 +22,8 @@ class NotificationListScreen extends ConsumerWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: BoxDecoration(
-                color: const Color(0xFFFCFAF8).withOpacity(0.95),
-                border: Border(bottom: BorderSide(color: const Color(0xFFE8DDCE).withOpacity(0.6))),
+                color: AppColors.stoxBackground.withOpacity(0.95),
+                border: Border(bottom: BorderSide(color: AppColors.stoxBorder)),
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -77,7 +77,7 @@ class NotificationListScreen extends ConsumerWidget {
                     padding: const EdgeInsets.only(bottom: 80),
                     itemCount: notifications.length,
                     separatorBuilder: (context, index) =>
-                        Divider(height: 1, color: const Color(0xFFE8DDCE).withOpacity(0.4)),
+                        Divider(height: 1, color: AppColors.stoxBorder),
                     itemBuilder: (context, index) {
                       return _NotificationItemView(item: notifications[index]);
                     },

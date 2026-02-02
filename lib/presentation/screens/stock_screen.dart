@@ -279,7 +279,7 @@ class _StockScreenState extends ConsumerState<StockScreen> {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                         decoration: BoxDecoration(
-                          color: AppColors.stoxPrimary,
+                          color: AppColors.stoxAccent,
                           borderRadius: BorderRadius.circular(30),
                           boxShadow: [
                             BoxShadow(
@@ -300,7 +300,7 @@ class _StockScreenState extends ConsumerState<StockScreen> {
                       ),
                       CustomPaint(
                         size: const Size(12, 6),
-                        painter: _TrianglePainter(color: AppColors.stoxPrimary),
+                        painter: _TrianglePainter(color: AppColors.stoxAccent),
                       ),
                     ],
                   ),
@@ -732,7 +732,7 @@ class _StockScreenState extends ConsumerState<StockScreen> {
                   ),
                   Text(
                     'INVENTORY LIST',
-                    style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.stoxPrimary, letterSpacing: 1.0),
+                    style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.stoxAccent, letterSpacing: 1.0),
                   ),
                 ],
               ),

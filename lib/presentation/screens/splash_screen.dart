@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../config/app_colors.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -38,7 +39,7 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFFF9F0),
+      backgroundColor: AppColors.stoxBackground,
       body: Stack(
         children: [
           // Background subtle circle decoration (top-left)
@@ -51,7 +52,7 @@ class _SplashScreenState extends State<SplashScreen> {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: const Color(0xFFFFF2E0),
+                  color: AppColors.stoxBannerBg,
                   width: 40,
                 ),
               ),
@@ -70,7 +71,7 @@ class _SplashScreenState extends State<SplashScreen> {
                   style: GoogleFonts.outfit(
                     fontSize: 48,
                     fontWeight: FontWeight.bold,
-                    color: const Color(0xFFEF9F27),
+                    color: AppColors.stoxPrimary,
                     letterSpacing: 4,
                   ),
                 ),
@@ -79,7 +80,7 @@ class _SplashScreenState extends State<SplashScreen> {
                   width: 40,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: const Color(0xFFFFECCC),
+                    color: AppColors.stoxAccent,
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -88,7 +89,7 @@ class _SplashScreenState extends State<SplashScreen> {
                   '家事悩み無くし系アプリ',
                   style: TextStyle(
                     fontSize: 14,
-                    color: Color(0xFF8A8A8A),
+                    color: AppColors.stoxSubText,
                     letterSpacing: 1.2,
                   ),
                 ),
@@ -108,7 +109,7 @@ class _SplashScreenState extends State<SplashScreen> {
                  decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   border: Border.all(
-                    color: const Color(0xFFFFF2E0),
+                    color: AppColors.stoxBannerBg,
                     width: 60,
                   ),
                 ),
@@ -124,11 +125,11 @@ class _SplashScreenState extends State<SplashScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    _buildDot(const Color(0xFFFFCC80)),
+                    _buildDot(AppColors.stoxSubText),
                     const SizedBox(width: 8),
-                    _buildDot(const Color(0xFFFFA726)),
+                    _buildDot(AppColors.stoxPrimary),
                     const SizedBox(width: 8),
-                    _buildDot(const Color(0xFFEF6C00)),
+                    _buildDot(AppColors.stoxAccent),
                   ],
                 ),
                 const SizedBox(height: 12),
@@ -159,8 +160,8 @@ class _SplashScreenState extends State<SplashScreen> {
           Container(
             width: 120,
             height: 120,
-            decoration: const BoxDecoration(
-              color: Color(0xFFFFF2E0),
+            decoration: BoxDecoration(
+              color: AppColors.stoxAccent.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
           ),
@@ -169,7 +170,7 @@ class _SplashScreenState extends State<SplashScreen> {
             width: 50,
             height: 60,
             decoration: BoxDecoration(
-              color: const Color(0xFFEF9F27),
+              color: AppColors.stoxPrimary,
               borderRadius: BorderRadius.circular(4),
             ),
             child: Column(
@@ -210,7 +211,7 @@ class _SplashScreenState extends State<SplashScreen> {
             child: Container(
               padding: const EdgeInsets.all(4),
               decoration: const BoxDecoration(
-                color: Color(0xFFEF9F27),
+                color: AppColors.stoxAccent,
                 shape: BoxShape.circle,
                 border: Border.fromBorderSide(BorderSide(color: Colors.white, width: 2)),
               ),

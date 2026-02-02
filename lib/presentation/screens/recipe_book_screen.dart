@@ -18,7 +18,7 @@ class RecipeBookScreen extends ConsumerWidget {
     final stateAsync = ref.watch(recipeBookViewModelProvider);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFFFFDFA), // bg-cream
+      backgroundColor: AppColors.stoxBackground, // bg-white
       body: SafeArea(
         bottom: false,
         child: LayoutBuilder(
@@ -185,7 +185,7 @@ class RecipeBookScreen extends ConsumerWidget {
                         ),
                         Text(
                           'RECIPE BOOK',
-                          style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.stoxPrimary, letterSpacing: 1.0),
+                          style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.stoxAccent, letterSpacing: 1.0),
                         ),
                       ],
                     ),
@@ -264,7 +264,7 @@ class RecipeBookScreen extends ConsumerWidget {
                               TextButton(
                                 onPressed: () {},
                                 style: TextButton.styleFrom(
-                                  foregroundColor: const Color(0xFFD97706), // amber-600
+                                  foregroundColor: AppColors.stoxAccent, // Changed to Accent
                                   textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
                                   tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                                 ),
@@ -372,7 +372,7 @@ class RecipeBookScreen extends ConsumerWidget {
                                       Expanded(
                                         flex: 1,
                                         child: Container(
-                                          color: const Color(0xFFFFF7ED),
+                                          color: AppColors.stoxBannerBg,
                                           child: (recipes.isNotEmpty && recipes[0].ogpImageUrl != null && recipes[0].ogpImageUrl!.isNotEmpty)
                                             ? Image.network(recipes[0].ogpImageUrl!, fit: BoxFit.cover, errorBuilder: (_,__,___) => const Icon(Icons.broken_image, color: AppColors.stoxPrimary))
                                             : const Center(child: Icon(Icons.restaurant, color: AppColors.stoxPrimary, size: 40)),
@@ -385,7 +385,7 @@ class RecipeBookScreen extends ConsumerWidget {
                                           children: [
                                             Expanded(
                                               child: Container(
-                                                color: const Color(0xFFFFF7ED),
+                                                color: AppColors.stoxBannerBg,
                                                   child: (recipes.length > 1 && recipes[1].ogpImageUrl != null && recipes[1].ogpImageUrl!.isNotEmpty)
                                                     ? Image.network(recipes[1].ogpImageUrl!, fit: BoxFit.cover, errorBuilder: (_,__,___) => const Icon(Icons.broken_image, color: AppColors.stoxPrimary))
                                                     : Center(child: Icon(Icons.restaurant, size: 24, color: AppColors.stoxPrimary.withOpacity(0.5))),
@@ -394,7 +394,7 @@ class RecipeBookScreen extends ConsumerWidget {
                                             const SizedBox(height: 2),
                                             Expanded(
                                               child: Container(
-                                                color: const Color(0xFFFFF7ED),
+                                                color: AppColors.stoxBannerBg,
                                                   child: (recipes.length > 2 && recipes[2].ogpImageUrl != null && recipes[2].ogpImageUrl!.isNotEmpty)
                                                     ? Image.network(recipes[2].ogpImageUrl!, fit: BoxFit.cover, errorBuilder: (_,__,___) => const Icon(Icons.broken_image, color: AppColors.stoxPrimary))
                                                     : Center(child: Icon(Icons.restaurant, size: 24, color: AppColors.stoxPrimary.withOpacity(0.5))),
@@ -468,7 +468,7 @@ class RecipeBookScreen extends ConsumerWidget {
           scrollDirection: Axis.horizontal,
           padding: const EdgeInsets.symmetric(horizontal: 20),
           children: [
-            _buildCategoryItem('主菜', Icons.restaurant, const Color(0xFFFFEDD5), const Color(0xFFEA580C)),
+            _buildCategoryItem('主菜', Icons.restaurant, AppColors.stoxBannerBg, AppColors.stoxPrimary),
             const SizedBox(width: 12),
             _buildCategoryItem('副菜', Icons.eco, const Color(0xFFF0FDF4), const Color(0xFF16A34A)),
             const SizedBox(width: 12),
@@ -748,7 +748,7 @@ class RecipeBookScreen extends ConsumerWidget {
                child: Container(
                 width: 60,
                 height: 60,
-                color: const Color(0xFFFFF7ED),
+                color: AppColors.stoxBannerBg,
                 child: (recipe.ogpImageUrl != null && recipe.ogpImageUrl!.isNotEmpty)
                   ? Image.network(recipe.ogpImageUrl!, fit: BoxFit.cover, errorBuilder: (_,__,___) => const Icon(Icons.broken_image, color: AppColors.stoxPrimary))
                   : const Icon(Icons.restaurant, color: AppColors.stoxPrimary),

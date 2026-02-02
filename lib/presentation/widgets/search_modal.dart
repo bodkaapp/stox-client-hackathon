@@ -8,6 +8,7 @@ import '../screens/recipe_search_results_screen.dart';
 import '../screens/manual_recipe_entry_screen.dart';
 
 import '../../domain/models/meal_plan.dart'; // Added import
+import '../components/ai_suggestion_button.dart';
 
 class SearchModal extends ConsumerStatefulWidget {
   final DateTime? initialDate;
@@ -153,7 +154,7 @@ class _SearchModalState extends ConsumerState<SearchModal> {
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(16),
                         boxShadow: [
-                           BoxShadow(color: const Color(0xFFFEF3C7), blurRadius: 2, offset: const Offset(0, 1)), // amber-100 shadow
+                           BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 2, offset: const Offset(0, 1)),
                         ],
                       ),
                       child: TextField(
@@ -163,22 +164,22 @@ class _SearchModalState extends ConsumerState<SearchModal> {
                         cursorColor: const Color(0xFFF59E0B),
                         style: const TextStyle(color: Color(0xFF292524)), // stone-800
                         decoration: InputDecoration(
-                          prefixIcon: const Icon(Icons.search, color: Color(0xFFF59E0B)), // amber-500
+                          prefixIcon: const Icon(Icons.search, color: AppColors.stoxSubText),
                           hintText: '', // Placeholder not shown in design when typed
                           filled: true,
                           fillColor: Colors.white,
                           contentPadding: const EdgeInsets.symmetric(vertical: 12),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(16),
-                            borderSide: const BorderSide(color: Color(0xFFF59E0B), width: 2),
+                            borderSide: const BorderSide(color: AppColors.stoxBorder, width: 2),
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(16),
-                            borderSide: const BorderSide(color: Color(0xFFF59E0B), width: 2),
+                            borderSide: const BorderSide(color: AppColors.stoxBorder, width: 2),
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(16),
-                            borderSide: const BorderSide(color: Color(0xFFF59E0B), width: 2),
+                            borderSide: const BorderSide(color: AppColors.stoxPrimary, width: 2),
                           ),
                         ),
                       ),
@@ -189,7 +190,7 @@ class _SearchModalState extends ConsumerState<SearchModal> {
                   TextButton(
                     onPressed: () => _submit(_controller.text),
                     style: TextButton.styleFrom(
-                      foregroundColor: const Color(0xFFD97706), // amber-600
+                      foregroundColor: AppColors.stoxPrimary,
                       padding: const EdgeInsets.symmetric(horizontal: 4),
                       minimumSize: Size.zero,
                       tapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -211,57 +212,11 @@ class _SearchModalState extends ConsumerState<SearchModal> {
                    // AI Button
                    Padding(
                      padding: const EdgeInsets.only(bottom: 24),
-                     child: Container(
-                       padding: const EdgeInsets.all(2), // Border width
-                       decoration: BoxDecoration(
-                         gradient: const LinearGradient(
-                           colors: [Color(0xFFFBBF24), Color(0xFFF97316)], // amber-400 to orange-500
-                         ),
-                         borderRadius: BorderRadius.circular(16),
-                         boxShadow: [
-                           BoxShadow(color: const Color(0xFFFFEDD5).withValues(alpha: 0.5), blurRadius: 10, offset: const Offset(0, 4)),
-                         ],
-                       ),
-                       child: Container(
-                         decoration: BoxDecoration(
-                           color: Colors.white,
-                           borderRadius: BorderRadius.circular(14),
-                           // ...
-                         ),
-                         // ... (rest of AI button content)
-                         child: Material(
-                           color: Colors.transparent,
-                           child: InkWell(
-                             onTap: () {
-                               // Empty function as requested
-                             },
-                             borderRadius: BorderRadius.circular(14),
-                             child: Padding(
-                               padding: const EdgeInsets.symmetric(vertical: 16),
-                               child: Row(
-                                 mainAxisAlignment: MainAxisAlignment.center,
-                                 children: [
-                                   const Icon(Icons.auto_awesome, color: Color(0xFFF97316), size: 24), // orange-500
-                                   const SizedBox(width: 8),
-                                   ShaderMask(
-                                     shaderCallback: (bounds) => const LinearGradient(
-                                       colors: [Color(0xFFD97706), Color(0xFFEA580C)], // amber-600 to orange-600
-                                     ).createShader(bounds),
-                                     child: const Text(
-                                       'AIに提案してもらう',
-                                       style: TextStyle(
-                                         color: Colors.white, // Mask requires white usually
-                                         fontSize: 14,
-                                         fontWeight: FontWeight.bold,
-                                       ),
-                                     ),
-                                   ),
-                                 ],
-                               ),
-                             ),
-                           ),
-                         ),
-                       ),
+                     child: AiSuggestionButton(
+                       onTap: () {
+                         // Empty function as requested
+                       },
+                       label: 'AIに提案してもらう',
                      ),
                    ),
 
