@@ -5,6 +5,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart'; // Added for context.go
+// import 'package:volume_controller/volume_controller.dart'; // Removed volume_controller
 import 'package:camera/camera.dart';
 import 'package:gal/gal.dart';
 import 'package:path_provider/path_provider.dart';
@@ -33,6 +34,9 @@ class _FoodCameraScreenState extends State<FoodCameraScreen> with WidgetsBinding
   bool _showFilterIndicator = false;
   bool _isBlurEnabled = false;
   Timer? _filterIndicatorTimer;
+  
+  // Shutter Effect
+  bool _showShutterFlash = false;
 
   // Filter Selection
   int _selectedFilterIndex = 0;
@@ -78,28 +82,50 @@ class _FoodCameraScreenState extends State<FoodCameraScreen> with WidgetsBinding
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    ServicesBinding.instance.keyboard.addHandler(_onKey);
+    
+    // Initialize volume listener via Native Channel
+    _enableVolumeListener();
+    
     _initializeCamera();
   }
 
-  bool _onKey(KeyEvent event) {
-    if (event is KeyDownEvent) {
-      if (event.physicalKey == PhysicalKeyboardKey.audioVolumeUp ||
-          event.physicalKey == PhysicalKeyboardKey.audioVolumeDown) {
-          // Trigger shutter
-          _takePicture();
-          return true; // Stop propagation (prevent volume change)
+  static const platform = MethodChannel('app.bodka.stox/volume');
+
+  Future<void> _enableVolumeListener() async {
+    try {
+      if (Platform.isAndroid) {
+         await platform.invokeMethod('enableVolumeListener');
+         platform.setMethodCallHandler((call) async {
+           if (call.method == 'onVolumeBtnPressed') {
+             _takePicture();
+           }
+         });
       }
+    } catch (e) {
+      debugPrint("Failed to enable volume listener: '$e'.");
     }
-    return false;
   }
+
+  // _onKey handler removed
+
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    ServicesBinding.instance.keyboard.removeHandler(_onKey);
+    _disableVolumeListener();
     _controller?.dispose();
     super.dispose();
+  }
+
+  Future<void> _disableVolumeListener() async {
+    try {
+      if (Platform.isAndroid) {
+         await platform.invokeMethod('disableVolumeListener');
+         platform.setMethodCallHandler(null);
+      }
+    } catch (e) {
+      debugPrint("Failed to disable volume listener: '$e'.");
+    }
   }
   
   @override
@@ -412,10 +438,22 @@ class _FoodCameraScreenState extends State<FoodCameraScreen> with WidgetsBinding
                          ),
                        ),
                      ),
-                ],
+                   // Shutter Flash Overlay
+                   IgnorePointer(
+                      child: AnimatedOpacity(
+                        opacity: _showShutterFlash ? 1.0 : 0.0,
+                        duration: const Duration(milliseconds: 100),
+                        child: Container(
+                          color: Colors.white.withOpacity(0.8),
+                        ),
+                      ),
+                   ),
+                  ],
+                ),
               ),
             ),
-          ),
+            
+
             
             const Spacer(),
             
@@ -585,6 +623,18 @@ class _FoodCameraScreenState extends State<FoodCameraScreen> with WidgetsBinding
 
   Future<void> _takePicture() async {
     try {
+      // Trigger Flash Effect
+      setState(() {
+         _showShutterFlash = true;
+      });
+      Future.delayed(const Duration(milliseconds: 100), () {
+        if(mounted) {
+           setState(() {
+             _showShutterFlash = false;
+           });
+        }
+      });
+      
       // 1. Capture widget as image
       final boundary = _repaintBoundaryKey.currentContext?.findRenderObject() as RenderRepaintBoundary?;
       if (boundary == null) return;
