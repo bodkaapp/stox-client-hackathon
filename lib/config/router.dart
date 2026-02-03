@@ -34,6 +34,11 @@ GoRouter router(RouterRef ref) {
         path: '/tutorial',
         builder: (context, state) => const TutorialScreen(),
       ),
+      GoRoute(
+        path: '/splash_view',
+        builder: (context, state) => const SplashScreen(autoNavigate: false),
+      ),
+
       ShellRoute(
         navigatorKey: _shellNavigatorKey,
         builder: (context, state, child) {

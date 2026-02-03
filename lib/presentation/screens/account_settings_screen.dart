@@ -130,6 +130,11 @@ class AccountSettingsScreen extends StatelessWidget {
                 title: 'AI解析結果画面確認 (Debug)',
                 onTap: () => _openDebugAiResult(context),
               ),
+              _buildSettingsTile(
+                icon: Icons.preview,
+                title: 'スプラッシュスクリーン確認',
+                onTap: () => context.push('/splash_view'),
+              ),
             ],
           ),
         ],

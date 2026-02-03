@@ -5,7 +5,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../config/app_colors.dart';
 
 class SplashScreen extends StatefulWidget {
-  const SplashScreen({super.key});
+  final bool autoNavigate;
+
+  const SplashScreen({
+    super.key,
+    this.autoNavigate = true,
+  });
 
   @override
   State<SplashScreen> createState() => _SplashScreenState();
@@ -15,7 +20,9 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    _checkFirstLaunch();
+    if (widget.autoNavigate) {
+      _checkFirstLaunch();
+    }
   }
 
   Future<void> _checkFirstLaunch() async {
