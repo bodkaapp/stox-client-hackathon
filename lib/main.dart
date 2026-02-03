@@ -38,10 +38,13 @@ class _MyAppState extends ConsumerState<MyApp> {
     quickActions.initialize((shortcutType) {
       if (shortcutType == 'add_shopping_item') {
         // Navigate to shopping screen with action=add
-        // We use a slight delay to ensure the app is fully mounted/router ready if cold start
-        // But usually callback fires when ready.
-        Future.delayed(const Duration(milliseconds: 100), () {
+        Future.delayed(const Duration(milliseconds: 500), () {
              ref.read(routerProvider).go('/shopping?action=add');
+        });
+      } else if (shortcutType == 'take_photo') {
+        // Navigate to food camera
+         Future.delayed(const Duration(milliseconds: 500), () {
+             ref.read(routerProvider).go('/food_camera');
         });
       }
     });
@@ -50,7 +53,12 @@ class _MyAppState extends ConsumerState<MyApp> {
       const ShortcutItem(
         type: 'add_shopping_item',
         localizedTitle: '買い物リストに追加',
-        // icon: 'ic_launcher', // TODO: Add appropriate drawable icon
+        // icon: 'ic_launcher',
+      ),
+      const ShortcutItem(
+        type: 'take_photo',
+        localizedTitle: '料理を撮影する',
+        // icon: 'ic_launcher',
       ),
     ]);
   }

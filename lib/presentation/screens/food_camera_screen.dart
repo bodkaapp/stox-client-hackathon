@@ -4,6 +4,7 @@ import 'dart:async'; // Added for Timer
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:go_router/go_router.dart'; // Added for context.go
 import 'package:camera/camera.dart';
 import 'package:gal/gal.dart';
 import 'package:path_provider/path_provider.dart';
@@ -22,6 +23,7 @@ class _FoodCameraScreenState extends State<FoodCameraScreen> with WidgetsBinding
   CameraController? _controller;
   List<CameraDescription>? _cameras;
   bool _isCameraInitialized = false;
+  bool _isInitializing = false; // Guard for parallel inits
   final GlobalKey _repaintBoundaryKey = GlobalKey();
   
   // Flash mode state
@@ -35,6 +37,8 @@ class _FoodCameraScreenState extends State<FoodCameraScreen> with WidgetsBinding
   // Filter Selection
   int _selectedFilterIndex = 0;
   File? _lastCapturedPhoto;
+
+  // final FocusNode _focusNode = FocusNode(); // Removed FocusNode
 
   final List<FilterItem> _filters = [
     FilterItem(name: 'Original', matrix: null),
@@ -74,49 +78,70 @@ class _FoodCameraScreenState extends State<FoodCameraScreen> with WidgetsBinding
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    ServicesBinding.instance.keyboard.addHandler(_onKey);
     _initializeCamera();
+  }
+
+  bool _onKey(KeyEvent event) {
+    if (event is KeyDownEvent) {
+      if (event.physicalKey == PhysicalKeyboardKey.audioVolumeUp ||
+          event.physicalKey == PhysicalKeyboardKey.audioVolumeDown) {
+          // Trigger shutter
+          _takePicture();
+          return true; // Stop propagation (prevent volume change)
+      }
+    }
+    return false;
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    ServicesBinding.instance.keyboard.removeHandler(_onKey);
     _controller?.dispose();
     super.dispose();
   }
   
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    // Re-initialize camera on resume if needed
-    if (_controller == null || !_controller!.value.isInitialized) {
-      return;
-    }
     if (state == AppLifecycleState.inactive) {
       _controller?.dispose();
+      if (mounted) {
+         setState(() => _isCameraInitialized = false);
+      }
     } else if (state == AppLifecycleState.resumed) {
       _initializeCamera();
     }
   }
 
   Future<void> _initializeCamera() async {
-    // Request permissions
-    final cameraStatus = await Permission.camera.request();
-    if (!cameraStatus.isGranted) {
-      if (mounted) {
-         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('カメラの権限が必要です')),
-        );
-        Navigator.of(context).pop();
-      }
-      return;
+    if (_isInitializing) return;
+    _isInitializing = true;
+
+    // Small delay to ensure lifecycle stability on quick launch
+    if (!mounted) {
+        _isInitializing = false;
+        return;
     }
 
     try {
+      // Request permissions
+      final cameraStatus = await Permission.camera.request();
+      if (!cameraStatus.isGranted) {
+        if (mounted) {
+           ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('カメラの権限が必要です')),
+          );
+          Navigator.of(context).pop();
+        }
+        return; // Finally block will handle flag reset
+      }
+
       _cameras = await availableCameras();
       if (_cameras != null && _cameras!.isNotEmpty) {
-        // Use the first camera (usually back)
         _controller = CameraController(
           _cameras![0],
-          ResolutionPreset.veryHigh, // High resolution for better preview
+          ResolutionPreset.veryHigh, 
           enableAudio: false,
           imageFormatGroup: Platform.isAndroid 
               ? ImageFormatGroup.jpeg 
@@ -138,79 +163,14 @@ class _FoodCameraScreenState extends State<FoodCameraScreen> with WidgetsBinding
       }
     } catch (e) {
       debugPrint('Error initializing camera: $e');
-    }
-  }
-  
-  Future<void> _toggleFlash() async {
-    if (_controller == null) return;
-    
-    FlashMode nextMode;
-    switch (_flashMode) {
-      case FlashMode.off:
-        nextMode = FlashMode.torch; // Continuous light is often better for food
-        break;
-      case FlashMode.torch:
-        nextMode = FlashMode.auto;
-        break;
-      case FlashMode.auto:
-        nextMode = FlashMode.off;
-        break;
-      default:
-        nextMode = FlashMode.off;
-    }
-    
-    try {
-      await _controller!.setFlashMode(nextMode);
-      setState(() {
-        _flashMode = nextMode;
-      });
-    } catch (e) {
-      debugPrint('Error setting flash mode: $e');
-    }
-  }
-
-  Future<void> _takePicture() async {
-    try {
-      // 1. Capture widget as image
-      final boundary = _repaintBoundaryKey.currentContext?.findRenderObject() as RenderRepaintBoundary?;
-      if (boundary == null) return;
-      
-      // Capture at pixel ratio 3.0 for higher quality screen grab
-      final image = await boundary.toImage(pixelRatio: 3.0);
-      final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
-      final pngBytes = byteData?.buffer.asUint8List();
-
-      if (pngBytes == null) return;
-
-      // 2. Save to temp file
-      final tempDir = await getTemporaryDirectory();
-      final timestamp = DateTime.now().millisecondsSinceEpoch;
-      final file = await File('${tempDir.path}/stox_food_$timestamp.png').create();
-      await file.writeAsBytes(pngBytes);
-
-      // 3. Save to Gallery
-      // Request storage permission if needed (handled by gal implicitly or we can check)
-      // Note: Gal handles permissions internally for the most part, but we can wrap in try-catch
-      await Gal.putImage(file.path, album: 'STOX');
-
+    } finally {
       if (mounted) {
-        setState(() {
-          _lastCapturedPhoto = file;
-        });
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('写真を保存しました')),
-        );
-      }
-    } catch (e) {
-      debugPrint('Error saving photo: $e');
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('保存に失敗しました: $e')),
-        );
+         _isInitializing = false;
       }
     }
   }
 
+  // ... _toggleFlash, _takePicture (keep as is)
 
   @override
   Widget build(BuildContext context) {
@@ -220,19 +180,12 @@ class _FoodCameraScreenState extends State<FoodCameraScreen> with WidgetsBinding
         body: Center(child: CircularProgressIndicator(color: Colors.white)),
       );
     }
+    
+
 
     final size = MediaQuery.of(context).size;
-    
+     
     // Determine the scale to cover the square area
-    // Camera preview is usually rectangular (e.g. 4:3 or 16:9). 
-    // We want to cover a 1:1 square.
-    // If we assume the camera is portrait (height > width), the width matches screen width.
-    // To fill a square width x width, we need to crop the height.
-    // Actually CameraPreview widget handles aspect ratio logic, but to "cover" a square, 
-    // we put it inside a container and use overflow alignment or Transform.scale.
-    // But since we are using RepaintBoundary on a square container, we need to ensure the preview fills it.
-    // Simple way: ClipRect with SizedOverflowBox or just standard Transform logic.
-    
     var cameraAspectRatio = _controller!.value.aspectRatio;
     // On many devices, aspect ratio is < 1 for portrait (e.g. 9/16).
     // If it's inverted structure (width/height > 1), we flip it.
@@ -240,36 +193,23 @@ class _FoodCameraScreenState extends State<FoodCameraScreen> with WidgetsBinding
        cameraAspectRatio = 1 / cameraAspectRatio;
     }
 
-    // We want to fill a Square (aspect ratio 1).
-    // If camera is taller than square (aspect < 1), we fit width => scale = 1 / aspect? NO.
-    // To cover a square with a narrower-than-square rectangle is impossible without zooming in severely?
-    // Wait, usually portrait camera is TALLER (e.g. 3:4 ratio i.e. 0.75).
-    // Square is 1:1. 
-    // To fill square, we match width, and clip top/bottom. 
-    // CameraPreview automatically tries to fit width?
-    
-    // Let's use simpler logic: 
-    // Stack -> Positioned.fill -> CameraPreview with BoxFit.cover logic via Transform.scale
-    
     var scale = 1.0;
     if (cameraAspectRatio > 1) {
-       // Landscape sensor?
        scale = cameraAspectRatio; 
     } else {
        // Portrait sensor (e.g. 0.75)
        // To fill 1.0, we need to scale by 1/ratio?
        // Actually CameraPreview maintains aspect ratio.
-       // If we force it into a square box, it might shrink to fit.
-       // We want it to COVER.
        scale = 1 / cameraAspectRatio; 
     }
 
     final currentMatrix = _filters[_selectedFilterIndex].matrix;
 
     return Scaffold(
-      backgroundColor: Colors.black,
-      body: SafeArea(
-        child: Column(
+        backgroundColor: Colors.black,
+        body: SafeArea(
+          // ... rest of the body
+          child: Column(
           children: [
              // 1. Top Controls
              Padding(
@@ -278,14 +218,21 @@ class _FoodCameraScreenState extends State<FoodCameraScreen> with WidgetsBinding
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   IconButton(
-                    icon: const Icon(Icons.close, color: Colors.white, size: 28),
-                    onPressed: () => Navigator.of(context).pop(_lastCapturedPhoto?.path),
+                    icon: const Icon(Icons.close, color: Colors.pinkAccent, size: 28),
+                    onPressed: () {
+                      if (Navigator.of(context).canPop()) {
+                        Navigator.of(context).pop(_lastCapturedPhoto?.path);
+                      } else {
+                        // If launched via Quick Action (no history), go to Home
+                        context.go('/');
+                      }
+                    },
                   ),
                   IconButton(
                     icon: Icon(
                       _flashMode == FlashMode.off ? Icons.flash_off : 
                       _flashMode == FlashMode.torch ? Icons.flash_on : Icons.flash_auto,
-                      color: Colors.white, 
+                      color: Colors.pinkAccent, 
                       size: 28
                     ),
                     onPressed: _toggleFlash,
@@ -300,9 +247,10 @@ class _FoodCameraScreenState extends State<FoodCameraScreen> with WidgetsBinding
             SizedBox(
               width: size.width,
               height: size.width,
-              child: Stack(
-                fit: StackFit.expand,
-                children: [
+              child: ClipRect(
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
                    // Layer A: Capture Boundary (Camera + Filters + Watermark)
                    RepaintBoundary(
                     key: _repaintBoundaryKey,
@@ -467,6 +415,7 @@ class _FoodCameraScreenState extends State<FoodCameraScreen> with WidgetsBinding
                 ],
               ),
             ),
+          ),
             
             const Spacer(),
             
@@ -605,6 +554,79 @@ class _FoodCameraScreenState extends State<FoodCameraScreen> with WidgetsBinding
       ),
     );
   }
+  
+  Future<void> _toggleFlash() async {
+    if (_controller == null) return;
+    
+    FlashMode nextMode;
+    switch (_flashMode) {
+      case FlashMode.off:
+        nextMode = FlashMode.torch; // Continuous light is often better for food
+        break;
+      case FlashMode.torch:
+        nextMode = FlashMode.auto;
+        break;
+      case FlashMode.auto:
+        nextMode = FlashMode.off;
+        break;
+      default:
+        nextMode = FlashMode.off;
+    }
+    
+    try {
+      await _controller!.setFlashMode(nextMode);
+      setState(() {
+        _flashMode = nextMode;
+      });
+    } catch (e) {
+      debugPrint('Error setting flash mode: $e');
+    }
+  }
+
+  Future<void> _takePicture() async {
+    try {
+      // 1. Capture widget as image
+      final boundary = _repaintBoundaryKey.currentContext?.findRenderObject() as RenderRepaintBoundary?;
+      if (boundary == null) return;
+      
+      // Capture at pixel ratio 3.0 for higher quality screen grab
+      final image = await boundary.toImage(pixelRatio: 3.0);
+      final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+      final pngBytes = byteData?.buffer.asUint8List();
+
+      if (pngBytes == null) return;
+
+      // 2. Save to temp file
+      final tempDir = await getTemporaryDirectory();
+      final timestamp = DateTime.now().millisecondsSinceEpoch;
+      final file = await File('${tempDir.path}/stox_food_$timestamp.png').create();
+      await file.writeAsBytes(pngBytes);
+
+      // 3. Save to Gallery
+      // Request storage permission if needed (handled by gal implicitly or we can check)
+      // Note: Gal handles permissions internally for the most part, but we can wrap in try-catch
+      await Gal.putImage(file.path, album: 'STOX');
+
+      if (mounted) {
+        setState(() {
+          _lastCapturedPhoto = file;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('写真を保存しました')),
+        );
+      }
+    } catch (e) {
+      debugPrint('Error saving photo: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('保存に失敗しました: $e')),
+        );
+      }
+    }
+  }
+
+
+
   
   String _getFormattedDate() {
     final now = DateTime.now();
