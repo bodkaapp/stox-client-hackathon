@@ -10,9 +10,16 @@ part 'recipe_book_viewmodel.g.dart';
 @riverpod
 class RecipeBookViewModel extends _$RecipeBookViewModel {
   @override
-  Future<List<Recipe>> build() async {
-    final repo = await ref.watch(recipeRepositoryProvider.future);
-    return repo.getAll();
+  Stream<List<Recipe>> build() {
+    final repo = ref.watch(recipeRepositoryProvider).valueOrNull;
+    if (repo == null) {
+      // Return empty stream or handle loading if repo is strictly async initially
+      // Since repo provider is Future, we might yield empty or effectively wait.
+      // However, usually repositories are initialized quickly.
+      // Better approach: wrap in stream.
+      return Stream.value([]);
+    }
+    return repo.watchAll();
   }
   
   Future<void> addSampleRecipe() async {
@@ -24,7 +31,7 @@ class RecipeBookViewModel extends _$RecipeBookViewModel {
        ogpImageUrl: 'https://example.com/image.png',
        createdAt: DateTime.now(),
      ));
-     ref.invalidateSelf();
+     // ref.invalidateSelf(); // No longer needed with Stream
   }
 }
 
@@ -62,43 +69,42 @@ Stream<List<Recipe>> todaysMenu(TodaysMenuRef ref) async* {
 }
 
 @riverpod
-Future<List<DailyMenu>> pastMenus(PastMenusRef ref) async {
+Stream<List<DailyMenu>> pastMenus(PastMenusRef ref) async* {
   final mealPlanRepo = await ref.watch(mealPlanRepositoryProvider.future);
   final recipeRepo = await ref.watch(recipeRepositoryProvider.future);
 
-  // Fetch past 20 meal plans
-  final plans = await mealPlanRepo.getEarlierThanDate(DateTime.now());
-
-  // Group by date
-  final grouped = <DateTime, List<MealPlan>>{};
-  for (final plan in plans) {
-    // Normalize date to YMD
-    final date = DateTime(plan.date.year, plan.date.month, plan.date.day);
-    if (!grouped.containsKey(date)) {
-      grouped[date] = [];
+  // Watch past 20 meal plans
+  yield* mealPlanRepo.watchEarlierThanDate(DateTime.now()).asyncMap((plans) async {
+    // Group by date
+    final grouped = <DateTime, List<MealPlan>>{};
+    for (final plan in plans) {
+      // Normalize date to YMD
+      final date = DateTime(plan.date.year, plan.date.month, plan.date.day);
+      if (!grouped.containsKey(date)) {
+        grouped[date] = [];
+      }
+      grouped[date]!.add(plan);
     }
-    grouped[date]!.add(plan);
-  }
 
-  final results = <DailyMenu>[];
-  for (final entry in grouped.entries) {
-    final date = entry.key;
-    final dayPlans = entry.value;
+    final results = <DailyMenu>[];
+    for (final entry in grouped.entries) {
+      final date = entry.key;
+      final dayPlans = entry.value;
 
-    final recipes = <Recipe>[];
-    for (final plan in dayPlans) {
-      final recipe = await recipeRepo.getById(plan.recipeId);
-      if (recipe != null) {
-        recipes.add(recipe);
+      final recipes = <Recipe>[];
+      for (final plan in dayPlans) {
+        final recipe = await recipeRepo.getById(plan.recipeId);
+        if (recipe != null) {
+          recipes.add(recipe);
+        }
+      }
+
+      if (recipes.isNotEmpty) {
+        results.add(DailyMenu(date: date, recipes: recipes));
       }
     }
-
-    if (recipes.isNotEmpty) {
-      results.add(DailyMenu(date: date, recipes: recipes));
-    }
-  }
-
-  return results;
+    return results;
+  });
 }
 
 class DailyMenu {

@@ -60,6 +60,15 @@ class DriftMealPlanRepository implements MealPlanRepository {
         ..where((t) => t.date.isBetweenValues(start, end))
       ).watch().map((entities) => entities.map((e) => e.toDomain()).toList());
   }
+
+  @override
+  Stream<List<MealPlan>> watchEarlierThanDate(DateTime date, {int limit = 20}) {
+    return (db.select(db.mealPlans)
+      ..where((t) => t.date.isSmallerThanValue(date))
+      ..orderBy([(t) => OrderingTerm(expression: t.date, mode: OrderingMode.desc)])
+      ..limit(limit)
+    ).watch().map((entities) => entities.map((e) => e.toDomain()).toList());
+  }
 }
 
 // Mappers

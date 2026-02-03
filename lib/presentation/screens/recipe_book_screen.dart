@@ -7,6 +7,7 @@ import 'menu_plan_screen.dart';
 import '../widgets/search_modal.dart';
 import 'recently_viewed_recipes_screen.dart';
 import 'cooking_mode_screen.dart';
+import 'recipe_search_results_screen.dart';
 import '../../domain/models/recipe.dart';
 
 class RecipeBookScreen extends ConsumerWidget {
@@ -197,8 +198,34 @@ class RecipeBookScreen extends ConsumerWidget {
             // Search Bar
             TextField(
               readOnly: true,
-              onTap: () {
-                SearchModal.show(context);
+              onTap: () async {
+                final intent = await SearchModal.show(context);
+                if (intent is UrlSearchIntent) {
+                  if (context.mounted) {
+                    await Navigator.of(context, rootNavigator: true).push(
+                      MaterialPageRoute(
+                        builder: (context) => RecipeWebViewScreen(
+                          url: intent.url,
+                          title: '読み込み中...',
+                        ),
+                      ),
+                    );
+                    // No need to manually refresh if ViewModel is stream-based, 
+                    // but if there are other side effects or if stream isn't fully perfect yet, it's safe.
+                    // However, with Stream, it should auto-update.
+                  }
+                } else if (intent is TextSearchIntent) {
+                  if (context.mounted) {
+                    await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => RecipeSearchResultsScreen(
+                          searchQuery: intent.query,
+                        ),
+                      ),
+                    );
+                  }
+                }
               },
               decoration: InputDecoration(
                 hintText: 'レシピを検索またはURLを入力',

@@ -22,11 +22,11 @@ final todaysMenuProvider = AutoDisposeStreamProvider<List<Recipe>>.internal(
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef TodaysMenuRef = AutoDisposeStreamProviderRef<List<Recipe>>;
-String _$pastMenusHash() => r'6fadf323b974d28f4a8ff79f674ce42e93dbf1f4';
+String _$pastMenusHash() => r'bee904e46b80f155aeb708e9fd30733db19fef07';
 
 /// See also [pastMenus].
 @ProviderFor(pastMenus)
-final pastMenusProvider = AutoDisposeFutureProvider<List<DailyMenu>>.internal(
+final pastMenusProvider = AutoDisposeStreamProvider<List<DailyMenu>>.internal(
   pastMenus,
   name: r'pastMenusProvider',
   debugGetCreateSourceHash:
@@ -37,13 +37,13 @@ final pastMenusProvider = AutoDisposeFutureProvider<List<DailyMenu>>.internal(
 
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
-typedef PastMenusRef = AutoDisposeFutureProviderRef<List<DailyMenu>>;
+typedef PastMenusRef = AutoDisposeStreamProviderRef<List<DailyMenu>>;
 String _$recipeBookViewModelHash() =>
-    r'87a3898c69af24c39ab76e7f61f24495d04de663';
+    r'4b1eab79de84821d999add78181e4d462aff8588';
 
 /// See also [RecipeBookViewModel].
 @ProviderFor(RecipeBookViewModel)
-final recipeBookViewModelProvider = AutoDisposeAsyncNotifierProvider<
+final recipeBookViewModelProvider = AutoDisposeStreamNotifierProvider<
     RecipeBookViewModel, List<Recipe>>.internal(
   RecipeBookViewModel.new,
   name: r'recipeBookViewModelProvider',
@@ -54,6 +54,6 @@ final recipeBookViewModelProvider = AutoDisposeAsyncNotifierProvider<
   allTransitiveDependencies: null,
 );
 
-typedef _$RecipeBookViewModel = AutoDisposeAsyncNotifier<List<Recipe>>;
+typedef _$RecipeBookViewModel = AutoDisposeStreamNotifier<List<Recipe>>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

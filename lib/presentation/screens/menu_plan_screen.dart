@@ -14,6 +14,7 @@ import 'package:image_picker/image_picker.dart';
 import '../widgets/search_modal.dart';
 import 'cooking_mode_screen.dart';
 import 'food_camera_screen.dart';
+import 'recipe_search_results_screen.dart';
 
 // -----------------------------------------------------------------------------
 // Models
@@ -32,22 +33,22 @@ class MealPlanWithRecipe {
 
 final selectedDateProvider = StateProvider<DateTime>((ref) => DateTime.now());
 
-final dailyMealPlanProvider = FutureProvider.autoDispose.family<List<MealPlanWithRecipe>, DateTime>((ref, date) async {
+final dailyMealPlanProvider = StreamProvider.autoDispose.family<List<MealPlanWithRecipe>, DateTime>((ref, date) async* {
+  // Use async* to yield stream events
+  
+  // Wait for repositories to be available
   final mealPlanRepo = await ref.watch(mealPlanRepositoryProvider.future);
   final recipeRepo = await ref.watch(recipeRepositoryProvider.future);
 
-  // For simplicity:
-  final startOfDay = DateTime(date.year, date.month, date.day);
-  final endOfDay = DateTime(date.year, date.month, date.day, 23, 59, 59);
-  
-  final mealPlans = await mealPlanRepo.getByDateRange(startOfDay, endOfDay);
-  
-  final results = <MealPlanWithRecipe>[];
-  for (final plan in mealPlans) {
-    final recipe = await recipeRepo.getById(plan.recipeId);
-    results.add(MealPlanWithRecipe(mealPlan: plan, recipe: recipe));
-  }
-  return results;
+  // Watch for changes in meal plans for the date
+  yield* mealPlanRepo.watchByDate(date).asyncMap((mealPlans) async {
+    final results = <MealPlanWithRecipe>[];
+    for (final plan in mealPlans) {
+      final recipe = await recipeRepo.getById(plan.recipeId);
+      results.add(MealPlanWithRecipe(mealPlan: plan, recipe: recipe));
+    }
+    return results;
+  });
 });
 
 
@@ -750,7 +751,7 @@ class _MenuPlanScreenState extends ConsumerState<MenuPlanScreen> {
            final updatedPlan = target.mealPlan.copyWith(photos: updatedPhotos, isDone: true);
            await repo.save(updatedPlan);
            
-           ref.invalidate(dailyMealPlanProvider);
+           // ref.invalidate(dailyMealPlanProvider); // No longer needed with StreamProvider
         } catch (e) {
           if (mounted) {
              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('画像の保存に失敗しました: $e')));
@@ -775,12 +776,38 @@ class _MenuPlanScreenState extends ConsumerState<MenuPlanScreen> {
     }
   }
 
-  void _onAddDish(MealType type) {
+  void _onAddDish(MealType type) async {
     final date = ref.read(selectedDateProvider);
-    SearchModal.show(
+    final intent = await SearchModal.show(
       context,
       initialDate: date,
       initialMealType: type,
     );
+
+    if (!mounted) return;
+
+    if (intent is UrlSearchIntent) {
+      await Navigator.of(context, rootNavigator: true).push(
+        MaterialPageRoute(
+          builder: (context) => RecipeWebViewScreen(
+            url: intent.url,
+            title: '読み込み中...',
+            initialDate: date,
+            initialMealType: type,
+          ),
+        ),
+      );
+    } else if (intent is TextSearchIntent) {
+      await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => RecipeSearchResultsScreen(
+            searchQuery: intent.query,
+            initialDate: date,
+            initialMealType: type,
+          ),
+        ),
+      );
+    }
   }
 }

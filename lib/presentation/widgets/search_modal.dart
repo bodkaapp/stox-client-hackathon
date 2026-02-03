@@ -16,8 +16,8 @@ class SearchModal extends ConsumerStatefulWidget {
 
   const SearchModal({super.key, this.initialDate, this.initialMealType});
 
-  static Future<void> show(BuildContext context, {DateTime? initialDate, MealType? initialMealType}) {
-    return showGeneralDialog(
+  static Future<SearchIntent?> show(BuildContext context, {DateTime? initialDate, MealType? initialMealType}) {
+    return showGeneralDialog<SearchIntent>(
       context: context,
       barrierDismissible: true,
       barrierLabel: 'Search',
@@ -41,6 +41,19 @@ class SearchModal extends ConsumerStatefulWidget {
 
   @override
   ConsumerState<SearchModal> createState() => _SearchModalState();
+}
+
+// Define specific intents for clarity
+abstract class SearchIntent {}
+
+class UrlSearchIntent extends SearchIntent {
+  final String url;
+  UrlSearchIntent(this.url);
+}
+
+class TextSearchIntent extends SearchIntent {
+  final String query;
+  TextSearchIntent(this.query);
 }
 
 class _SearchModalState extends ConsumerState<SearchModal> {
@@ -77,30 +90,11 @@ class _SearchModalState extends ConsumerState<SearchModal> {
        ref.read(searchHistoryViewModelProvider.notifier).add(trimmedValue);
     }
 
-    Navigator.pop(context); // Close modal first
-
+    // Return the intent
     if (isUrl) {
-      Navigator.of(context, rootNavigator: true).push(
-        MaterialPageRoute(
-          builder: (context) => RecipeWebViewScreen(
-            url: trimmedValue,
-            title: '読み込み中...',
-            initialDate: widget.initialDate,
-            initialMealType: widget.initialMealType,
-          ),
-        ),
-      ).then((_) => ref.refresh(recipeBookViewModelProvider));
+      Navigator.pop(context, UrlSearchIntent(trimmedValue));
     } else {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => RecipeSearchResultsScreen(
-            searchQuery: trimmedValue,
-            initialDate: widget.initialDate,
-            initialMealType: widget.initialMealType,
-          ),
-        ),
-      ).then((_) => ref.refresh(recipeBookViewModelProvider));
+      Navigator.pop(context, TextSearchIntent(trimmedValue));
     }
   }
 
