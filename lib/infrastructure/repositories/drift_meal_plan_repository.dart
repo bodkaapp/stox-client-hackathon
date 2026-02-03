@@ -69,6 +69,16 @@ class DriftMealPlanRepository implements MealPlanRepository {
       ..limit(limit)
     ).watch().map((entities) => entities.map((e) => e.toDomain()).toList());
   }
+
+  @override
+  Future<List<MealPlan>> getWithPhotos({int limit = 50, int offset = 0}) async {
+    final entities = await (db.select(db.mealPlans)
+      ..where((t) => t.photos.isNotValue('[]'))
+      ..orderBy([(t) => OrderingTerm(expression: t.date, mode: OrderingMode.desc)])
+      ..limit(limit, offset: offset)
+    ).get();
+    return entities.map((e) => e.toDomain()).toList();
+  }
 }
 
 // Mappers

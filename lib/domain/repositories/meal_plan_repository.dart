@@ -7,4 +7,5 @@ abstract class MealPlanRepository {
   Future<void> delete(String id);
   Stream<List<MealPlan>> watchByDate(DateTime date);
   Stream<List<MealPlan>> watchEarlierThanDate(DateTime date, {int limit = 20});
+  Future<List<MealPlan>> getWithPhotos({int limit = 50, int offset = 0});
 }

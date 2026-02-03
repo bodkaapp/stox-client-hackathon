@@ -13,64 +13,66 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter/rendering.dart';
 import 'photo_viewer_screen.dart';
 
-class FoodCameraScreen extends StatefulWidget {
-  const FoodCameraScreen({super.key});
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:uuid/uuid.dart';
+import '../../domain/models/meal_plan.dart';
+import '../../infrastructure/repositories/drift_meal_plan_repository.dart';
+
+class FoodCameraScreen extends ConsumerStatefulWidget {
+  final bool createMealPlanOnCapture;
+
+  const FoodCameraScreen({super.key, this.createMealPlanOnCapture = false});
 
   @override
-  State<FoodCameraScreen> createState() => _FoodCameraScreenState();
+  ConsumerState<FoodCameraScreen> createState() => _FoodCameraScreenState();
 }
 
-class _FoodCameraScreenState extends State<FoodCameraScreen> with WidgetsBindingObserver {
+class _FoodCameraScreenState extends ConsumerState<FoodCameraScreen> with WidgetsBindingObserver {
+  // ... existing fields ...
   CameraController? _controller;
   List<CameraDescription>? _cameras;
   bool _isCameraInitialized = false;
-  bool _isInitializing = false; // Guard for parallel inits
+  bool _isInitializing = false; 
   final GlobalKey _repaintBoundaryKey = GlobalKey();
   
-  // Flash mode state
   FlashMode _flashMode = FlashMode.off;
 
-  // Filter Indicator State
   bool _showFilterIndicator = false;
   bool _isBlurEnabled = false;
   Timer? _filterIndicatorTimer;
   
-  // Shutter Effect
   bool _showShutterFlash = false;
 
-  // Filter Selection
   int _selectedFilterIndex = 0;
   File? _lastCapturedPhoto;
 
-  // final FocusNode _focusNode = FocusNode(); // Removed FocusNode
-
-  final List<FilterItem> _filters = [
+  final List<FilterItem> _filters = [ // ... existing filters ...
     FilterItem(name: 'Original', matrix: null),
     FilterItem(name: 'Fresh (YU1)', matrix: [
       1.2, 0.0, 0.0, 0.0, 10.0,
       0.0, 1.1, 0.0, 0.0, 5.0,
       0.0, 0.0, 1.0, 0.0, 0.0,
       0.0, 0.0, 0.0, 1.0, 0.0,
-    ]), // Strongly bright and warm
-    FilterItem(name: 'Warm (Juno)', matrix: [ // Strong amber/warm
+    ]),
+    FilterItem(name: 'Warm (Juno)', matrix: [
       1.3, 0.0, 0.0, 0.0, 20.0,
       0.0, 1.15, 0.0, 0.0, 10.0,
       0.0, 0.0, 0.9, 0.0, 0.0,
       0.0, 0.0, 0.0, 1.0, 0.0,
     ]),
-    FilterItem(name: 'Cool (Lark)', matrix: [ // Strong blue/cold
+    FilterItem(name: 'Cool (Lark)', matrix: [
       0.9, 0.0, 0.0, 0.0, 0.0,
       0.0, 1.0, 0.0, 0.0, 0.0,
       0.0, 0.0, 1.3, 0.0, 20.0,
       0.0, 0.0, 0.0, 1.0, 0.0,
     ]),
-     FilterItem(name: 'Sweet', matrix: [ // Strong Pink
+     FilterItem(name: 'Sweet', matrix: [
       1.2, 0.0, 0.0, 0.0, 30.0,
       0.0, 1.0, 0.0, 0.0, 10.0,
       0.0, 0.0, 1.1, 0.0, 30.0,
       0.0, 0.0, 0.0, 1.0, 0.0,
     ]),
-    FilterItem(name: 'Mono', matrix: [ // Black & White for testing
+    FilterItem(name: 'Mono', matrix: [
       0.33, 0.33, 0.33, 0.0, 0.0,
       0.33, 0.33, 0.33, 0.0, 0.0,
       0.33, 0.33, 0.33, 0.0, 0.0,
@@ -82,13 +84,11 @@ class _FoodCameraScreenState extends State<FoodCameraScreen> with WidgetsBinding
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    
-    // Initialize volume listener via Native Channel
     _enableVolumeListener();
-    
     _initializeCamera();
   }
 
+  // ... platform methods ...
   static const platform = MethodChannel('app.bodka.stox/volume');
 
   Future<void> _enableVolumeListener() async {
@@ -106,17 +106,6 @@ class _FoodCameraScreenState extends State<FoodCameraScreen> with WidgetsBinding
     }
   }
 
-  // _onKey handler removed
-
-
-  @override
-  void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
-    _disableVolumeListener();
-    _controller?.dispose();
-    super.dispose();
-  }
-
   Future<void> _disableVolumeListener() async {
     try {
       if (Platform.isAndroid) {
@@ -126,6 +115,14 @@ class _FoodCameraScreenState extends State<FoodCameraScreen> with WidgetsBinding
     } catch (e) {
       debugPrint("Failed to disable volume listener: '$e'.");
     }
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _disableVolumeListener();
+    _controller?.dispose();
+    super.dispose();
   }
   
   @override
@@ -143,15 +140,11 @@ class _FoodCameraScreenState extends State<FoodCameraScreen> with WidgetsBinding
   Future<void> _initializeCamera() async {
     if (_isInitializing) return;
     _isInitializing = true;
-
-    // Small delay to ensure lifecycle stability on quick launch
     if (!mounted) {
         _isInitializing = false;
         return;
     }
-
     try {
-      // Request permissions
       final cameraStatus = await Permission.camera.request();
       if (!cameraStatus.isGranted) {
         if (mounted) {
@@ -160,20 +153,16 @@ class _FoodCameraScreenState extends State<FoodCameraScreen> with WidgetsBinding
           );
           Navigator.of(context).pop();
         }
-        return; // Finally block will handle flag reset
+        return;
       }
-
       _cameras = await availableCameras();
       if (_cameras != null && _cameras!.isNotEmpty) {
         _controller = CameraController(
           _cameras![0],
           ResolutionPreset.veryHigh, 
           enableAudio: false,
-          imageFormatGroup: Platform.isAndroid 
-              ? ImageFormatGroup.jpeg 
-              : ImageFormatGroup.bgra8888,
+          imageFormatGroup: Platform.isAndroid ? ImageFormatGroup.jpeg : ImageFormatGroup.bgra8888,
         );
-
         await _controller!.initialize();
         if (mounted) {
           setState(() {
@@ -196,8 +185,7 @@ class _FoodCameraScreenState extends State<FoodCameraScreen> with WidgetsBinding
     }
   }
 
-  // ... _toggleFlash, _takePicture (keep as is)
-
+  // ... build method ...
   @override
   Widget build(BuildContext context) {
     if (!_isCameraInitialized || _controller == null) {
@@ -207,25 +195,15 @@ class _FoodCameraScreenState extends State<FoodCameraScreen> with WidgetsBinding
       );
     }
     
-
-
     final size = MediaQuery.of(context).size;
-     
-    // Determine the scale to cover the square area
     var cameraAspectRatio = _controller!.value.aspectRatio;
-    // On many devices, aspect ratio is < 1 for portrait (e.g. 9/16).
-    // If it's inverted structure (width/height > 1), we flip it.
     if (size.width < size.height && cameraAspectRatio > 1) { 
        cameraAspectRatio = 1 / cameraAspectRatio;
     }
-
     var scale = 1.0;
     if (cameraAspectRatio > 1) {
        scale = cameraAspectRatio; 
     } else {
-       // Portrait sensor (e.g. 0.75)
-       // To fill 1.0, we need to scale by 1/ratio?
-       // Actually CameraPreview maintains aspect ratio.
        scale = 1 / cameraAspectRatio; 
     }
 
@@ -234,10 +212,8 @@ class _FoodCameraScreenState extends State<FoodCameraScreen> with WidgetsBinding
     return Scaffold(
         backgroundColor: Colors.black,
         body: SafeArea(
-          // ... rest of the body
           child: Column(
           children: [
-             // 1. Top Controls
              Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               child: Row(
@@ -249,7 +225,6 @@ class _FoodCameraScreenState extends State<FoodCameraScreen> with WidgetsBinding
                       if (Navigator.of(context).canPop()) {
                         Navigator.of(context).pop(_lastCapturedPhoto?.path);
                       } else {
-                        // If launched via Quick Action (no history), go to Home
                         context.go('/');
                       }
                     },
@@ -266,10 +241,7 @@ class _FoodCameraScreenState extends State<FoodCameraScreen> with WidgetsBinding
                 ],
               ),
             ),
-            
             const Spacer(),
-
-            // 2. Square Camera View Area
             SizedBox(
               width: size.width,
               height: size.width,
@@ -277,11 +249,10 @@ class _FoodCameraScreenState extends State<FoodCameraScreen> with WidgetsBinding
                 child: Stack(
                   fit: StackFit.expand,
                   children: [
-                   // Layer A: Capture Boundary (Camera + Filters + Watermark)
                    RepaintBoundary(
                     key: _repaintBoundaryKey,
                     child: Container(
-                      color: Colors.black, // Background for transparency handling
+                      color: Colors.black,
                       child: Stack(
                         fit: StackFit.expand,
                         children: [
@@ -296,11 +267,9 @@ class _FoodCameraScreenState extends State<FoodCameraScreen> with WidgetsBinding
                                     child: CameraPreview(_controller!),
                                   ),
                                 );
-        
                                return Stack(
                                  fit: StackFit.expand,
                                  children: [
-                                   // Sharp Layer
                                    if (currentMatrix != null)
                                      ColorFiltered(
                                        colorFilter: ColorFilter.matrix(currentMatrix),
@@ -308,8 +277,6 @@ class _FoodCameraScreenState extends State<FoodCameraScreen> with WidgetsBinding
                                      )
                                    else
                                      cameraWidget,
-        
-                                   // Blur Layer
                                    if (_isBlurEnabled)
                                      ShaderMask(
                                        shaderCallback: (rect) {
@@ -335,8 +302,6 @@ class _FoodCameraScreenState extends State<FoodCameraScreen> with WidgetsBinding
                                );
                             }
                           ),
-                          
-                           // Watermark (Inside RepaintBoundary to be captured)
                            Positioned(
                              right: 12,
                              bottom: 12,
@@ -386,10 +351,6 @@ class _FoodCameraScreenState extends State<FoodCameraScreen> with WidgetsBinding
                       ),
                     ),
                    ),
-
-                   // Layer B: UI Overlays (Not captured)
-                   
-                   // Blur Toggle
                    Positioned(
                      left: 16,
                      bottom: 16,
@@ -414,8 +375,6 @@ class _FoodCameraScreenState extends State<FoodCameraScreen> with WidgetsBinding
                        ),
                      ),
                    ),
-
-                   // Filter Indicator
                    if (_showFilterIndicator)
                      Center(
                        child: AnimatedOpacity(
@@ -438,7 +397,6 @@ class _FoodCameraScreenState extends State<FoodCameraScreen> with WidgetsBinding
                          ),
                        ),
                      ),
-                   // Shutter Flash Overlay
                    IgnorePointer(
                       child: AnimatedOpacity(
                         opacity: _showShutterFlash ? 1.0 : 0.0,
@@ -452,15 +410,9 @@ class _FoodCameraScreenState extends State<FoodCameraScreen> with WidgetsBinding
                 ),
               ),
             ),
-            
-
-            
             const Spacer(),
-            
-            // 3. Bottom Controls
             Column(
               children: [
-                // Filter + Thumbnail Row
                 SizedBox(
                   height: 90,
                   child: Row(
@@ -526,8 +478,6 @@ class _FoodCameraScreenState extends State<FoodCameraScreen> with WidgetsBinding
                           },
                         ),
                       ),
-                      
-                      // Thumbnail
                        Padding(
                          padding: const EdgeInsets.only(right: 16, left: 8),
                          child: GestureDetector(
@@ -559,10 +509,7 @@ class _FoodCameraScreenState extends State<FoodCameraScreen> with WidgetsBinding
                     ],
                   ),
                 ),
-                
                 const SizedBox(height: 20),
-                
-                // Shutter Button
                 Padding(
                   padding: const EdgeInsets.only(bottom: 30),
                   child: GestureDetector(
@@ -595,27 +542,16 @@ class _FoodCameraScreenState extends State<FoodCameraScreen> with WidgetsBinding
   
   Future<void> _toggleFlash() async {
     if (_controller == null) return;
-    
     FlashMode nextMode;
     switch (_flashMode) {
-      case FlashMode.off:
-        nextMode = FlashMode.torch; // Continuous light is often better for food
-        break;
-      case FlashMode.torch:
-        nextMode = FlashMode.auto;
-        break;
-      case FlashMode.auto:
-        nextMode = FlashMode.off;
-        break;
-      default:
-        nextMode = FlashMode.off;
+      case FlashMode.off: nextMode = FlashMode.torch; break;
+      case FlashMode.torch: nextMode = FlashMode.auto; break;
+      case FlashMode.auto: nextMode = FlashMode.off; break;
+      default: nextMode = FlashMode.off;
     }
-    
     try {
       await _controller!.setFlashMode(nextMode);
-      setState(() {
-        _flashMode = nextMode;
-      });
+      setState(() { _flashMode = nextMode; });
     } catch (e) {
       debugPrint('Error setting flash mode: $e');
     }
@@ -623,44 +559,33 @@ class _FoodCameraScreenState extends State<FoodCameraScreen> with WidgetsBinding
 
   Future<void> _takePicture() async {
     try {
-      // Trigger Flash Effect
-      setState(() {
-         _showShutterFlash = true;
-      });
+      setState(() { _showShutterFlash = true; });
       Future.delayed(const Duration(milliseconds: 100), () {
-        if(mounted) {
-           setState(() {
-             _showShutterFlash = false;
-           });
-        }
+        if(mounted) { setState(() { _showShutterFlash = false; }); }
       });
       
-      // 1. Capture widget as image
       final boundary = _repaintBoundaryKey.currentContext?.findRenderObject() as RenderRepaintBoundary?;
       if (boundary == null) return;
       
-      // Capture at pixel ratio 3.0 for higher quality screen grab
       final image = await boundary.toImage(pixelRatio: 3.0);
       final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
       final pngBytes = byteData?.buffer.asUint8List();
-
       if (pngBytes == null) return;
 
-      // 2. Save to temp file
       final tempDir = await getTemporaryDirectory();
       final timestamp = DateTime.now().millisecondsSinceEpoch;
       final file = await File('${tempDir.path}/stox_food_$timestamp.png').create();
       await file.writeAsBytes(pngBytes);
 
-      // 3. Save to Gallery
-      // Request storage permission if needed (handled by gal implicitly or we can check)
-      // Note: Gal handles permissions internally for the most part, but we can wrap in try-catch
       await Gal.putImage(file.path, album: 'STOX');
 
+      // Auto-Save Logic
+      if (widget.createMealPlanOnCapture) {
+        await _saveToMealPlan(file.path);
+      }
+
       if (mounted) {
-        setState(() {
-          _lastCapturedPhoto = file;
-        });
+        setState(() { _lastCapturedPhoto = file; });
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('写真を保存しました')),
         );
@@ -675,14 +600,42 @@ class _FoodCameraScreenState extends State<FoodCameraScreen> with WidgetsBinding
     }
   }
 
+  Future<void> _saveToMealPlan(String photoPath) async {
+    try {
+      final repo = await ref.read(mealPlanRepositoryProvider.future);
+      final now = DateTime.now();
+      
+      final mealPlan = MealPlan(
+        id: const Uuid().v4(),
+        recipeId: '', // No recipe
+        date: now,
+        mealType: _getMealTypeFromTime(now),
+        isDone: true,
+        completedAt: now,
+        photos: [photoPath],
+      );
+      
+      await repo.save(mealPlan);
+    } catch (e) {
+      debugPrint('Error auto-saving meal plan: $e');
+    }
+  }
 
-
+  MealType _getMealTypeFromTime(DateTime time) {
+    final hour = time.hour;
+    if (hour >= 4 && hour < 10) return MealType.breakfast;
+    if (hour >= 10 && hour < 15) return MealType.lunch;
+    if (hour >= 15 && hour < 18) return MealType.snack;
+    if (hour >= 18 && hour < 23) return MealType.dinner;
+    return MealType.other;
+  }
   
   String _getFormattedDate() {
     final now = DateTime.now();
     return '${now.year}.${now.month.toString().padLeft(2, '0')}.${now.day.toString().padLeft(2, '0')}';
   }
-}
+} // End of State
+// FilterItem class remains...
 
 class FilterItem {
   final String name;

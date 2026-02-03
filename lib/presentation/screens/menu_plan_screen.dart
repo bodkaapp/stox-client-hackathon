@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
+import 'package:go_router/go_router.dart';
 import '../../config/app_colors.dart';
 import '../../domain/models/meal_plan.dart';
 import '../../domain/models/recipe.dart';
@@ -16,6 +17,7 @@ import '../widgets/search_modal.dart';
 import 'cooking_mode_screen.dart';
 import 'food_camera_screen.dart';
 import 'recipe_search_results_screen.dart';
+import 'photo_viewer_screen.dart';
 
 // -----------------------------------------------------------------------------
 // Models
@@ -35,13 +37,9 @@ class MealPlanWithRecipe {
 final selectedDateProvider = StateProvider<DateTime>((ref) => DateTime.now());
 
 final dailyMealPlanProvider = StreamProvider.autoDispose.family<List<MealPlanWithRecipe>, DateTime>((ref, date) async* {
-  // Use async* to yield stream events
-  
-  // Wait for repositories to be available
   final mealPlanRepo = await ref.watch(mealPlanRepositoryProvider.future);
   final recipeRepo = await ref.watch(recipeRepositoryProvider.future);
 
-  // Watch for changes in meal plans for the date
   yield* mealPlanRepo.watchByDate(date).asyncMap((mealPlans) async {
     final results = <MealPlanWithRecipe>[];
     for (final plan in mealPlans) {
@@ -58,7 +56,9 @@ final dailyMealPlanProvider = StreamProvider.autoDispose.family<List<MealPlanWit
 // -----------------------------------------------------------------------------
 
 class MenuPlanScreen extends ConsumerStatefulWidget {
-  const MenuPlanScreen({super.key});
+  final DateTime? initialDate;
+  final bool showBackButton;
+  const MenuPlanScreen({super.key, this.initialDate, this.showBackButton = false});
 
   @override
   ConsumerState<MenuPlanScreen> createState() => _MenuPlanScreenState();
@@ -75,12 +75,27 @@ class _MenuPlanScreenState extends ConsumerState<MenuPlanScreen> {
     initializeDateFormatting('ja');
     _dateScrollController = ScrollController();
     
-    // Scroll to center initially (approx)
+    if (widget.initialDate != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        ref.read(selectedDateProvider.notifier).state = widget.initialDate!;
+      });
+    }
+    
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_dateScrollController.hasClients) {
         // Simple centering logic could be added here if needed
       }
     });
+  }
+
+  @override
+  void didUpdateWidget(MenuPlanScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.initialDate != null && widget.initialDate != oldWidget.initialDate) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        ref.read(selectedDateProvider.notifier).state = widget.initialDate!;
+      });
+    }
   }
 
   @override
@@ -95,7 +110,7 @@ class _MenuPlanScreenState extends ConsumerState<MenuPlanScreen> {
     final mealPlansAsync = ref.watch(dailyMealPlanProvider(selectedDate));
 
     return Scaffold(
-      backgroundColor: const Color(0xFFFFFDFA), // bg-background-light
+      backgroundColor: const Color(0xFFFFFDFA),
       appBar: AppBar(
         backgroundColor: const Color(0xFFFFFDFA).withOpacity(0.9),
         elevation: 0,
@@ -106,20 +121,23 @@ class _MenuPlanScreenState extends ConsumerState<MenuPlanScreen> {
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
-            color: Color(0xFF292524), // text-stone-800
+            color: Color(0xFF292524),
           ),
         ),
-        leading: Navigator.canPop(context)
+        leading: widget.showBackButton
             ? IconButton(
-                icon: const Icon(Icons.arrow_back, color: Color(0xFF57534E)), // text-stone-600
-                onPressed: () => Navigator.of(context).pop(),
+                icon: const Icon(Icons.arrow_back, color: Color(0xFF57534E)),
+                onPressed: () => context.go('/photo_gallery'),
               )
-            : null,
+            : (Navigator.canPop(context)
+                ? IconButton(
+                    icon: const Icon(Icons.arrow_back, color: Color(0xFF57534E)),
+                    onPressed: () => Navigator.of(context).pop(),
+                  )
+                : null),
         actions: [
-          // Only show toggle in Mobile
           LayoutBuilder(
             builder: (context, constraints) {
-               // We don't have parent constraints in Actions list really, but we can check checking MediaQuery
                final isTablet = MediaQuery.of(context).size.width >= 600;
                if (!isTablet) {
                  return Padding(
@@ -132,7 +150,7 @@ class _MenuPlanScreenState extends ConsumerState<MenuPlanScreen> {
                       },
                       icon: const Icon(Icons.calendar_month, color: Color(0xFF57534E)),
                       style: IconButton.styleFrom(
-                        backgroundColor: _isMonthlyView ? AppColors.stoxPrimary.withOpacity(0.1) : const Color(0xFFF5F5F4), // bg-stone-100 or active tint
+                        backgroundColor: _isMonthlyView ? AppColors.stoxPrimary.withOpacity(0.1) : const Color(0xFFF5F5F4),
                       ),
                     ),
                   );
@@ -156,7 +174,6 @@ class _MenuPlanScreenState extends ConsumerState<MenuPlanScreen> {
   Widget _buildMobileLayout(DateTime selectedDate, AsyncValue<List<MealPlanWithRecipe>> mealPlansAsync) {
     return Column(
       children: [
-        // Date Strip or Calendar
         _isMonthlyView 
           ? MonthlyCalendarView(
               selectedDate: selectedDate,
@@ -180,7 +197,6 @@ class _MenuPlanScreenState extends ConsumerState<MenuPlanScreen> {
         
         const Divider(height: 1, color: Color(0xFFF5F5F4)),
 
-        // Main Content
         Expanded(
           child: mealPlansAsync.when(
             data: (data) => _buildMealSections(data),
@@ -196,7 +212,6 @@ class _MenuPlanScreenState extends ConsumerState<MenuPlanScreen> {
      return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Left Column: Calendar
         Container(
           width: 360,
           decoration: const BoxDecoration(
@@ -206,7 +221,7 @@ class _MenuPlanScreenState extends ConsumerState<MenuPlanScreen> {
           child: Column(
             children: [
                Expanded(
-                 child: SingleChildScrollView( // Allow scrolling if calendar is tall
+                 child: SingleChildScrollView(
                    child: Padding(
                      padding: const EdgeInsets.only(top: 16.0),
                      child: MonthlyCalendarView(
@@ -228,7 +243,6 @@ class _MenuPlanScreenState extends ConsumerState<MenuPlanScreen> {
           ),
         ),
 
-        // Right Column: Meal Plans
         Expanded(
           child: mealPlansAsync.when(
             data: (data) => _buildMealSections(data),
@@ -241,7 +255,6 @@ class _MenuPlanScreenState extends ConsumerState<MenuPlanScreen> {
   }
 
   Widget _buildMealSections(List<MealPlanWithRecipe> plans) {
-    // Group by MealType
     final breakfast = plans.where((p) => p.mealPlan.mealType == MealType.breakfast).toList();
     final lunch = plans.where((p) => p.mealPlan.mealType == MealType.lunch).toList();
     final dinner = plans.where((p) => p.mealPlan.mealType == MealType.dinner).toList();
@@ -254,20 +267,20 @@ class _MenuPlanScreenState extends ConsumerState<MenuPlanScreen> {
         _buildSection(
           title: '朝食',
           label: '朝',
-          color: const Color(0xFFFBBF24), // amber-400
-          bgColor: const Color(0xFFFEF3C7), // amber-100
-          textColor: const Color(0xFFB45309), // amber-700
+          color: const Color(0xFFFBBF24),
+          bgColor: const Color(0xFFFEF3C7),
+          textColor: const Color(0xFFB45309),
           items: breakfast,
-          isHorizontal: true,
+          isHorizontal: false,
           type: MealType.breakfast,
         ),
         const SizedBox(height: 24),
         _buildSection(
           title: '昼食',
           label: '昼',
-          color: const Color(0xFFFB923C), // orange-400
-          bgColor: const Color(0xFFFFEDD5), // orange-100
-          textColor: const Color(0xFFC2410C), // orange-700
+          color: const Color(0xFFFB923C),
+          bgColor: const Color(0xFFFFEDD5),
+          textColor: const Color(0xFFC2410C),
           items: lunch,
           isHorizontal: false, 
           type: MealType.lunch,
@@ -276,9 +289,9 @@ class _MenuPlanScreenState extends ConsumerState<MenuPlanScreen> {
         _buildSection(
           title: '夕食',
           label: '夜',
-          color: const Color(0xFFFB7185), // rose-400
-          bgColor: const Color(0xFFFFE4E6), // rose-100
-          textColor: const Color(0xFFBE123C), // rose-700
+          color: const Color(0xFFFB7185),
+          bgColor: const Color(0xFFFFE4E6),
+          textColor: const Color(0xFFBE123C),
           items: dinner,
           isHorizontal: false,
           type: MealType.dinner,
@@ -291,9 +304,9 @@ class _MenuPlanScreenState extends ConsumerState<MenuPlanScreen> {
         _buildSection(
           title: '時間未定',
           label: '未定',
-          color: const Color(0xFF9CA3AF), // gray-400
-          bgColor: const Color(0xFFF3F4F6), // gray-100
-          textColor: const Color(0xFF4B5563), // gray-600
+          color: const Color(0xFF9CA3AF),
+          bgColor: const Color(0xFFF3F4F6),
+          textColor: const Color(0xFF4B5563),
           items: undecided,
           isHorizontal: false,
           type: MealType.undecided,
@@ -316,7 +329,6 @@ class _MenuPlanScreenState extends ConsumerState<MenuPlanScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Header
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 4.0),
           child: Row(
@@ -353,29 +365,26 @@ class _MenuPlanScreenState extends ConsumerState<MenuPlanScreen> {
               ),
               Row(
                 children: [
-                   // Made It Button (Secondary)
                    if (items.any((e) => e.recipe != null)) ...[
                      TextButton.icon(
                       onPressed: () => _onMadeIt(items),
                       icon: const Icon(Icons.check_circle_outline, size: 16),
                       label: const Text('作った', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
                       style: TextButton.styleFrom(
-                        foregroundColor: const Color(0xFF78716C), // stone-500
+                        foregroundColor: const Color(0xFF78716C),
                         padding: const EdgeInsets.symmetric(horizontal: 8),
                         minimumSize: Size.zero,
                         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                       ),
                     ),
                     const SizedBox(width: 4),
-                     // Cook Button (Primary)
-                     // Hide if all recipes are manual entry (empty URL)
                      if (items.any((e) => e.recipe != null && e.recipe!.pageUrl.isNotEmpty))
                        TextButton.icon(
                         onPressed: () => _onCook(items),
                         icon: const Icon(Icons.restaurant_menu, size: 16),
                         label: const Text('料理する', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
                         style: TextButton.styleFrom(
-                          foregroundColor: AppColors.stoxPrimary, // Primary Color
+                          foregroundColor: AppColors.stoxPrimary,
                           padding: const EdgeInsets.symmetric(horizontal: 8),
                           minimumSize: Size.zero,
                           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -388,18 +397,17 @@ class _MenuPlanScreenState extends ConsumerState<MenuPlanScreen> {
           ),
         ),
         const SizedBox(height: 12),
-        // Content
         if (items.isEmpty)
            Container(
              width: double.infinity,
              padding: const EdgeInsets.all(16),
              decoration: BoxDecoration(
-                color: Colors.grey[50], // bg-stone-50
+                color: Colors.grey[50],
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: const Color(0xFFE7E5E4)), // border-stone-200
+                border: Border.all(color: const Color(0xFFE7E5E4)),
              ),
              child: const Center(
-               child: Text('予定はありません', style: TextStyle(fontSize: 12, color: Color(0xFFA8A29E))), // text-stone-400
+               child: Text('予定はありません', style: TextStyle(fontSize: 12, color: Color(0xFFA8A29E))),
              ),
            )
         else if (isHorizontal)
@@ -425,7 +433,6 @@ class _MenuPlanScreenState extends ConsumerState<MenuPlanScreen> {
             },
           ),
           
-        // Photos
         if (items.any((e) => e.mealPlan.photos.isNotEmpty))
            Container(
              height: 100,
@@ -435,12 +442,20 @@ class _MenuPlanScreenState extends ConsumerState<MenuPlanScreen> {
                children: items.expand((e) => e.mealPlan.photos).map((path) {
                  return Padding(
                    padding: const EdgeInsets.only(right: 8),
-                   child: Stack(
-                     children: [
-                       ClipRRect(
-                         borderRadius: BorderRadius.circular(8),
-                         child: Image.file(File(path), width: 100, height: 100, fit: BoxFit.cover),
-                       ),
+                   child: GestureDetector(
+                     onTap: () {
+                        Navigator.of(context, rootNavigator: true).push(
+                          MaterialPageRoute(
+                            builder: (_) => PhotoViewerScreen(filePath: path),
+                          ),
+                        );
+                     },
+                     child: Stack(
+                       children: [
+                         ClipRRect(
+                           borderRadius: BorderRadius.circular(8),
+                           child: Image.file(File(path), width: 100, height: 100, fit: BoxFit.cover),
+                         ),
                        Positioned(
                          bottom: 4,
                          right: 4,
@@ -464,12 +479,12 @@ class _MenuPlanScreenState extends ConsumerState<MenuPlanScreen> {
                        ),
                      ],
                    ),
+                  ),
                  );
                }).toList(),
              ),
            ),
 
-        // Add Dish Button at bottom right
         Align(
           alignment: Alignment.centerRight,
           child: Padding(
@@ -506,7 +521,7 @@ class _MenuPlanScreenState extends ConsumerState<MenuPlanScreen> {
                      width: 4,
                      height: 20,
                      decoration: BoxDecoration(
-                       color: const Color(0xFF2DD4BF), // teal-400
+                       color: const Color(0xFF2DD4BF),
                        borderRadius: BorderRadius.circular(2),
                      ),
                    ),
@@ -519,12 +534,12 @@ class _MenuPlanScreenState extends ConsumerState<MenuPlanScreen> {
                    Container(
                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                      decoration: BoxDecoration(
-                       color: const Color(0xFFCCFBF1), // teal-100
+                       color: const Color(0xFFCCFBF1),
                        borderRadius: BorderRadius.circular(4),
                      ),
                      child: const Text(
                        '準備',
-                       style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFF0F766E)), // teal-700
+                       style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFF0F766E)),
                      ),
                    ),
                  ],
@@ -548,20 +563,19 @@ class _MenuPlanScreenState extends ConsumerState<MenuPlanScreen> {
           Container(
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: const Color(0xFFF5F5F4), // bg-stone-100
+              color: const Color(0xFFF5F5F4),
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: const Color(0xFFE7E5E4), style: BorderStyle.none), // dashed border hard to do with standard border, using none for now or maybe DottedBorder package if available. HTML has dashed.
+              border: Border.all(color: const Color(0xFFE7E5E4), style: BorderStyle.none),
             ),
-            // Use CustomPaint for dashed border if strictly needed, but solid/lighter is okay for MVP.
             child: const Center(
               child: Column(
                 children: [
-                  Icon(Icons.restaurant, size: 32, color: Color(0xFFD6D3D1)), // stone-300
+                  Icon(Icons.restaurant, size: 32, color: Color(0xFFD6D3D1)),
                   SizedBox(height: 8),
                   Text(
                     '週末の作り置きレシピを\n登録してみましょう',
                     textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 12, color: Color(0xFFA8A29E)), // stone-400
+                    style: TextStyle(fontSize: 12, color: Color(0xFFA8A29E)),
                   ),
                 ],
               ),
@@ -588,7 +602,7 @@ class _MenuPlanScreenState extends ConsumerState<MenuPlanScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFF5F5F4)), // border-stone-100
+        border: Border.all(color: const Color(0xFFF5F5F4)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
@@ -808,83 +822,64 @@ class _MenuPlanScreenState extends ConsumerState<MenuPlanScreen> {
 
   Future<void> _pickAndSaveImage(List<MealPlanWithRecipe> items, ImageSource source) async {
     final picker = ImagePicker();
-    final XFile? image = await picker.pickImage(source: source);
-
-    if (image != null) {
-      await _saveImageToPlan(items, image.path);
+    final picked = await picker.pickImage(source: source);
+    if (picked != null) {
+      await _saveImageToPlan(items, picked.path);
     }
   }
 
-  Future<void> _saveImageToPlan(List<MealPlanWithRecipe> items, String imagePath) async {
-      if (items.isNotEmpty) {
-        final target = items.first;
-        try {
-           final repo = await ref.read(mealPlanRepositoryProvider.future);
-           final updatedPhotos = List<String>.from(target.mealPlan.photos)..add(imagePath);
-           final updatedPlan = target.mealPlan.copyWith(
-             photos: updatedPhotos, 
-             isDone: true,
-             completedAt: target.mealPlan.completedAt ?? DateTime.now(),
-           );
-           await repo.save(updatedPlan);
-           
-           // ref.invalidate(dailyMealPlanProvider); // No longer needed with StreamProvider
-        } catch (e) {
-          if (mounted) {
-             ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('画像の保存に失敗しました: $e')));
-          }
+  Future<void> _saveImageToPlan(List<MealPlanWithRecipe> items, String path) async {
+    if (items.isEmpty) return;
+    final target = items.first;
+     try {
+       final repo = await ref.read(mealPlanRepositoryProvider.future);
+       final updatedPlan = target.mealPlan.copyWith(
+         photos: [...target.mealPlan.photos, path],
+         isDone: true,
+         completedAt: target.mealPlan.completedAt ?? DateTime.now(),
+       );
+       await repo.save(updatedPlan);
+     } catch (e) {
+        if (mounted) {
+           ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('画像の保存に失敗しました: $e')));
         }
-      }
+     }
   }
 
   void _onCook(List<MealPlanWithRecipe> items) {
-    if (items.isEmpty) {
+    if (items.isEmpty) return;
+    final recipe = items.first.recipe;
+    
+    if (recipe == null) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('レシピがありません')));
       return;
     }
-    
-    final recipes = items.map((e) => e.recipe).whereType<Recipe>().toList();
-    if (recipes.isNotEmpty) {
-      Navigator.of(context, rootNavigator: true).push(
-        MaterialPageRoute(
-          builder: (context) => CookingModeScreen(recipes: recipes),
-        ),
-      );
+
+    if (recipe.pageUrl.isEmpty) {
+       // Manual recipe -> maybe just open details or nothing?
+       // Current requirement: "Cook" button shown only if URL exists (check logic in build)
+       return; 
     }
+
+    Navigator.of(context, rootNavigator: true).push(
+      MaterialPageRoute(
+        builder: (_) => CookingModeScreen(recipes: items.map((e) => e.recipe!).where((r) => r.pageUrl.isNotEmpty).toList()),
+      ),
+    );
   }
 
-  void _onAddDish(MealType type) async {
+  void _onAddDish(MealType type) {
+    // When adding dish, we might want to default to currently selected date in the view
     final date = ref.read(selectedDateProvider);
-    final intent = await SearchModal.show(
-      context,
-      initialDate: date,
-      initialMealType: type,
+    
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => SearchModal(
+        initialDate: date,
+        initialMealType: type,
+      ),
     );
-
-    if (!mounted) return;
-
-    if (intent is UrlSearchIntent) {
-      await Navigator.of(context, rootNavigator: true).push(
-        MaterialPageRoute(
-          builder: (context) => RecipeWebViewScreen(
-            url: intent.url,
-            title: '読み込み中...',
-            initialDate: date,
-            initialMealType: type,
-          ),
-        ),
-      );
-    } else if (intent is TextSearchIntent) {
-      await Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => RecipeSearchResultsScreen(
-            searchQuery: intent.query,
-            initialDate: date,
-            initialMealType: type,
-          ),
-        ),
-      );
-    }
   }
 }

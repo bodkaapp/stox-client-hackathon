@@ -14,6 +14,7 @@ import '../presentation/screens/tutorial_screen.dart';
 import '../presentation/screens/account_settings_screen.dart';
 import '../presentation/screens/food_camera_screen.dart';
 import '../presentation/screens/menu_plan_screen.dart';
+import '../presentation/screens/photo_gallery_screen.dart';
 
 part 'router.g.dart';
 
@@ -70,7 +71,12 @@ GoRouter router(RouterRef ref) {
           ),
           GoRoute(
             path: '/menu_plan',
-            builder: (context, state) => const MenuPlanScreen(),
+            builder: (context, state) {
+              final dateStr = state.uri.queryParameters['date'];
+              final date = dateStr != null ? DateTime.tryParse(dateStr) : null;
+              final fromGallery = state.uri.queryParameters['from_gallery'] == 'true';
+              return MenuPlanScreen(initialDate: date, showBackButton: fromGallery);
+            },
           ),
         ],
       ),
@@ -90,7 +96,12 @@ GoRouter router(RouterRef ref) {
       GoRoute(
         path: '/food_camera',
         parentNavigatorKey: _rootNavigatorKey,
-        builder: (context, state) => const FoodCameraScreen(),
+        builder: (context, state) => const FoodCameraScreen(createMealPlanOnCapture: true),
+      ),
+      GoRoute(
+        path: '/photo_gallery',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => const PhotoGalleryScreen(),
       ),
 
     ],

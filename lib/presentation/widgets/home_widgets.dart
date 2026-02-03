@@ -56,9 +56,11 @@ class HomeHeader extends ConsumerWidget {
           ),
           Row(
             children: [
-              Stack(
-                children: [
-                  _buildHeaderIconButton(Icons.notifications, () => context.push('/notifications')),
+                  _buildHeaderIconButton(Icons.photo_library, () => context.push('/photo_gallery')),
+                  const SizedBox(width: 8),
+                  Stack(
+                    children: [
+                      _buildHeaderIconButton(Icons.notifications, () => context.push('/notifications')),
                   if (notificationsAsync.value?.any((n) => !n.isRead) ?? false)
                     Positioned(
                       top: 4,
@@ -392,8 +394,8 @@ class _HomeActionGridState extends ConsumerState<HomeActionGrid> with AdManagerM
           _buildActionCard(Icons.camera_alt, '料理を撮影', Colors.pink.shade50, Colors.pink.shade600, () {
              context.push('/food_camera');
           }),
-          _buildActionCard(Icons.calendar_month, '献立計画表を見る', Colors.cyan.shade50, Colors.cyan.shade600, () {
-             context.push('/menu_plan');
+          _buildActionCard(Icons.photo_library, '写真を見る', Colors.cyan.shade50, Colors.cyan.shade600, () {
+             context.push('/photo_gallery');
           }),
         ],
       ),
