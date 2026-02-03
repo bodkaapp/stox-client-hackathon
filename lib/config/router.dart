@@ -55,7 +55,10 @@ GoRouter router(RouterRef ref) {
           ),
           GoRoute(
             path: '/shopping',
-            builder: (context, state) => const ShoppingScreen(),
+            builder: (context, state) {
+              final action = state.uri.queryParameters['action'];
+              return ShoppingScreen(openAddModal: action == 'add');
+            },
           ),
           GoRoute(
             path: '/stock',

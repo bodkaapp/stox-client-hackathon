@@ -13,7 +13,9 @@ import '../widgets/voice_shopping_modal.dart';
 import '../mixins/receipt_scanner_mixin.dart';
 
 class ShoppingScreen extends ConsumerStatefulWidget {
-  const ShoppingScreen({super.key});
+  final bool openAddModal;
+
+  const ShoppingScreen({super.key, this.openAddModal = false});
 
   @override
   ConsumerState<ShoppingScreen> createState() => _ShoppingScreenState();
@@ -28,6 +30,37 @@ class _ShoppingScreenState extends ConsumerState<ShoppingScreen> with AdManagerM
   void initState() {
     super.initState();
     loadRewardedAd();
+    
+    if (widget.openAddModal) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _showAddIngredientModal();
+      });
+    }
+  }
+
+  @override
+  void didUpdateWidget(ShoppingScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.openAddModal && !oldWidget.openAddModal) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _showAddIngredientModal();
+      });
+    }
+  }
+
+  Future<void> _showAddIngredientModal() async {
+    await showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => IngredientAddModal(
+        title: '買い物リストに追加',
+        targetStatus: IngredientStatus.toBuy,
+        onSaved: () {
+          ref.invalidate(shoppingViewModelProvider);
+        },
+      ),
+    );
   }
 
   void _toggleMenu() {
@@ -147,18 +180,7 @@ class _ShoppingScreenState extends ConsumerState<ShoppingScreen> with AdManagerM
                       title: const Text('買うものを入力', style: TextStyle(fontSize: 14)),
                       enabled: !isShoppingMode,
                       onTap: () {
-                         showModalBottomSheet(
-                           context: context,
-                           isScrollControlled: true,
-                           backgroundColor: Colors.transparent,
-                           builder: (context) => IngredientAddModal(
-                             title: '買い物リストに追加',
-                             targetStatus: IngredientStatus.toBuy,
-                             onSaved: () {
-                               ref.invalidate(shoppingViewModelProvider);
-                             },
-                           ),
-                         );
+                         _showAddIngredientModal();
                       },
                     ),
                     ListTile(
@@ -374,18 +396,7 @@ class _ShoppingScreenState extends ConsumerState<ShoppingScreen> with AdManagerM
                           '買うものを入力する', 
                           onTap: () {
                             _toggleMenu();
-                            showModalBottomSheet(
-                              context: context,
-                              isScrollControlled: true,
-                              backgroundColor: Colors.transparent,
-                              builder: (context) => IngredientAddModal(
-                                title: '買い物リストに追加',
-                                targetStatus: IngredientStatus.toBuy,
-                                onSaved: () {
-                                  ref.invalidate(shoppingViewModelProvider);
-                                },
-                              ),
-                            );
+                            _showAddIngredientModal();
                           }
                         ),
                         const SizedBox(height: 12),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:quick_actions/quick_actions.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'config/router.dart';
@@ -18,11 +19,44 @@ void main() async {
   runApp(const ProviderScope(child: MyApp()));
 }
 
-class MyApp extends ConsumerWidget {
+class MyApp extends ConsumerStatefulWidget {
   const MyApp({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends ConsumerState<MyApp> {
+  @override
+  void initState() {
+    super.initState();
+    _setupQuickActions();
+  }
+
+  void _setupQuickActions() {
+    const quickActions = QuickActions();
+    quickActions.initialize((shortcutType) {
+      if (shortcutType == 'add_shopping_item') {
+        // Navigate to shopping screen with action=add
+        // We use a slight delay to ensure the app is fully mounted/router ready if cold start
+        // But usually callback fires when ready.
+        Future.delayed(const Duration(milliseconds: 100), () {
+             ref.read(routerProvider).go('/shopping?action=add');
+        });
+      }
+    });
+
+    quickActions.setShortcutItems(<ShortcutItem>[
+      const ShortcutItem(
+        type: 'add_shopping_item',
+        localizedTitle: '買い物リストに追加',
+        // icon: 'ic_launcher', // TODO: Add appropriate drawable icon
+      ),
+    ]);
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final router = ref.watch(routerProvider);
     return MaterialApp.router(
       title: 'Stox',
