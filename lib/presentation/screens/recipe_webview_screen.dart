@@ -6,6 +6,8 @@ import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../config/app_colors.dart';
 import '../../domain/models/recipe.dart';
+import '../../domain/models/ingredient.dart';
+import '../../infrastructure/repositories/ai_recipe_repository.dart';
 import '../../infrastructure/repositories/drift_recipe_repository.dart';
 import 'ai_ingredient_list_screen.dart';
 import 'recipe_schedule_screen.dart';
@@ -235,7 +237,6 @@ class _RecipeWebViewScreenState extends ConsumerState<RecipeWebViewScreen> with 
           TextButton(
             onPressed: () {
               Navigator.pop(dialogContext);
-              // Use screenContext, checking moved to ensure safety
               if (!mounted) return;
               Navigator.push(
                 screenContext,
@@ -258,44 +259,110 @@ class _RecipeWebViewScreenState extends ConsumerState<RecipeWebViewScreen> with 
               
               if (!mounted) return;
 
-               // Ad Bypass for Testing
+              // Analysis Future
+              Future<List<Ingredient>>? analysisFuture;
+              final aiRepo = ref.read(aiRecipeRepositoryProvider);
+
                final success = await showAdAndExecute(
-                context: screenContext, // Use VALID screen context
+                context: screenContext, 
                 preAdTitle: 'AI解析を開始',
-                preAdContent: 'AIがレシピの材料を分析します。\n広告を再生することで、この機能を無料でご利用いただけます。',
+                preAdContent: 'AIがレシピの材料を分析します。\n広告を再生している間に解析を行います。',
                 confirmButtonText: '広告を見て解析する',
-                postAdMessage: 'AIの解析がおわりました。\n広告の視聴ありがとうございました。',
+                // postAdMessage will be shown ONLY if analysis is also complete? 
+                // Or we handle post-ad message manually to sync with analysis.
+                // Let's pass null and handle it manually.
+                postAdMessage: null, 
                 onConsent: () {
                   if (mounted) {
                     setState(() { _isAnalyzing = true; });
                   }
+                  // Start analysis immediately
+                  analysisFuture = aiRepo.extractIngredients(currentUrl ?? widget.url);
                 }
                );
 
-             // Whether success or fail, turn off analyzing overlay
-             if (mounted) {
-               setState(() { _isAnalyzing = false; });
+             if (!success) {
+                // Ad cancelled or failed
+                if (mounted) {
+                   setState(() { _isAnalyzing = false; });
+                }
+                return;
              }
 
-             if (!success) return;
-            //  final success = true; // Force success for testing
-
+             // Ad finished. Now wait for analysis if not done.
+             List<Ingredient>? ingredients;
+             try {
+                if (analysisFuture != null) {
+                  ingredients = await analysisFuture;
+                }
+             } catch (e) {
+                // Analysis failed
+                if (mounted) {
+                   setState(() { _isAnalyzing = false; });
+                   ScaffoldMessenger.of(screenContext).showSnackBar(
+                     const SnackBar(content: Text('解析に失敗しました。もう一度お試しください。')),
+                   );
+                }
+                return;
+             }
+            
              if (!mounted) return;
+             
+             setState(() { _isAnalyzing = false; });
+
+             // Show Success Dialog briefly or just Snack?
+             // User plan says: "AIの解析が終わりました。広告の視聴ありがとうございました"
+             await showDialog(
+                context: screenContext,
+                builder: (context) => AlertDialog(
+                  content: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                       const Icon(Icons.check_circle, color: Colors.green, size: 48),
+                       const SizedBox(height: 16),
+                       const Text('AIの解析が終わりました。\n広告の視聴ありがとうございました。', textAlign: TextAlign.center),
+                    ],
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text('次へ'),
+                    )
+                  ],
+                ),
+              );
+
+               if (!mounted) return;
+
 
               final result = await Navigator.push(
-                screenContext, // Use VALID screen context
+                screenContext,
                 MaterialPageRoute(
                   builder: (context) => AiIngredientListScreen(
                     initialText: currentUrl ?? widget.url,
                     sourceUrl: currentUrl ?? widget.url,
                     recipeTitle: _currentTitle,
                     imageUrl: finalImageUrl,
+                    preCalculatedIngredients: ingredients,
                   ),
                 ),
               );
               
-              if ((result == true || result is String) && mounted) {
-                 // Success
+              // If result is recipeId (String), go to Schedule
+              if (result is String && result.isNotEmpty && mounted) {
+                 Navigator.push(
+                    screenContext,
+                    MaterialPageRoute(
+                      builder: (context) => RecipeScheduleScreen(
+                        url: currentUrl ?? widget.url,
+                        title: _currentTitle,
+                        imageUrl: finalImageUrl,
+                        initialDate: widget.initialDate,
+                        initialMealType: widget.initialMealType,
+                        existingRecipeId: result,
+                      ),
+                    ),
+                 );
               }
             },
             style: ElevatedButton.styleFrom(backgroundColor: AppColors.stoxPrimary),

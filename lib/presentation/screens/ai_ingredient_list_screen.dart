@@ -43,6 +43,7 @@ class AiIngredientListScreen extends ConsumerStatefulWidget {
   final String? sourceUrl;
   final String? recipeTitle;
   final String? imageUrl;
+  final List<Ingredient>? preCalculatedIngredients;
 
   const AiIngredientListScreen({
     super.key,
@@ -50,6 +51,7 @@ class AiIngredientListScreen extends ConsumerStatefulWidget {
     this.sourceUrl,
     this.recipeTitle,
     this.imageUrl,
+    this.preCalculatedIngredients,
   });
 
   @override
@@ -66,11 +68,65 @@ class _AiIngredientListScreenState extends ConsumerState<AiIngredientListScreen>
   void initState() {
     super.initState();
     _recipeTitle = widget.recipeTitle ?? '';
-    if (widget.initialText != null) {
+    if (widget.preCalculatedIngredients != null) {
+      // Use pre-calculated ingredients but still check against stock
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _processPreCalculatedIngredients(widget.preCalculatedIngredients!);
+      });
+    } else if (widget.initialText != null) {
       _inputController.text = widget.initialText!;
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _analyzeRecipe();
       });
+    }
+  }
+
+  Future<void> _processPreCalculatedIngredients(List<Ingredient> ingredients) async {
+    setState(() {
+      _isAnalyzing = true;
+    });
+
+    try {
+      final ingredientRepository = await ref.read(ingredientRepositoryProvider.future);
+      final allIngredients = await ingredientRepository.getAll();
+      
+      final existingNames = allIngredients
+          .map((i) => i.name)
+          .toSet();
+      
+      final uniqueResults = <String, Ingredient>{};
+      for (final item in ingredients) {
+        if (!uniqueResults.containsKey(item.name)) {
+          uniqueResults[item.name] = item;
+        }
+      }
+      
+      if (mounted) {
+        setState(() {
+          _ingredients = uniqueResults.values.map((i) {
+            final isExisting = existingNames.contains(i.name);
+            return _AiIngredientItem(
+              ingredient: i,
+              selection: isExisting ? AiSelection.stock : AiSelection.toBuy,
+            );
+          }).toList();
+          _isAnalyzing = false;
+        });
+      }
+    } catch (e) {
+       setState(() {
+        _isAnalyzing = false;
+      });
+      // Just show what we have if check fails? Or show error?
+      // If check fails, we might just default to 'toBuy'.
+       if (mounted) {
+        setState(() {
+          _ingredients = ingredients.map((i) => _AiIngredientItem(
+            ingredient: i,
+            selection: AiSelection.toBuy,
+          )).toList();
+        });
+      }
     }
   }
 
