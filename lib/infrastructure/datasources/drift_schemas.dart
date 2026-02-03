@@ -62,6 +62,7 @@ class MealPlans extends Table {
   DateTimeColumn get date => dateTime()();
   IntColumn get mealType => integer()(); // Enum index
   BoolColumn get isDone => boolean().withDefault(const Constant(false))();
+  DateTimeColumn get completedAt => dateTime().nullable()();
   TextColumn get photos => text().withDefault(const Constant('[]'))(); // JSON list of strings
 
   @override

@@ -10,6 +10,7 @@ enum MealType {
   snack,
   preMade, // 作り置き
   other,
+  undecided, // 時間未定
 }
 
 @freezed
@@ -20,6 +21,7 @@ class MealPlan with _$MealPlan {
     required DateTime date,
     required MealType mealType,
     @Default(false) bool isDone,
+    DateTime? completedAt,
     @Default([]) List<String> photos,
   }) = _MealPlan;
 

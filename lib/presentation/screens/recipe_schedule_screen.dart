@@ -139,8 +139,11 @@ class _RecipeScheduleScreenState extends ConsumerState<RecipeScheduleScreen> {
         }
       }
 
-      if (_selectedDate != null && _selectedTimeSlot != null) {
-          final mealType = _getMealType(_selectedTimeSlot!);
+      if (_selectedDate != null) {
+          final mealType = _selectedTimeSlot != null 
+              ? _getMealType(_selectedTimeSlot!) 
+              : MealType.undecided;
+              
           final mealPlan = MealPlan(
             id: DateTime.now().microsecondsSinceEpoch.toString(), 
             recipeId: recipeId,

@@ -80,6 +80,7 @@ extension MealPlanEntityMapper on MealPlanEntity {
       date: date,
       mealType: MealType.values[mealType],
       isDone: isDone,
+      completedAt: completedAt,
       photos: (json.decode(photos) as List<dynamic>).map((e) => e.toString()).toList(),
     );
   }
@@ -93,6 +94,7 @@ extension MealPlanDomainMapper on MealPlan {
       date: Value(mealPlan.date),
       mealType: Value(mealPlan.mealType.index),
       isDone: Value(mealPlan.isDone),
+      completedAt: Value(mealPlan.completedAt),
       photos: Value(json.encode(mealPlan.photos)),
     );
   }

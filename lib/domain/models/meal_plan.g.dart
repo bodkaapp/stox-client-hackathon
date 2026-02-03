@@ -13,6 +13,9 @@ _$MealPlanImpl _$$MealPlanImplFromJson(Map<String, dynamic> json) =>
       date: DateTime.parse(json['date'] as String),
       mealType: $enumDecode(_$MealTypeEnumMap, json['mealType']),
       isDone: json['isDone'] as bool? ?? false,
+      completedAt: json['completedAt'] == null
+          ? null
+          : DateTime.parse(json['completedAt'] as String),
       photos: (json['photos'] as List<dynamic>?)
               ?.map((e) => e as String)
               .toList() ??
@@ -26,6 +29,7 @@ Map<String, dynamic> _$$MealPlanImplToJson(_$MealPlanImpl instance) =>
       'date': instance.date.toIso8601String(),
       'mealType': _$MealTypeEnumMap[instance.mealType]!,
       'isDone': instance.isDone,
+      'completedAt': instance.completedAt?.toIso8601String(),
       'photos': instance.photos,
     };
 
@@ -36,4 +40,5 @@ const _$MealTypeEnumMap = {
   MealType.snack: 'snack',
   MealType.preMade: 'preMade',
   MealType.other: 'other',
+  MealType.undecided: 'undecided',
 };

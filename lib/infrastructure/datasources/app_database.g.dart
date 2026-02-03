@@ -1290,6 +1290,12 @@ class $MealPlansTable extends MealPlans
       defaultConstraints:
           GeneratedColumn.constraintIsAlways('CHECK ("is_done" IN (0, 1))'),
       defaultValue: const Constant(false));
+  static const VerificationMeta _completedAtMeta =
+      const VerificationMeta('completedAt');
+  @override
+  late final GeneratedColumn<DateTime> completedAt = GeneratedColumn<DateTime>(
+      'completed_at', aliasedName, true,
+      type: DriftSqlType.dateTime, requiredDuringInsert: false);
   static const VerificationMeta _photosMeta = const VerificationMeta('photos');
   @override
   late final GeneratedColumn<String> photos = GeneratedColumn<String>(
@@ -1299,7 +1305,7 @@ class $MealPlansTable extends MealPlans
       defaultValue: const Constant('[]'));
   @override
   List<GeneratedColumn> get $columns =>
-      [id, originalId, recipeId, date, mealType, isDone, photos];
+      [id, originalId, recipeId, date, mealType, isDone, completedAt, photos];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -1343,6 +1349,12 @@ class $MealPlansTable extends MealPlans
       context.handle(_isDoneMeta,
           isDone.isAcceptableOrUnknown(data['is_done']!, _isDoneMeta));
     }
+    if (data.containsKey('completed_at')) {
+      context.handle(
+          _completedAtMeta,
+          completedAt.isAcceptableOrUnknown(
+              data['completed_at']!, _completedAtMeta));
+    }
     if (data.containsKey('photos')) {
       context.handle(_photosMeta,
           photos.isAcceptableOrUnknown(data['photos']!, _photosMeta));
@@ -1368,6 +1380,8 @@ class $MealPlansTable extends MealPlans
           .read(DriftSqlType.int, data['${effectivePrefix}meal_type'])!,
       isDone: attachedDatabase.typeMapping
           .read(DriftSqlType.bool, data['${effectivePrefix}is_done'])!,
+      completedAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}completed_at']),
       photos: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}photos'])!,
     );
@@ -1386,6 +1400,7 @@ class MealPlanEntity extends DataClass implements Insertable<MealPlanEntity> {
   final DateTime date;
   final int mealType;
   final bool isDone;
+  final DateTime? completedAt;
   final String photos;
   const MealPlanEntity(
       {required this.id,
@@ -1394,6 +1409,7 @@ class MealPlanEntity extends DataClass implements Insertable<MealPlanEntity> {
       required this.date,
       required this.mealType,
       required this.isDone,
+      this.completedAt,
       required this.photos});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -1404,6 +1420,9 @@ class MealPlanEntity extends DataClass implements Insertable<MealPlanEntity> {
     map['date'] = Variable<DateTime>(date);
     map['meal_type'] = Variable<int>(mealType);
     map['is_done'] = Variable<bool>(isDone);
+    if (!nullToAbsent || completedAt != null) {
+      map['completed_at'] = Variable<DateTime>(completedAt);
+    }
     map['photos'] = Variable<String>(photos);
     return map;
   }
@@ -1416,6 +1435,9 @@ class MealPlanEntity extends DataClass implements Insertable<MealPlanEntity> {
       date: Value(date),
       mealType: Value(mealType),
       isDone: Value(isDone),
+      completedAt: completedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(completedAt),
       photos: Value(photos),
     );
   }
@@ -1430,6 +1452,7 @@ class MealPlanEntity extends DataClass implements Insertable<MealPlanEntity> {
       date: serializer.fromJson<DateTime>(json['date']),
       mealType: serializer.fromJson<int>(json['mealType']),
       isDone: serializer.fromJson<bool>(json['isDone']),
+      completedAt: serializer.fromJson<DateTime?>(json['completedAt']),
       photos: serializer.fromJson<String>(json['photos']),
     );
   }
@@ -1443,6 +1466,7 @@ class MealPlanEntity extends DataClass implements Insertable<MealPlanEntity> {
       'date': serializer.toJson<DateTime>(date),
       'mealType': serializer.toJson<int>(mealType),
       'isDone': serializer.toJson<bool>(isDone),
+      'completedAt': serializer.toJson<DateTime?>(completedAt),
       'photos': serializer.toJson<String>(photos),
     };
   }
@@ -1454,6 +1478,7 @@ class MealPlanEntity extends DataClass implements Insertable<MealPlanEntity> {
           DateTime? date,
           int? mealType,
           bool? isDone,
+          Value<DateTime?> completedAt = const Value.absent(),
           String? photos}) =>
       MealPlanEntity(
         id: id ?? this.id,
@@ -1462,6 +1487,7 @@ class MealPlanEntity extends DataClass implements Insertable<MealPlanEntity> {
         date: date ?? this.date,
         mealType: mealType ?? this.mealType,
         isDone: isDone ?? this.isDone,
+        completedAt: completedAt.present ? completedAt.value : this.completedAt,
         photos: photos ?? this.photos,
       );
   MealPlanEntity copyWithCompanion(MealPlansCompanion data) {
@@ -1473,6 +1499,8 @@ class MealPlanEntity extends DataClass implements Insertable<MealPlanEntity> {
       date: data.date.present ? data.date.value : this.date,
       mealType: data.mealType.present ? data.mealType.value : this.mealType,
       isDone: data.isDone.present ? data.isDone.value : this.isDone,
+      completedAt:
+          data.completedAt.present ? data.completedAt.value : this.completedAt,
       photos: data.photos.present ? data.photos.value : this.photos,
     );
   }
@@ -1486,14 +1514,15 @@ class MealPlanEntity extends DataClass implements Insertable<MealPlanEntity> {
           ..write('date: $date, ')
           ..write('mealType: $mealType, ')
           ..write('isDone: $isDone, ')
+          ..write('completedAt: $completedAt, ')
           ..write('photos: $photos')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode =>
-      Object.hash(id, originalId, recipeId, date, mealType, isDone, photos);
+  int get hashCode => Object.hash(
+      id, originalId, recipeId, date, mealType, isDone, completedAt, photos);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -1504,6 +1533,7 @@ class MealPlanEntity extends DataClass implements Insertable<MealPlanEntity> {
           other.date == this.date &&
           other.mealType == this.mealType &&
           other.isDone == this.isDone &&
+          other.completedAt == this.completedAt &&
           other.photos == this.photos);
 }
 
@@ -1514,6 +1544,7 @@ class MealPlansCompanion extends UpdateCompanion<MealPlanEntity> {
   final Value<DateTime> date;
   final Value<int> mealType;
   final Value<bool> isDone;
+  final Value<DateTime?> completedAt;
   final Value<String> photos;
   const MealPlansCompanion({
     this.id = const Value.absent(),
@@ -1522,6 +1553,7 @@ class MealPlansCompanion extends UpdateCompanion<MealPlanEntity> {
     this.date = const Value.absent(),
     this.mealType = const Value.absent(),
     this.isDone = const Value.absent(),
+    this.completedAt = const Value.absent(),
     this.photos = const Value.absent(),
   });
   MealPlansCompanion.insert({
@@ -1531,6 +1563,7 @@ class MealPlansCompanion extends UpdateCompanion<MealPlanEntity> {
     required DateTime date,
     required int mealType,
     this.isDone = const Value.absent(),
+    this.completedAt = const Value.absent(),
     this.photos = const Value.absent(),
   })  : originalId = Value(originalId),
         recipeId = Value(recipeId),
@@ -1543,6 +1576,7 @@ class MealPlansCompanion extends UpdateCompanion<MealPlanEntity> {
     Expression<DateTime>? date,
     Expression<int>? mealType,
     Expression<bool>? isDone,
+    Expression<DateTime>? completedAt,
     Expression<String>? photos,
   }) {
     return RawValuesInsertable({
@@ -1552,6 +1586,7 @@ class MealPlansCompanion extends UpdateCompanion<MealPlanEntity> {
       if (date != null) 'date': date,
       if (mealType != null) 'meal_type': mealType,
       if (isDone != null) 'is_done': isDone,
+      if (completedAt != null) 'completed_at': completedAt,
       if (photos != null) 'photos': photos,
     });
   }
@@ -1563,6 +1598,7 @@ class MealPlansCompanion extends UpdateCompanion<MealPlanEntity> {
       Value<DateTime>? date,
       Value<int>? mealType,
       Value<bool>? isDone,
+      Value<DateTime?>? completedAt,
       Value<String>? photos}) {
     return MealPlansCompanion(
       id: id ?? this.id,
@@ -1571,6 +1607,7 @@ class MealPlansCompanion extends UpdateCompanion<MealPlanEntity> {
       date: date ?? this.date,
       mealType: mealType ?? this.mealType,
       isDone: isDone ?? this.isDone,
+      completedAt: completedAt ?? this.completedAt,
       photos: photos ?? this.photos,
     );
   }
@@ -1596,6 +1633,9 @@ class MealPlansCompanion extends UpdateCompanion<MealPlanEntity> {
     if (isDone.present) {
       map['is_done'] = Variable<bool>(isDone.value);
     }
+    if (completedAt.present) {
+      map['completed_at'] = Variable<DateTime>(completedAt.value);
+    }
     if (photos.present) {
       map['photos'] = Variable<String>(photos.value);
     }
@@ -1611,6 +1651,7 @@ class MealPlansCompanion extends UpdateCompanion<MealPlanEntity> {
           ..write('date: $date, ')
           ..write('mealType: $mealType, ')
           ..write('isDone: $isDone, ')
+          ..write('completedAt: $completedAt, ')
           ..write('photos: $photos')
           ..write(')'))
         .toString();
@@ -3827,6 +3868,7 @@ typedef $$MealPlansTableCreateCompanionBuilder = MealPlansCompanion Function({
   required DateTime date,
   required int mealType,
   Value<bool> isDone,
+  Value<DateTime?> completedAt,
   Value<String> photos,
 });
 typedef $$MealPlansTableUpdateCompanionBuilder = MealPlansCompanion Function({
@@ -3836,6 +3878,7 @@ typedef $$MealPlansTableUpdateCompanionBuilder = MealPlansCompanion Function({
   Value<DateTime> date,
   Value<int> mealType,
   Value<bool> isDone,
+  Value<DateTime?> completedAt,
   Value<String> photos,
 });
 
@@ -3865,6 +3908,9 @@ class $$MealPlansTableFilterComposer
 
   ColumnFilters<bool> get isDone => $composableBuilder(
       column: $table.isDone, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get completedAt => $composableBuilder(
+      column: $table.completedAt, builder: (column) => ColumnFilters(column));
 
   ColumnFilters<String> get photos => $composableBuilder(
       column: $table.photos, builder: (column) => ColumnFilters(column));
@@ -3897,6 +3943,9 @@ class $$MealPlansTableOrderingComposer
   ColumnOrderings<bool> get isDone => $composableBuilder(
       column: $table.isDone, builder: (column) => ColumnOrderings(column));
 
+  ColumnOrderings<DateTime> get completedAt => $composableBuilder(
+      column: $table.completedAt, builder: (column) => ColumnOrderings(column));
+
   ColumnOrderings<String> get photos => $composableBuilder(
       column: $table.photos, builder: (column) => ColumnOrderings(column));
 }
@@ -3927,6 +3976,9 @@ class $$MealPlansTableAnnotationComposer
 
   GeneratedColumn<bool> get isDone =>
       $composableBuilder(column: $table.isDone, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get completedAt => $composableBuilder(
+      column: $table.completedAt, builder: (column) => column);
 
   GeneratedColumn<String> get photos =>
       $composableBuilder(column: $table.photos, builder: (column) => column);
@@ -3964,6 +4016,7 @@ class $$MealPlansTableTableManager extends RootTableManager<
             Value<DateTime> date = const Value.absent(),
             Value<int> mealType = const Value.absent(),
             Value<bool> isDone = const Value.absent(),
+            Value<DateTime?> completedAt = const Value.absent(),
             Value<String> photos = const Value.absent(),
           }) =>
               MealPlansCompanion(
@@ -3973,6 +4026,7 @@ class $$MealPlansTableTableManager extends RootTableManager<
             date: date,
             mealType: mealType,
             isDone: isDone,
+            completedAt: completedAt,
             photos: photos,
           ),
           createCompanionCallback: ({
@@ -3982,6 +4036,7 @@ class $$MealPlansTableTableManager extends RootTableManager<
             required DateTime date,
             required int mealType,
             Value<bool> isDone = const Value.absent(),
+            Value<DateTime?> completedAt = const Value.absent(),
             Value<String> photos = const Value.absent(),
           }) =>
               MealPlansCompanion.insert(
@@ -3991,6 +4046,7 @@ class $$MealPlansTableTableManager extends RootTableManager<
             date: date,
             mealType: mealType,
             isDone: isDone,
+            completedAt: completedAt,
             photos: photos,
           ),
           withReferenceMapper: (p0) => p0

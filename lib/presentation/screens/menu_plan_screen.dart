@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:intl/intl.dart';
 import '../../config/app_colors.dart';
 import '../../domain/models/meal_plan.dart';
 import '../../domain/models/recipe.dart';
@@ -243,6 +244,7 @@ class _MenuPlanScreenState extends ConsumerState<MenuPlanScreen> {
     final lunch = plans.where((p) => p.mealPlan.mealType == MealType.lunch).toList();
     final dinner = plans.where((p) => p.mealPlan.mealType == MealType.dinner).toList();
     final preMade = plans.where((p) => p.mealPlan.mealType == MealType.preMade).toList();
+    final undecided = plans.where((p) => p.mealPlan.mealType == MealType.undecided).toList();
 
     return ListView(
       padding: const EdgeInsets.all(20),
@@ -282,6 +284,17 @@ class _MenuPlanScreenState extends ConsumerState<MenuPlanScreen> {
         const SizedBox(height: 24),
         _buildPreMadeSection(
           items: preMade,
+        ),
+        const SizedBox(height: 24),
+        _buildSection(
+          title: '時間未定',
+          label: '未定',
+          color: const Color(0xFF9CA3AF), // gray-400
+          bgColor: const Color(0xFFF3F4F6), // gray-100
+          textColor: const Color(0xFF4B5563), // gray-600
+          items: undecided,
+          isHorizontal: false,
+          type: MealType.undecided,
         ),
         const SizedBox(height: 80),
       ],
@@ -420,9 +433,34 @@ class _MenuPlanScreenState extends ConsumerState<MenuPlanScreen> {
                children: items.expand((e) => e.mealPlan.photos).map((path) {
                  return Padding(
                    padding: const EdgeInsets.only(right: 8),
-                   child: ClipRRect(
-                     borderRadius: BorderRadius.circular(8),
-                     child: Image.file(File(path), width: 100, height: 100, fit: BoxFit.cover),
+                   child: Stack(
+                     children: [
+                       ClipRRect(
+                         borderRadius: BorderRadius.circular(8),
+                         child: Image.file(File(path), width: 100, height: 100, fit: BoxFit.cover),
+                       ),
+                       Positioned(
+                         bottom: 4,
+                         right: 4,
+                         child: FutureBuilder<DateTime>(
+                           future: File(path).lastModified(),
+                           builder: (context, snapshot) {
+                             if (!snapshot.hasData) return const SizedBox.shrink();
+                             return Container(
+                               padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                               decoration: BoxDecoration(
+                                 color: Colors.black.withOpacity(0.6),
+                                 borderRadius: BorderRadius.circular(4),
+                               ),
+                               child: Text(
+                                 DateFormat('HH:mm').format(snapshot.data!),
+                                 style: const TextStyle(fontSize: 10, color: Colors.white, fontWeight: FontWeight.bold),
+                               ),
+                             );
+                           },
+                         ),
+                       ),
+                     ],
                    ),
                  );
                }).toList(),
@@ -599,6 +637,14 @@ class _MenuPlanScreenState extends ConsumerState<MenuPlanScreen> {
               style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFF292524), height: 1.2),
             ),
           ),
+          if (item.mealPlan.isDone && item.mealPlan.completedAt != null)
+            Padding(
+              padding: const EdgeInsets.only(left: 8.0, right: 8.0, bottom: 8.0),
+              child: Text(
+                '${DateFormat('HH:mm').format(item.mealPlan.completedAt!)}に作りました',
+                style: const TextStyle(fontSize: 10, color: AppColors.stoxPrimary, fontWeight: FontWeight.bold),
+              ),
+            ),
         ],
       ),
     );
@@ -665,6 +711,13 @@ class _MenuPlanScreenState extends ConsumerState<MenuPlanScreen> {
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
+                if (item.mealPlan.isDone && item.mealPlan.completedAt != null) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    '${DateFormat('HH:mm').format(item.mealPlan.completedAt!)}に作りました',
+                    style: const TextStyle(fontSize: 12, color: AppColors.stoxPrimary, fontWeight: FontWeight.bold),
+                  ),
+                ],
                 const SizedBox(height: 4),
                  if (recipe != null)
                  const Row(
@@ -709,8 +762,9 @@ class _MenuPlanScreenState extends ConsumerState<MenuPlanScreen> {
               child: const Text('撮影する'),
             ),
              TextButton(
-              onPressed: () {
+              onPressed: () async {
                 Navigator.pop(context);
+                await _markAsDone(items);
               },
               child: const Text('写真を貼らずに完了する'),
             ),
@@ -718,6 +772,23 @@ class _MenuPlanScreenState extends ConsumerState<MenuPlanScreen> {
         );
       },
     );
+  }
+
+  Future<void> _markAsDone(List<MealPlanWithRecipe> items) async {
+    if (items.isEmpty) return;
+    final target = items.first;
+    try {
+      final repo = await ref.read(mealPlanRepositoryProvider.future);
+      final updatedPlan = target.mealPlan.copyWith(
+        isDone: true,
+        completedAt: target.mealPlan.completedAt ?? DateTime.now(),
+      );
+      await repo.save(updatedPlan);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('保存に失敗しました: $e')));
+      }
+    }
   }
 
   Future<void> _openFoodCameraAndSave(List<MealPlanWithRecipe> items) async {
@@ -748,7 +819,11 @@ class _MenuPlanScreenState extends ConsumerState<MenuPlanScreen> {
         try {
            final repo = await ref.read(mealPlanRepositoryProvider.future);
            final updatedPhotos = List<String>.from(target.mealPlan.photos)..add(imagePath);
-           final updatedPlan = target.mealPlan.copyWith(photos: updatedPhotos, isDone: true);
+           final updatedPlan = target.mealPlan.copyWith(
+             photos: updatedPhotos, 
+             isDone: true,
+             completedAt: target.mealPlan.completedAt ?? DateTime.now(),
+           );
            await repo.save(updatedPlan);
            
            // ref.invalidate(dailyMealPlanProvider); // No longer needed with StreamProvider
