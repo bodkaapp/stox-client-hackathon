@@ -92,7 +92,13 @@ Stream<List<DailyMenu>> pastMenus(PastMenusRef ref) async* {
       final dayPlans = entry.value;
 
       final recipes = <Recipe>[];
+      final photos = <String>[];
+      
       for (final plan in dayPlans) {
+        if (plan.photos.isNotEmpty) {
+          photos.addAll(plan.photos);
+        }
+        
         final recipe = await recipeRepo.getById(plan.recipeId);
         if (recipe != null) {
           recipes.add(recipe);
@@ -100,7 +106,7 @@ Stream<List<DailyMenu>> pastMenus(PastMenusRef ref) async* {
       }
 
       if (recipes.isNotEmpty) {
-        results.add(DailyMenu(date: date, recipes: recipes));
+        results.add(DailyMenu(date: date, recipes: recipes, photos: photos));
       }
     }
     return results;
@@ -110,6 +116,11 @@ Stream<List<DailyMenu>> pastMenus(PastMenusRef ref) async* {
 class DailyMenu {
   final DateTime date;
   final List<Recipe> recipes;
+  final List<String> photos;
 
-  DailyMenu({required this.date, required this.recipes});
+  DailyMenu({
+    required this.date, 
+    required this.recipes,
+    this.photos = const [],
+  });
 }

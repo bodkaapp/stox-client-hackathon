@@ -9,6 +9,7 @@ import 'recently_viewed_recipes_screen.dart';
 import 'cooking_mode_screen.dart';
 import 'recipe_search_results_screen.dart';
 import '../../domain/models/recipe.dart';
+import 'dart:io';
 
 class RecipeBookScreen extends ConsumerWidget {
   const RecipeBookScreen({super.key});
@@ -123,7 +124,20 @@ class RecipeBookScreen extends ConsumerWidget {
                                 
                                 return Padding(
                                   padding: const EdgeInsets.only(bottom: 12),
-                                  child: _buildHistoryItem(month, day, title),
+                                  child: _buildHistoryItem(
+                                    month, 
+                                    day, 
+                                    title, 
+                                    menu.photos,
+                                    onTap: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => MenuPlanScreen(initialDate: menu.date),
+                                        ),
+                                      );
+                                    },
+                                  ),
                                 );
                               },
                             );
@@ -694,7 +708,20 @@ class RecipeBookScreen extends ConsumerWidget {
                       
                       return Padding(
                         padding: const EdgeInsets.only(bottom: 12),
-                        child: _buildHistoryItem(month, day, title),
+                        child: _buildHistoryItem(
+                          month, 
+                          day, 
+                          title, 
+                          menu.photos,
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => MenuPlanScreen(initialDate: menu.date),
+                              ),
+                            );
+                          },
+                        ),
                       );
                     }).toList(),
                   );
@@ -730,72 +757,75 @@ class RecipeBookScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildHistoryItem(String month, String day, String title) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.stoxBorder),
-        boxShadow: [
-           BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 2, offset: const Offset(0, 1)),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 48,
-            padding: const EdgeInsets.only(right: 12),
-            decoration: const BoxDecoration(
-              border: Border(right: BorderSide(color: AppColors.stoxBorder)),
+  Widget _buildHistoryItem(String month, String day, String title, List<String> photos, {VoidCallback? onTap}) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: AppColors.stoxBorder),
+          boxShadow: [
+             BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 2, offset: const Offset(0, 1)),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 48,
+              padding: const EdgeInsets.only(right: 12),
+              decoration: const BoxDecoration(
+                border: Border(right: BorderSide(color: AppColors.stoxBorder)),
+              ),
+              child: Column(
+                children: [
+                  Text(month, style: const TextStyle(fontSize: 10,  color: Color(0xFF78716C))),
+                  Text(day, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF292524))),
+                ],
+              ),
             ),
-            child: Column(
-              children: [
-                Text(month, style: const TextStyle(fontSize: 10,  color: Color(0xFF78716C))),
-                Text(day, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF292524))),
-              ],
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF292524)),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      for (int i = 0; i < 2; i++) ...[
+                        if (i > 0) const SizedBox(width: 6),
+                        Container(
+                          width: 40,
+                          height: 40,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF5F5F4),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          clipBehavior: Clip.antiAlias,
+                          child: (i < photos.length)
+                              ? Image.file(
+                                  File(photos[i]), 
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (_, __, ___) => const Icon(Icons.image, size: 16, color: Color(0xFFD6D3D1)),
+                                )
+                              : const Icon(Icons.image, size: 16, color: Color(0xFFD6D3D1)),
+                        ),
+                      ],
+                    ],
+                  )
+                ],
+              ),
             ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF292524)),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    Container(
-                      width: 40,
-                      height: 40,
-                       decoration: BoxDecoration(
-                        color: const Color(0xFFF5F5F4),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: const Icon(Icons.image, size: 16, color: Color(0xFFD6D3D1)),
-                    ),
-                     const SizedBox(width: 6),
-                     Container(
-                      width: 40,
-                      height: 40,
-                       decoration: BoxDecoration(
-                        color: const Color(0xFFF5F5F4),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: const Icon(Icons.image, size: 16, color: Color(0xFFD6D3D1)),
-                    ),
-                  ],
-                )
-              ],
-            ),
-          ),
-          const Icon(Icons.chevron_right, color: Color(0xFFD6D3D1)),
-        ],
+            const Icon(Icons.chevron_right, color: Color(0xFFD6D3D1)),
+          ],
+        ),
       ),
     );
   }
