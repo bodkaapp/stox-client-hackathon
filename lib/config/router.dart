@@ -68,6 +68,10 @@ GoRouter router(RouterRef ref) {
             path: '/recipe_book',
             builder: (context, state) => const RecipeBookScreen(),
           ),
+          GoRoute(
+            path: '/menu_plan',
+            builder: (context, state) => const MenuPlanScreen(),
+          ),
         ],
       ),
       GoRoute(
@@ -88,11 +92,7 @@ GoRouter router(RouterRef ref) {
         parentNavigatorKey: _rootNavigatorKey,
         builder: (context, state) => const FoodCameraScreen(),
       ),
-      GoRoute(
-        path: '/menu_plan',
-        parentNavigatorKey: _rootNavigatorKey,
-        builder: (context, state) => const MenuPlanScreen(),
-      ),
+
     ],
   );
 }

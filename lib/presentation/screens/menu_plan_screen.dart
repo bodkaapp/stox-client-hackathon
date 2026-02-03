@@ -109,10 +109,12 @@ class _MenuPlanScreenState extends ConsumerState<MenuPlanScreen> {
             color: Color(0xFF292524), // text-stone-800
           ),
         ),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFF57534E)), // text-stone-600
-          onPressed: () => Navigator.of(context).pop(),
-        ),
+        leading: Navigator.canPop(context)
+            ? IconButton(
+                icon: const Icon(Icons.arrow_back, color: Color(0xFF57534E)), // text-stone-600
+                onPressed: () => Navigator.of(context).pop(),
+              )
+            : null,
         actions: [
           // Only show toggle in Mobile
           LayoutBuilder(

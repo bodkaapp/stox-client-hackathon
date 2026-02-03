@@ -26,16 +26,16 @@ class ScaffoldWithNavBar extends ConsumerWidget {
             label: 'ホーム',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.map_outlined),
-            label: 'チラシ',
+            icon: Icon(Icons.inventory_2),
+            label: '在庫',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.shopping_cart),
             label: '買い物',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.inventory_2),
-            label: '在庫',
+            icon: Icon(Icons.calendar_month),
+            label: '献立計画表',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.menu_book),
@@ -48,13 +48,13 @@ class ScaffoldWithNavBar extends ConsumerWidget {
 
   static int _calculateSelectedIndex(BuildContext context) {
     final String location = GoRouterState.of(context).uri.toString();
-    if (location.startsWith('/flyer')) {
+    if (location.startsWith('/stock')) {
       return 1;
     }
     if (location.startsWith('/shopping')) {
       return 2;
     }
-    if (location.startsWith('/stock')) {
+    if (location.startsWith('/menu_plan')) {
       return 3;
     }
     if (location.startsWith('/recipe_book')) {
@@ -69,13 +69,13 @@ class ScaffoldWithNavBar extends ConsumerWidget {
         context.go('/');
         break;
       case 1:
-        context.go('/flyer');
+        context.go('/stock');
         break;
       case 2:
         context.go('/shopping');
         break;
       case 3:
-        context.go('/stock');
+        context.go('/menu_plan');
         break;
       case 4:
         context.go('/recipe_book');
