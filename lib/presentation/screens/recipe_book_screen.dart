@@ -393,45 +393,7 @@ class RecipeBookScreen extends ConsumerWidget {
                             child: Column(
                               children: [
                                 SizedBox(
-                                  height: 224, // h-56
-                                  child: Row(
-                                    children: [
-                                      Expanded(
-                                        flex: 1,
-                                        child: Container(
-                                          color: AppColors.stoxBannerBg,
-                                          child: (recipes.isNotEmpty && recipes[0].ogpImageUrl != null && recipes[0].ogpImageUrl!.isNotEmpty)
-                                            ? Image.network(recipes[0].ogpImageUrl!, fit: BoxFit.cover, errorBuilder: (_,__,___) => const Icon(Icons.broken_image, color: AppColors.stoxPrimary))
-                                            : const Center(child: Icon(Icons.restaurant, color: AppColors.stoxPrimary, size: 40)),
-                                        ),
-                                      ),
-                                      const SizedBox(width: 2), // gap-0.5 approx
-                                      Expanded(
-                                        flex: 1,
-                                        child: Column(
-                                          children: [
-                                            Expanded(
-                                              child: Container(
-                                                color: AppColors.stoxBannerBg,
-                                                  child: (recipes.length > 1 && recipes[1].ogpImageUrl != null && recipes[1].ogpImageUrl!.isNotEmpty)
-                                                    ? Image.network(recipes[1].ogpImageUrl!, fit: BoxFit.cover, errorBuilder: (_,__,___) => const Icon(Icons.broken_image, color: AppColors.stoxPrimary))
-                                                    : Center(child: Icon(Icons.restaurant, size: 24, color: AppColors.stoxPrimary.withOpacity(0.5))),
-                                              ),
-                                            ),
-                                            const SizedBox(height: 2),
-                                            Expanded(
-                                              child: Container(
-                                                color: AppColors.stoxBannerBg,
-                                                  child: (recipes.length > 2 && recipes[2].ogpImageUrl != null && recipes[2].ogpImageUrl!.isNotEmpty)
-                                                    ? Image.network(recipes[2].ogpImageUrl!, fit: BoxFit.cover, errorBuilder: (_,__,___) => const Icon(Icons.broken_image, color: AppColors.stoxPrimary))
-                                                    : Center(child: Icon(Icons.restaurant, size: 24, color: AppColors.stoxPrimary.withOpacity(0.5))),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ],
-                                  ),
+                              child: _buildDynamicImageGrid(recipes),
                                 ),
                                 Padding(
                                   padding: const EdgeInsets.all(16.0),
@@ -483,6 +445,101 @@ class RecipeBookScreen extends ConsumerWidget {
             error: (err, stack) => Padding(padding: const EdgeInsets.all(20), child: Text('Error: $err')),
           );
         }
+      ),
+    );
+  }
+
+  Widget _buildDynamicImageGrid(List<Recipe> recipes) {
+    if (recipes.isEmpty) return const SizedBox.shrink();
+
+    Widget buildImage(Recipe r) {
+      return Container(
+        color: AppColors.stoxBannerBg,
+        width: double.infinity,
+        height: double.infinity,
+        child: (r.ogpImageUrl.isNotEmpty)
+            ? Image.network(
+                r.ogpImageUrl,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => const Icon(Icons.broken_image, color: AppColors.stoxPrimary),
+              )
+            : const Center(child: Icon(Icons.restaurant, color: AppColors.stoxPrimary, size: 40)),
+      );
+    }
+
+    // Common spacer
+    const space = SizedBox(width: 2, height: 2);
+
+    // Case 1: Single image
+    if (recipes.length == 1) {
+      return SizedBox(
+        height: 224,
+        child: buildImage(recipes[0]),
+      );
+    }
+
+    // Case 2: Two images side-by-side
+    if (recipes.length == 2) {
+      return SizedBox(
+        height: 224, // h-56
+        child: Row(
+          children: [
+            Expanded(child: buildImage(recipes[0])),
+            space,
+            Expanded(child: buildImage(recipes[1])),
+          ],
+        ),
+      );
+    }
+
+    // Case 3: 1 large on left, 2 small on right (1:2 split)
+    if (recipes.length == 3) {
+      return SizedBox(
+        height: 224,
+        child: Row(
+          children: [
+            Expanded(child: buildImage(recipes[0])),
+            space,
+            Expanded(
+              child: Column(
+                children: [
+                  Expanded(child: buildImage(recipes[1])),
+                  space,
+                  Expanded(child: buildImage(recipes[2])),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    // Case 4+: 2x2 Grid (Top 4 recipes)
+    // We utilize the first 4 recipes.
+    return SizedBox(
+      height: 224,
+      child: Column(
+        children: [
+          Expanded(
+            child: Row(
+              children: [
+                Expanded(child: buildImage(recipes[0])),
+                space,
+                Expanded(child: buildImage(recipes[1])),
+              ],
+            ),
+          ),
+          space,
+          Expanded(
+            child: Row(
+              children: [
+                Expanded(child: buildImage(recipes[2])),
+                space,
+                Expanded(child: buildImage(recipes[3])),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
