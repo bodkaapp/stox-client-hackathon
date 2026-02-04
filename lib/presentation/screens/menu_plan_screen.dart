@@ -18,6 +18,8 @@ import 'cooking_mode_screen.dart';
 import 'food_camera_screen.dart';
 import 'recipe_search_results_screen.dart';
 import 'photo_viewer_screen.dart';
+import '../widgets/help_icon.dart';
+
 
 // -----------------------------------------------------------------------------
 // Models
@@ -139,6 +141,11 @@ class _MenuPlanScreenState extends ConsumerState<MenuPlanScreen> {
                   style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.stoxAccent, letterSpacing: 1.0),
                 ),
               ],
+            ),
+            const SizedBox(width: 8),
+            const HelpIcon(
+              title: '献立計画表画面',
+              description: 'これから作る料理の献立を計画したり、前に作った料理のレシピを振り返ったりする画面です。',
             ),
           ],
         ),

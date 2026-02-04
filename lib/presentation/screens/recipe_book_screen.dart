@@ -10,6 +10,7 @@ import 'cooking_mode_screen.dart';
 import 'recipe_search_results_screen.dart';
 import '../../domain/models/recipe.dart';
 import 'dart:io';
+import '../widgets/help_icon.dart';
 
 class RecipeBookScreen extends ConsumerWidget {
   const RecipeBookScreen({super.key});
@@ -203,6 +204,11 @@ class RecipeBookScreen extends ConsumerWidget {
                           style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.stoxAccent, letterSpacing: 1.0),
                         ),
                       ],
+                    ),
+                    const SizedBox(width: 8),
+                    const HelpIcon(
+                      title: 'マイレシピ帳画面',
+                      description: 'レシピを検索したり、献立を計画したり、作った料理のレシピを記録したりする画面です。',
                     ),
                   ],
                 ),

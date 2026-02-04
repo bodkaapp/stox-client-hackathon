@@ -9,6 +9,7 @@ import 'photo_stock_location_screen.dart';
 import '../widgets/ingredient_add_modal.dart';
 import '../widgets/voice_shopping_modal.dart';
 import '../components/circle_action_button.dart';
+import '../widgets/help_icon.dart';
 
 class StockScreen extends ConsumerStatefulWidget {
   const StockScreen({super.key});
@@ -523,6 +524,11 @@ class _StockScreenState extends ConsumerState<StockScreen> {
                       '在庫一覧',
                       style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.stoxText),
                     ),
+                    const SizedBox(width: 8),
+                    const HelpIcon(
+                      title: '在庫一覧画面',
+                      description: '家にある食材や日用品の在庫を確認する画面です。個数や賞味期限の確認ができます',
+                    ),
                   ],
                 ),
               ),
@@ -735,6 +741,11 @@ class _StockScreenState extends ConsumerState<StockScreen> {
                     style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.stoxAccent, letterSpacing: 1.0),
                   ),
                 ],
+              ),
+              const SizedBox(width: 8),
+              const HelpIcon(
+                title: '在庫一覧画面',
+                description: '家にある食材や日用品の在庫を確認する画面です。個数や賞味期限の確認ができます',
               ),
             ],
           ),

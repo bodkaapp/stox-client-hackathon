@@ -14,6 +14,7 @@ import '../screens/shopping_receipt_result_screen.dart';
 import '../mixins/ad_manager_mixin.dart';
 import '../mixins/receipt_scanner_mixin.dart';
 import 'dart:io';
+import 'help_icon.dart';
 
 // --- Home Header ---
 class HomeHeader extends ConsumerWidget {
@@ -51,6 +52,11 @@ class HomeHeader extends ConsumerWidget {
                   fontWeight: FontWeight.w900,
                   letterSpacing: -0.5,
                 ),
+              ),
+              const SizedBox(width: 8),
+              const HelpIcon(
+                title: 'ホーム画面',
+                description: 'アプリのメインの画面です。この「？」アイコンをタップすると、画面の使い方が表示されます。',
               ),
             ],
           ),

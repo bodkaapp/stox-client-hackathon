@@ -11,6 +11,7 @@ import '../mixins/ad_manager_mixin.dart';
 import 'shopping_receipt_result_screen.dart';
 import '../widgets/voice_shopping_modal.dart';
 import '../mixins/receipt_scanner_mixin.dart';
+import '../widgets/help_icon.dart';
 
 class ShoppingScreen extends ConsumerStatefulWidget {
   final bool openAddModal;
@@ -160,6 +161,11 @@ class _ShoppingScreenState extends ConsumerState<ShoppingScreen> with AdManagerM
                     const Text(
                       'お買い物',
                       style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.stoxText),
+                    ),
+                    const SizedBox(width: 8),
+                    const HelpIcon(
+                      title: '買い物画面',
+                      description: '買いたいものを管理する画面です。\n「＋」ボタンをタップして、買うものを登録できます。\n「お買い物モード」ボタンを押すと、お買い物を便利にするモードに切り替わります。\nお買い物が終わった後はレシートを撮影して、買ったものを在庫に移動することもできます。',
                     ),
                   ],
                 ),
@@ -609,6 +615,11 @@ class _ShoppingScreenState extends ConsumerState<ShoppingScreen> with AdManagerM
                     style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.stoxAccent, letterSpacing: 1.0),
                   ),
                 ],
+              ),
+              const SizedBox(width: 8),
+              const HelpIcon(
+                title: '買い物画面',
+                description: '買いたいものを管理する画面です。\n「＋」ボタンをタップして、買うものを登録できます。\n「お買い物モード」ボタンを押すと、お買い物を便利にするモードに切り替わります。\nお買い物が終わった後はレシートを撮影して、買ったものを在庫に移動することもできます。',
               ),
             ],
           ),
