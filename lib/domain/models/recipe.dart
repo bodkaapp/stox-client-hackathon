@@ -16,7 +16,9 @@ class Recipe with _$Recipe {
     @Default(2) int defaultServings,
     @Default(0) int rating,
     DateTime? lastCookedAt,
+    DateTime? lastViewedAt,
     @Default(false) bool isDeleted,
+    @Default(false) bool isTemporary,
     @Default('') String memo,
     @Default([]) List<RecipeIngredient> ingredients,
   }) = _Recipe;

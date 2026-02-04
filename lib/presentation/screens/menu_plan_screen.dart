@@ -669,6 +669,7 @@ class _MenuPlanScreenState extends ConsumerState<MenuPlanScreen> {
                             url: recipe.pageUrl,
                             title: recipe.title,
                             imageUrl: recipe.ogpImageUrl,
+                            existingRecipeId: recipe.id,
                           ),
                         ),
                       );
@@ -734,6 +735,7 @@ class _MenuPlanScreenState extends ConsumerState<MenuPlanScreen> {
                       url: recipe.pageUrl,
                       title: recipe.title,
                       imageUrl: recipe.ogpImageUrl,
+                      existingRecipeId: recipe.id,
                     ),
                   ),
                 );

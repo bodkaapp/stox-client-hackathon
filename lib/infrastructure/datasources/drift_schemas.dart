@@ -14,7 +14,9 @@ class Recipes extends Table {
   IntColumn get defaultServings => integer().withDefault(const Constant(2))();
   IntColumn get rating => integer().withDefault(const Constant(0))(); // 0-5
   DateTimeColumn get lastCookedAt => dateTime().nullable()();
+  DateTimeColumn get lastViewedAt => dateTime().nullable()();
   BoolColumn get isDeleted => boolean().withDefault(const Constant(false))();
+  BoolColumn get isTemporary => boolean().withDefault(const Constant(false))(); // For view history only
   TextColumn get memo => text().withDefault(const Constant(''))();
   
   @override

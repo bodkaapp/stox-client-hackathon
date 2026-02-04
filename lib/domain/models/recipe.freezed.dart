@@ -29,7 +29,9 @@ mixin _$Recipe {
   int get defaultServings => throw _privateConstructorUsedError;
   int get rating => throw _privateConstructorUsedError;
   DateTime? get lastCookedAt => throw _privateConstructorUsedError;
+  DateTime? get lastViewedAt => throw _privateConstructorUsedError;
   bool get isDeleted => throw _privateConstructorUsedError;
+  bool get isTemporary => throw _privateConstructorUsedError;
   String get memo => throw _privateConstructorUsedError;
   List<RecipeIngredient> get ingredients => throw _privateConstructorUsedError;
 
@@ -57,7 +59,9 @@ abstract class $RecipeCopyWith<$Res> {
       int defaultServings,
       int rating,
       DateTime? lastCookedAt,
+      DateTime? lastViewedAt,
       bool isDeleted,
+      bool isTemporary,
       String memo,
       List<RecipeIngredient> ingredients});
 }
@@ -86,7 +90,9 @@ class _$RecipeCopyWithImpl<$Res, $Val extends Recipe>
     Object? defaultServings = null,
     Object? rating = null,
     Object? lastCookedAt = freezed,
+    Object? lastViewedAt = freezed,
     Object? isDeleted = null,
+    Object? isTemporary = null,
     Object? memo = null,
     Object? ingredients = null,
   }) {
@@ -127,9 +133,17 @@ class _$RecipeCopyWithImpl<$Res, $Val extends Recipe>
           ? _value.lastCookedAt
           : lastCookedAt // ignore: cast_nullable_to_non_nullable
               as DateTime?,
+      lastViewedAt: freezed == lastViewedAt
+          ? _value.lastViewedAt
+          : lastViewedAt // ignore: cast_nullable_to_non_nullable
+              as DateTime?,
       isDeleted: null == isDeleted
           ? _value.isDeleted
           : isDeleted // ignore: cast_nullable_to_non_nullable
+              as bool,
+      isTemporary: null == isTemporary
+          ? _value.isTemporary
+          : isTemporary // ignore: cast_nullable_to_non_nullable
               as bool,
       memo: null == memo
           ? _value.memo
@@ -160,7 +174,9 @@ abstract class _$$RecipeImplCopyWith<$Res> implements $RecipeCopyWith<$Res> {
       int defaultServings,
       int rating,
       DateTime? lastCookedAt,
+      DateTime? lastViewedAt,
       bool isDeleted,
+      bool isTemporary,
       String memo,
       List<RecipeIngredient> ingredients});
 }
@@ -187,7 +203,9 @@ class __$$RecipeImplCopyWithImpl<$Res>
     Object? defaultServings = null,
     Object? rating = null,
     Object? lastCookedAt = freezed,
+    Object? lastViewedAt = freezed,
     Object? isDeleted = null,
+    Object? isTemporary = null,
     Object? memo = null,
     Object? ingredients = null,
   }) {
@@ -228,9 +246,17 @@ class __$$RecipeImplCopyWithImpl<$Res>
           ? _value.lastCookedAt
           : lastCookedAt // ignore: cast_nullable_to_non_nullable
               as DateTime?,
+      lastViewedAt: freezed == lastViewedAt
+          ? _value.lastViewedAt
+          : lastViewedAt // ignore: cast_nullable_to_non_nullable
+              as DateTime?,
       isDeleted: null == isDeleted
           ? _value.isDeleted
           : isDeleted // ignore: cast_nullable_to_non_nullable
+              as bool,
+      isTemporary: null == isTemporary
+          ? _value.isTemporary
+          : isTemporary // ignore: cast_nullable_to_non_nullable
               as bool,
       memo: null == memo
           ? _value.memo
@@ -257,7 +283,9 @@ class _$RecipeImpl implements _Recipe {
       this.defaultServings = 2,
       this.rating = 0,
       this.lastCookedAt,
+      this.lastViewedAt,
       this.isDeleted = false,
+      this.isTemporary = false,
       this.memo = '',
       final List<RecipeIngredient> ingredients = const []})
       : _ingredients = ingredients;
@@ -287,8 +315,13 @@ class _$RecipeImpl implements _Recipe {
   @override
   final DateTime? lastCookedAt;
   @override
+  final DateTime? lastViewedAt;
+  @override
   @JsonKey()
   final bool isDeleted;
+  @override
+  @JsonKey()
+  final bool isTemporary;
   @override
   @JsonKey()
   final String memo;
@@ -303,7 +336,7 @@ class _$RecipeImpl implements _Recipe {
 
   @override
   String toString() {
-    return 'Recipe(id: $id, title: $title, pageUrl: $pageUrl, ogpImageUrl: $ogpImageUrl, createdAt: $createdAt, cookedCount: $cookedCount, defaultServings: $defaultServings, rating: $rating, lastCookedAt: $lastCookedAt, isDeleted: $isDeleted, memo: $memo, ingredients: $ingredients)';
+    return 'Recipe(id: $id, title: $title, pageUrl: $pageUrl, ogpImageUrl: $ogpImageUrl, createdAt: $createdAt, cookedCount: $cookedCount, defaultServings: $defaultServings, rating: $rating, lastCookedAt: $lastCookedAt, lastViewedAt: $lastViewedAt, isDeleted: $isDeleted, isTemporary: $isTemporary, memo: $memo, ingredients: $ingredients)';
   }
 
   @override
@@ -325,8 +358,12 @@ class _$RecipeImpl implements _Recipe {
             (identical(other.rating, rating) || other.rating == rating) &&
             (identical(other.lastCookedAt, lastCookedAt) ||
                 other.lastCookedAt == lastCookedAt) &&
+            (identical(other.lastViewedAt, lastViewedAt) ||
+                other.lastViewedAt == lastViewedAt) &&
             (identical(other.isDeleted, isDeleted) ||
                 other.isDeleted == isDeleted) &&
+            (identical(other.isTemporary, isTemporary) ||
+                other.isTemporary == isTemporary) &&
             (identical(other.memo, memo) || other.memo == memo) &&
             const DeepCollectionEquality()
                 .equals(other._ingredients, _ingredients));
@@ -345,7 +382,9 @@ class _$RecipeImpl implements _Recipe {
       defaultServings,
       rating,
       lastCookedAt,
+      lastViewedAt,
       isDeleted,
+      isTemporary,
       memo,
       const DeepCollectionEquality().hash(_ingredients));
 
@@ -376,7 +415,9 @@ abstract class _Recipe implements Recipe {
       final int defaultServings,
       final int rating,
       final DateTime? lastCookedAt,
+      final DateTime? lastViewedAt,
       final bool isDeleted,
+      final bool isTemporary,
       final String memo,
       final List<RecipeIngredient> ingredients}) = _$RecipeImpl;
 
@@ -401,7 +442,11 @@ abstract class _Recipe implements Recipe {
   @override
   DateTime? get lastCookedAt;
   @override
+  DateTime? get lastViewedAt;
+  @override
   bool get isDeleted;
+  @override
+  bool get isTemporary;
   @override
   String get memo;
   @override

@@ -1,4 +1,5 @@
 import 'package:go_router/go_router.dart';
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -7,10 +8,45 @@ import '../../infrastructure/repositories/drift_meal_plan_repository.dart';
 import 'dart:io';
 import 'photo_viewer_screen.dart';
 
-final photoGalleryProvider = FutureProvider.autoDispose<List<MealPlan>>((ref) async {
-  final repo = await ref.watch(mealPlanRepositoryProvider.future);
-  return repo.getWithPhotos(limit: 100);
-});
+final photoGalleryProvider = AsyncNotifierProvider.autoDispose<PhotoGalleryNotifier, List<MealPlan>>(
+  PhotoGalleryNotifier.new,
+);
+
+class PhotoGalleryNotifier extends AutoDisposeAsyncNotifier<List<MealPlan>> {
+  bool _hasMore = true;
+  static const int _limit = 50;
+
+  bool get hasMore => _hasMore;
+
+  @override
+  FutureOr<List<MealPlan>> build() async {
+    _hasMore = true;
+    return _fetch(offset: 0);
+  }
+
+  Future<List<MealPlan>> _fetch({required int offset}) async {
+    final repo = await ref.watch(mealPlanRepositoryProvider.future);
+    final newItems = await repo.getWithPhotos(limit: _limit, offset: offset);
+    if (newItems.length < _limit) {
+      _hasMore = false;
+    }
+    return newItems;
+  }
+
+  Future<void> loadMore() async {
+    final currentList = state.valueOrNull;
+    if (currentList == null || !_hasMore || state.isLoading) return;
+
+    state = const AsyncLoading<List<MealPlan>>().copyWithPrevious(state);
+
+    try {
+      final newItems = await _fetch(offset: currentList.length);
+      state = AsyncData([...currentList, ...newItems]);
+    } catch (e, s) {
+      state = AsyncError<List<MealPlan>>(e, s).copyWithPrevious(state);
+    }
+  }
+}
 
 class PhotoGalleryScreen extends ConsumerWidget {
   const PhotoGalleryScreen({super.key});
@@ -18,6 +54,7 @@ class PhotoGalleryScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final plansAsync = ref.watch(photoGalleryProvider);
+    final notifier = ref.watch(photoGalleryProvider.notifier);
 
     return Scaffold(
       appBar: AppBar(
@@ -27,6 +64,7 @@ class PhotoGalleryScreen extends ConsumerWidget {
         iconTheme: const IconThemeData(color: Colors.black),
       ),
       body: plansAsync.when(
+        skipLoadingOnReload: true,
         data: (plans) {
           if (plans.isEmpty) {
             return const Center(child: Text('写真がありません'));
@@ -43,15 +81,33 @@ class PhotoGalleryScreen extends ConsumerWidget {
           }
           
           final sortedDates = grouped.keys.toList()..sort((a, b) => b.compareTo(a));
+          final isLoadingMore = plansAsync.isLoading;
 
-          return ListView.builder(
-            padding: const EdgeInsets.only(bottom: 24),
-            itemCount: sortedDates.length,
-            itemBuilder: (context, index) {
-              final date = sortedDates[index];
-              final photos = grouped[date]!;
-              return _buildDateSection(context, date, photos);
+          return NotificationListener<ScrollNotification>(
+            onNotification: (ScrollNotification scrollInfo) {
+              if (scrollInfo.metrics.pixels >= scrollInfo.metrics.maxScrollExtent - 200 &&
+                  !isLoadingMore &&
+                  notifier.hasMore) {
+                // Defer to next frame to avoid state change during build
+                Future.microtask(() => notifier.loadMore());
+              }
+              return false;
             },
+            child: ListView.builder(
+              padding: const EdgeInsets.only(bottom: 24),
+              itemCount: sortedDates.length + (isLoadingMore ? 1 : 0),
+              itemBuilder: (context, index) {
+                if (index == sortedDates.length) {
+                  return const Padding(
+                    padding: EdgeInsets.all(16.0),
+                    child: Center(child: CircularProgressIndicator()),
+                  );
+                }
+                final date = sortedDates[index];
+                final photos = grouped[date]!;
+                return _buildDateSection(context, date, photos);
+              },
+            ),
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),

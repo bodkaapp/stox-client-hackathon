@@ -76,6 +76,12 @@ class $RecipesTable extends Recipes
   late final GeneratedColumn<DateTime> lastCookedAt = GeneratedColumn<DateTime>(
       'last_cooked_at', aliasedName, true,
       type: DriftSqlType.dateTime, requiredDuringInsert: false);
+  static const VerificationMeta _lastViewedAtMeta =
+      const VerificationMeta('lastViewedAt');
+  @override
+  late final GeneratedColumn<DateTime> lastViewedAt = GeneratedColumn<DateTime>(
+      'last_viewed_at', aliasedName, true,
+      type: DriftSqlType.dateTime, requiredDuringInsert: false);
   static const VerificationMeta _isDeletedMeta =
       const VerificationMeta('isDeleted');
   @override
@@ -85,6 +91,16 @@ class $RecipesTable extends Recipes
       requiredDuringInsert: false,
       defaultConstraints:
           GeneratedColumn.constraintIsAlways('CHECK ("is_deleted" IN (0, 1))'),
+      defaultValue: const Constant(false));
+  static const VerificationMeta _isTemporaryMeta =
+      const VerificationMeta('isTemporary');
+  @override
+  late final GeneratedColumn<bool> isTemporary = GeneratedColumn<bool>(
+      'is_temporary', aliasedName, false,
+      type: DriftSqlType.bool,
+      requiredDuringInsert: false,
+      defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'CHECK ("is_temporary" IN (0, 1))'),
       defaultValue: const Constant(false));
   static const VerificationMeta _memoMeta = const VerificationMeta('memo');
   @override
@@ -105,7 +121,9 @@ class $RecipesTable extends Recipes
         defaultServings,
         rating,
         lastCookedAt,
+        lastViewedAt,
         isDeleted,
+        isTemporary,
         memo
       ];
   @override
@@ -177,9 +195,21 @@ class $RecipesTable extends Recipes
           lastCookedAt.isAcceptableOrUnknown(
               data['last_cooked_at']!, _lastCookedAtMeta));
     }
+    if (data.containsKey('last_viewed_at')) {
+      context.handle(
+          _lastViewedAtMeta,
+          lastViewedAt.isAcceptableOrUnknown(
+              data['last_viewed_at']!, _lastViewedAtMeta));
+    }
     if (data.containsKey('is_deleted')) {
       context.handle(_isDeletedMeta,
           isDeleted.isAcceptableOrUnknown(data['is_deleted']!, _isDeletedMeta));
+    }
+    if (data.containsKey('is_temporary')) {
+      context.handle(
+          _isTemporaryMeta,
+          isTemporary.isAcceptableOrUnknown(
+              data['is_temporary']!, _isTemporaryMeta));
     }
     if (data.containsKey('memo')) {
       context.handle(
@@ -214,8 +244,12 @@ class $RecipesTable extends Recipes
           .read(DriftSqlType.int, data['${effectivePrefix}rating'])!,
       lastCookedAt: attachedDatabase.typeMapping.read(
           DriftSqlType.dateTime, data['${effectivePrefix}last_cooked_at']),
+      lastViewedAt: attachedDatabase.typeMapping.read(
+          DriftSqlType.dateTime, data['${effectivePrefix}last_viewed_at']),
       isDeleted: attachedDatabase.typeMapping
           .read(DriftSqlType.bool, data['${effectivePrefix}is_deleted'])!,
+      isTemporary: attachedDatabase.typeMapping
+          .read(DriftSqlType.bool, data['${effectivePrefix}is_temporary'])!,
       memo: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}memo'])!,
     );
@@ -238,7 +272,9 @@ class RecipeEntity extends DataClass implements Insertable<RecipeEntity> {
   final int defaultServings;
   final int rating;
   final DateTime? lastCookedAt;
+  final DateTime? lastViewedAt;
   final bool isDeleted;
+  final bool isTemporary;
   final String memo;
   const RecipeEntity(
       {required this.id,
@@ -251,7 +287,9 @@ class RecipeEntity extends DataClass implements Insertable<RecipeEntity> {
       required this.defaultServings,
       required this.rating,
       this.lastCookedAt,
+      this.lastViewedAt,
       required this.isDeleted,
+      required this.isTemporary,
       required this.memo});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -268,7 +306,11 @@ class RecipeEntity extends DataClass implements Insertable<RecipeEntity> {
     if (!nullToAbsent || lastCookedAt != null) {
       map['last_cooked_at'] = Variable<DateTime>(lastCookedAt);
     }
+    if (!nullToAbsent || lastViewedAt != null) {
+      map['last_viewed_at'] = Variable<DateTime>(lastViewedAt);
+    }
     map['is_deleted'] = Variable<bool>(isDeleted);
+    map['is_temporary'] = Variable<bool>(isTemporary);
     map['memo'] = Variable<String>(memo);
     return map;
   }
@@ -287,7 +329,11 @@ class RecipeEntity extends DataClass implements Insertable<RecipeEntity> {
       lastCookedAt: lastCookedAt == null && nullToAbsent
           ? const Value.absent()
           : Value(lastCookedAt),
+      lastViewedAt: lastViewedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(lastViewedAt),
       isDeleted: Value(isDeleted),
+      isTemporary: Value(isTemporary),
       memo: Value(memo),
     );
   }
@@ -306,7 +352,9 @@ class RecipeEntity extends DataClass implements Insertable<RecipeEntity> {
       defaultServings: serializer.fromJson<int>(json['defaultServings']),
       rating: serializer.fromJson<int>(json['rating']),
       lastCookedAt: serializer.fromJson<DateTime?>(json['lastCookedAt']),
+      lastViewedAt: serializer.fromJson<DateTime?>(json['lastViewedAt']),
       isDeleted: serializer.fromJson<bool>(json['isDeleted']),
+      isTemporary: serializer.fromJson<bool>(json['isTemporary']),
       memo: serializer.fromJson<String>(json['memo']),
     );
   }
@@ -324,7 +372,9 @@ class RecipeEntity extends DataClass implements Insertable<RecipeEntity> {
       'defaultServings': serializer.toJson<int>(defaultServings),
       'rating': serializer.toJson<int>(rating),
       'lastCookedAt': serializer.toJson<DateTime?>(lastCookedAt),
+      'lastViewedAt': serializer.toJson<DateTime?>(lastViewedAt),
       'isDeleted': serializer.toJson<bool>(isDeleted),
+      'isTemporary': serializer.toJson<bool>(isTemporary),
       'memo': serializer.toJson<String>(memo),
     };
   }
@@ -340,7 +390,9 @@ class RecipeEntity extends DataClass implements Insertable<RecipeEntity> {
           int? defaultServings,
           int? rating,
           Value<DateTime?> lastCookedAt = const Value.absent(),
+          Value<DateTime?> lastViewedAt = const Value.absent(),
           bool? isDeleted,
+          bool? isTemporary,
           String? memo}) =>
       RecipeEntity(
         id: id ?? this.id,
@@ -354,7 +406,10 @@ class RecipeEntity extends DataClass implements Insertable<RecipeEntity> {
         rating: rating ?? this.rating,
         lastCookedAt:
             lastCookedAt.present ? lastCookedAt.value : this.lastCookedAt,
+        lastViewedAt:
+            lastViewedAt.present ? lastViewedAt.value : this.lastViewedAt,
         isDeleted: isDeleted ?? this.isDeleted,
+        isTemporary: isTemporary ?? this.isTemporary,
         memo: memo ?? this.memo,
       );
   RecipeEntity copyWithCompanion(RecipesCompanion data) {
@@ -376,7 +431,12 @@ class RecipeEntity extends DataClass implements Insertable<RecipeEntity> {
       lastCookedAt: data.lastCookedAt.present
           ? data.lastCookedAt.value
           : this.lastCookedAt,
+      lastViewedAt: data.lastViewedAt.present
+          ? data.lastViewedAt.value
+          : this.lastViewedAt,
       isDeleted: data.isDeleted.present ? data.isDeleted.value : this.isDeleted,
+      isTemporary:
+          data.isTemporary.present ? data.isTemporary.value : this.isTemporary,
       memo: data.memo.present ? data.memo.value : this.memo,
     );
   }
@@ -394,7 +454,9 @@ class RecipeEntity extends DataClass implements Insertable<RecipeEntity> {
           ..write('defaultServings: $defaultServings, ')
           ..write('rating: $rating, ')
           ..write('lastCookedAt: $lastCookedAt, ')
+          ..write('lastViewedAt: $lastViewedAt, ')
           ..write('isDeleted: $isDeleted, ')
+          ..write('isTemporary: $isTemporary, ')
           ..write('memo: $memo')
           ..write(')'))
         .toString();
@@ -412,7 +474,9 @@ class RecipeEntity extends DataClass implements Insertable<RecipeEntity> {
       defaultServings,
       rating,
       lastCookedAt,
+      lastViewedAt,
       isDeleted,
+      isTemporary,
       memo);
   @override
   bool operator ==(Object other) =>
@@ -428,7 +492,9 @@ class RecipeEntity extends DataClass implements Insertable<RecipeEntity> {
           other.defaultServings == this.defaultServings &&
           other.rating == this.rating &&
           other.lastCookedAt == this.lastCookedAt &&
+          other.lastViewedAt == this.lastViewedAt &&
           other.isDeleted == this.isDeleted &&
+          other.isTemporary == this.isTemporary &&
           other.memo == this.memo);
 }
 
@@ -443,7 +509,9 @@ class RecipesCompanion extends UpdateCompanion<RecipeEntity> {
   final Value<int> defaultServings;
   final Value<int> rating;
   final Value<DateTime?> lastCookedAt;
+  final Value<DateTime?> lastViewedAt;
   final Value<bool> isDeleted;
+  final Value<bool> isTemporary;
   final Value<String> memo;
   const RecipesCompanion({
     this.id = const Value.absent(),
@@ -456,7 +524,9 @@ class RecipesCompanion extends UpdateCompanion<RecipeEntity> {
     this.defaultServings = const Value.absent(),
     this.rating = const Value.absent(),
     this.lastCookedAt = const Value.absent(),
+    this.lastViewedAt = const Value.absent(),
     this.isDeleted = const Value.absent(),
+    this.isTemporary = const Value.absent(),
     this.memo = const Value.absent(),
   });
   RecipesCompanion.insert({
@@ -470,7 +540,9 @@ class RecipesCompanion extends UpdateCompanion<RecipeEntity> {
     this.defaultServings = const Value.absent(),
     this.rating = const Value.absent(),
     this.lastCookedAt = const Value.absent(),
+    this.lastViewedAt = const Value.absent(),
     this.isDeleted = const Value.absent(),
+    this.isTemporary = const Value.absent(),
     this.memo = const Value.absent(),
   })  : originalId = Value(originalId),
         title = Value(title),
@@ -488,7 +560,9 @@ class RecipesCompanion extends UpdateCompanion<RecipeEntity> {
     Expression<int>? defaultServings,
     Expression<int>? rating,
     Expression<DateTime>? lastCookedAt,
+    Expression<DateTime>? lastViewedAt,
     Expression<bool>? isDeleted,
+    Expression<bool>? isTemporary,
     Expression<String>? memo,
   }) {
     return RawValuesInsertable({
@@ -502,7 +576,9 @@ class RecipesCompanion extends UpdateCompanion<RecipeEntity> {
       if (defaultServings != null) 'default_servings': defaultServings,
       if (rating != null) 'rating': rating,
       if (lastCookedAt != null) 'last_cooked_at': lastCookedAt,
+      if (lastViewedAt != null) 'last_viewed_at': lastViewedAt,
       if (isDeleted != null) 'is_deleted': isDeleted,
+      if (isTemporary != null) 'is_temporary': isTemporary,
       if (memo != null) 'memo': memo,
     });
   }
@@ -518,7 +594,9 @@ class RecipesCompanion extends UpdateCompanion<RecipeEntity> {
       Value<int>? defaultServings,
       Value<int>? rating,
       Value<DateTime?>? lastCookedAt,
+      Value<DateTime?>? lastViewedAt,
       Value<bool>? isDeleted,
+      Value<bool>? isTemporary,
       Value<String>? memo}) {
     return RecipesCompanion(
       id: id ?? this.id,
@@ -531,7 +609,9 @@ class RecipesCompanion extends UpdateCompanion<RecipeEntity> {
       defaultServings: defaultServings ?? this.defaultServings,
       rating: rating ?? this.rating,
       lastCookedAt: lastCookedAt ?? this.lastCookedAt,
+      lastViewedAt: lastViewedAt ?? this.lastViewedAt,
       isDeleted: isDeleted ?? this.isDeleted,
+      isTemporary: isTemporary ?? this.isTemporary,
       memo: memo ?? this.memo,
     );
   }
@@ -569,8 +649,14 @@ class RecipesCompanion extends UpdateCompanion<RecipeEntity> {
     if (lastCookedAt.present) {
       map['last_cooked_at'] = Variable<DateTime>(lastCookedAt.value);
     }
+    if (lastViewedAt.present) {
+      map['last_viewed_at'] = Variable<DateTime>(lastViewedAt.value);
+    }
     if (isDeleted.present) {
       map['is_deleted'] = Variable<bool>(isDeleted.value);
+    }
+    if (isTemporary.present) {
+      map['is_temporary'] = Variable<bool>(isTemporary.value);
     }
     if (memo.present) {
       map['memo'] = Variable<String>(memo.value);
@@ -591,7 +677,9 @@ class RecipesCompanion extends UpdateCompanion<RecipeEntity> {
           ..write('defaultServings: $defaultServings, ')
           ..write('rating: $rating, ')
           ..write('lastCookedAt: $lastCookedAt, ')
+          ..write('lastViewedAt: $lastViewedAt, ')
           ..write('isDeleted: $isDeleted, ')
+          ..write('isTemporary: $isTemporary, ')
           ..write('memo: $memo')
           ..write(')'))
         .toString();
@@ -3758,7 +3846,9 @@ typedef $$RecipesTableCreateCompanionBuilder = RecipesCompanion Function({
   Value<int> defaultServings,
   Value<int> rating,
   Value<DateTime?> lastCookedAt,
+  Value<DateTime?> lastViewedAt,
   Value<bool> isDeleted,
+  Value<bool> isTemporary,
   Value<String> memo,
 });
 typedef $$RecipesTableUpdateCompanionBuilder = RecipesCompanion Function({
@@ -3772,7 +3862,9 @@ typedef $$RecipesTableUpdateCompanionBuilder = RecipesCompanion Function({
   Value<int> defaultServings,
   Value<int> rating,
   Value<DateTime?> lastCookedAt,
+  Value<DateTime?> lastViewedAt,
   Value<bool> isDeleted,
+  Value<bool> isTemporary,
   Value<String> memo,
 });
 
@@ -3816,8 +3908,14 @@ class $$RecipesTableFilterComposer
   ColumnFilters<DateTime> get lastCookedAt => $composableBuilder(
       column: $table.lastCookedAt, builder: (column) => ColumnFilters(column));
 
+  ColumnFilters<DateTime> get lastViewedAt => $composableBuilder(
+      column: $table.lastViewedAt, builder: (column) => ColumnFilters(column));
+
   ColumnFilters<bool> get isDeleted => $composableBuilder(
       column: $table.isDeleted, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<bool> get isTemporary => $composableBuilder(
+      column: $table.isTemporary, builder: (column) => ColumnFilters(column));
 
   ColumnFilters<String> get memo => $composableBuilder(
       column: $table.memo, builder: (column) => ColumnFilters(column));
@@ -3864,8 +3962,15 @@ class $$RecipesTableOrderingComposer
       column: $table.lastCookedAt,
       builder: (column) => ColumnOrderings(column));
 
+  ColumnOrderings<DateTime> get lastViewedAt => $composableBuilder(
+      column: $table.lastViewedAt,
+      builder: (column) => ColumnOrderings(column));
+
   ColumnOrderings<bool> get isDeleted => $composableBuilder(
       column: $table.isDeleted, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<bool> get isTemporary => $composableBuilder(
+      column: $table.isTemporary, builder: (column) => ColumnOrderings(column));
 
   ColumnOrderings<String> get memo => $composableBuilder(
       column: $table.memo, builder: (column) => ColumnOrderings(column));
@@ -3910,8 +4015,14 @@ class $$RecipesTableAnnotationComposer
   GeneratedColumn<DateTime> get lastCookedAt => $composableBuilder(
       column: $table.lastCookedAt, builder: (column) => column);
 
+  GeneratedColumn<DateTime> get lastViewedAt => $composableBuilder(
+      column: $table.lastViewedAt, builder: (column) => column);
+
   GeneratedColumn<bool> get isDeleted =>
       $composableBuilder(column: $table.isDeleted, builder: (column) => column);
+
+  GeneratedColumn<bool> get isTemporary => $composableBuilder(
+      column: $table.isTemporary, builder: (column) => column);
 
   GeneratedColumn<String> get memo =>
       $composableBuilder(column: $table.memo, builder: (column) => column);
@@ -3950,7 +4061,9 @@ class $$RecipesTableTableManager extends RootTableManager<
             Value<int> defaultServings = const Value.absent(),
             Value<int> rating = const Value.absent(),
             Value<DateTime?> lastCookedAt = const Value.absent(),
+            Value<DateTime?> lastViewedAt = const Value.absent(),
             Value<bool> isDeleted = const Value.absent(),
+            Value<bool> isTemporary = const Value.absent(),
             Value<String> memo = const Value.absent(),
           }) =>
               RecipesCompanion(
@@ -3964,7 +4077,9 @@ class $$RecipesTableTableManager extends RootTableManager<
             defaultServings: defaultServings,
             rating: rating,
             lastCookedAt: lastCookedAt,
+            lastViewedAt: lastViewedAt,
             isDeleted: isDeleted,
+            isTemporary: isTemporary,
             memo: memo,
           ),
           createCompanionCallback: ({
@@ -3978,7 +4093,9 @@ class $$RecipesTableTableManager extends RootTableManager<
             Value<int> defaultServings = const Value.absent(),
             Value<int> rating = const Value.absent(),
             Value<DateTime?> lastCookedAt = const Value.absent(),
+            Value<DateTime?> lastViewedAt = const Value.absent(),
             Value<bool> isDeleted = const Value.absent(),
+            Value<bool> isTemporary = const Value.absent(),
             Value<String> memo = const Value.absent(),
           }) =>
               RecipesCompanion.insert(
@@ -3992,7 +4109,9 @@ class $$RecipesTableTableManager extends RootTableManager<
             defaultServings: defaultServings,
             rating: rating,
             lastCookedAt: lastCookedAt,
+            lastViewedAt: lastViewedAt,
             isDeleted: isDeleted,
+            isTemporary: isTemporary,
             memo: memo,
           ),
           withReferenceMapper: (p0) => p0

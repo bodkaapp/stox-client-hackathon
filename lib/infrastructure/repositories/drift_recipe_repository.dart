@@ -15,7 +15,8 @@ class DriftRecipeRepository implements RecipeRepository {
 
   @override
   Future<List<Recipe>> getAll() async {
-    final entities = await db.select(db.recipes).get();
+    // Filter out temporary recipes
+    final entities = await (db.select(db.recipes)..where((t) => t.isTemporary.equals(false))).get();
     
     // Performance note: N+1 query. For many recipes, should fetch all ingredients and map in memory.
     // For now, simple loop or batch fetch.
@@ -53,25 +54,59 @@ class DriftRecipeRepository implements RecipeRepository {
   }
 
   @override
+  Future<Recipe?> findByUrl(String url) async {
+    // Check both pageUrl and originalId (if needed, but mainly pageUrl)
+    // We want to find ANY recipe (temporary or not) to avoid duplicates
+    final entity = await (db.select(db.recipes)..where((t) => t.pageUrl.equals(url))).getSingleOrNull();
+    if (entity == null) return null;
+
+    // We don't necessarily need ingredients for just checking existence/logging
+    // But to match signature, let's fetch them or return empty if lazy
+    return entity.toDomain(); 
+  }
+
+  @override
   Future<void> save(Recipe recipe) async {
     final companion = RecipeDomainMapper.fromDomain(recipe);
     
     await db.transaction(() async {
-      final existing = await (db.select(db.recipes)..where((t) => t.originalId.equals(recipe.id))).getSingleOrNull();
+      // Check for existence by originalId OR pageUrl to merge temporary
+      RecipeEntity? existing;
+      
+      existing = await (db.select(db.recipes)..where((t) => t.originalId.equals(recipe.id))).getSingleOrNull();
+      
+      if (existing == null) {
+         // Fallback: check by URL if we are trying to save a recipe that might exist as temporary
+         existing = await (db.select(db.recipes)..where((t) => t.pageUrl.equals(recipe.pageUrl))).getSingleOrNull();
+      }
 
       if (existing != null) {
-        await (db.update(db.recipes)..where((t) => t.originalId.equals(recipe.id))).write(companion);
+        // If we found by URL but IDs mismatch, we should probably update the existing one with new ID? 
+        // Or keep existing ID? Keeping existing ID is safer for consistency.
+        // But if we generated a new ID in domain, we might overwrite. 
+        // Let's rely on the strategy: if we find by URL, we update that record.
+        
+        final toWrite = companion.copyWith(
+           originalId: Value(existing.originalId) // Ensure we keep the DB id
+        );
+
+        await (db.update(db.recipes)..where((t) => t.originalId.equals(existing!.originalId))).write(toWrite);
+        
         // Delete existing ingredients
-        await (db.delete(db.recipeIngredients)..where((t) => t.recipeId.equals(recipe.id))).go();
+        await (db.delete(db.recipeIngredients)..where((t) => t.recipeId.equals(existing!.originalId))).go();
       } else {
         await db.into(db.recipes).insert(companion);
       }
 
       // Insert new ingredients
+      // Use the actual ID we used (recipe.id or existing.originalId)
+      // If we merged, we used existing.originalId.
+      final targetId = existing?.originalId ?? recipe.id;
+
       if (recipe.ingredients.isNotEmpty) {
         final ingredients = recipe.ingredients.asMap().entries.map((e) {
           return RecipeIngredientsCompanion(
-            recipeId: Value(recipe.id),
+            recipeId: Value(targetId),
             name: Value(e.value.name),
             amount: Value(e.value.amount),
             index: Value(e.key),
@@ -92,11 +127,63 @@ class DriftRecipeRepository implements RecipeRepository {
 
   @override
   Future<List<Recipe>> search(String query) async {
-    final entities = await (db.select(db.recipes)..where((t) => t.title.contains(query) | t.memo.contains(query))).get();
+    // Search scans all? Or only saved? Probably both or saved. Let's say Saved for now to treat temp as hidden.
+    final entities = await (db.select(db.recipes)
+      ..where((t) => (t.title.contains(query) | t.memo.contains(query)) & t.isTemporary.equals(false))
+    ).get();
     
-    // For search results, we also need ingredients if we want to show them?
-    // Maybe not necessary for list view, but toDomain requires matching signature.
-    // Reusing logic from getAll efficiently:
+    if (entities.isEmpty) return [];
+
+    final recipeIds = entities.map((e) => e.originalId).toList();
+    final allIngredients = await (db.select(db.recipeIngredients)..where((t) => t.recipeId.isIn(recipeIds))).get();
+    
+    final ingredientMap = <String, List<RecipeIngredientEntity>>{};
+    for (var ing in allIngredients) {
+      if (!ingredientMap.containsKey(ing.recipeId)) {
+        ingredientMap[ing.recipeId] = [];
+      }
+      ingredientMap[ing.recipeId]!.add(ing);
+    }
+
+    return entities.map((e) {
+      final ingredients = ingredientMap[e.originalId] ?? [];
+      ingredients.sort((a, b) => a.index.compareTo(b.index));
+      return e.toDomain(ingredients: ingredients);
+    }).toList();
+  }
+
+  @override
+  Future<void> logView(String recipeId) async {
+    await (db.update(db.recipes)..where((t) => t.originalId.equals(recipeId))).write(
+      RecipesCompanion(lastViewedAt: Value(DateTime.now())),
+    );
+  }
+
+  @override
+  Future<List<Recipe>> getRecent({int limit = 50, int offset = 0}) async {
+    // Only saved recipes
+    final entities = await (db.select(db.recipes)
+      ..where((t) => t.isTemporary.equals(false))
+      ..orderBy([(t) => OrderingTerm(expression: t.createdAt, mode: OrderingMode.desc)])
+      ..limit(limit, offset: offset)
+    ).get();
+
+    return _mapEntitiesToRecipes(entities);
+  }
+
+  @override
+  Future<List<Recipe>> getRecentlyViewed({int limit = 50, int offset = 0}) async {
+    // Viewed - include temporary! (User wants history of everything viewed)
+    final entities = await (db.select(db.recipes)
+      ..where((t) => t.lastViewedAt.isNotNull())
+      ..orderBy([(t) => OrderingTerm(expression: t.lastViewedAt, mode: OrderingMode.desc)])
+      ..limit(limit, offset: offset)
+    ).get();
+
+    return _mapEntitiesToRecipes(entities);
+  }
+
+  Future<List<Recipe>> _mapEntitiesToRecipes(List<RecipeEntity> entities) async {
     if (entities.isEmpty) return [];
 
     final recipeIds = entities.map((e) => e.originalId).toList();
@@ -119,9 +206,11 @@ class DriftRecipeRepository implements RecipeRepository {
 
   @override
   Stream<List<Recipe>> watchAll() {
-    return db.select(db.recipes).watch().map((entities) {
-      return entities.map((e) => e.toDomain()).toList();
-    });
+    return (db.select(db.recipes)..where((t) => t.isTemporary.equals(false)))
+      .watch()
+      .map((entities) {
+        return entities.map((e) => e.toDomain()).toList();
+      });
   }
 }
 
@@ -138,7 +227,9 @@ extension RecipeEntityMapper on RecipeEntity {
       defaultServings: defaultServings,
       rating: rating,
       lastCookedAt: lastCookedAt,
+      lastViewedAt: lastViewedAt,
       isDeleted: isDeleted,
+      isTemporary: isTemporary,
       memo: memo,
       ingredients: ingredients.map((e) => RecipeIngredient(name: e.name, amount: e.amount)).toList(),
     );
@@ -157,7 +248,9 @@ extension RecipeDomainMapper on Recipe {
       defaultServings: Value(recipe.defaultServings),
       rating: Value(recipe.rating),
       lastCookedAt: Value(recipe.lastCookedAt),
+      lastViewedAt: Value(recipe.lastViewedAt),
       isDeleted: Value(recipe.isDeleted),
+      isTemporary: Value(recipe.isTemporary),
       memo: Value(recipe.memo),
     );
   }
@@ -186,6 +279,7 @@ extension RecipeEntityDataHelper on RecipesCompanion {
        rating: rating.value,
        lastCookedAt: lastCookedAt.value,
        isDeleted: isDeleted.value,
+       isTemporary: isTemporary.value,
        memo: memo.value,
      );
   }

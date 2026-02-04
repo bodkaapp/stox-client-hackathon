@@ -127,15 +127,17 @@ class _RecipeScheduleScreenState extends ConsumerState<RecipeScheduleScreen> {
         );
         await recipeRepo.save(recipe);
       } else {
-        // If recipe already exists (manual entry), should we update memo?
-        // Let's update memo if changed, but keep ingredients if implementation_plan suggests.
-        // For now, simpler: if existing, assume it's fresh and just use ID.
-        // Or if we want to allow editing memo here:
+        // Handle existing recipe (manual entry or from search/history)
         final existing = await recipeRepo.getById(recipeId);
-        if (existing != null && _memoController.text != widget.initialMemo) {
-           // Merging logic might be needed if we don't want to overwrite ingredients stored in memo (old plan)
-           // But new plan uses separate table. So updating memo on Recipe entity is safe!
-           await recipeRepo.save(existing.copyWith(memo: _memoController.text));
+        if (existing != null) {
+           // We must ensure the recipe is marked as NOT temporary (Saved)
+           // Also update memo if changed.
+           if (existing.isTemporary || _memoController.text != widget.initialMemo) {
+              await recipeRepo.save(existing.copyWith(
+                isTemporary: false,
+                memo: _memoController.text
+              ));
+           }
         }
       }
 

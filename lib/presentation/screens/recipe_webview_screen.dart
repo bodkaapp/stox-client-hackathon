@@ -24,6 +24,7 @@ class RecipeWebViewScreen extends ConsumerStatefulWidget {
   final String? imageUrl;
   final DateTime? initialDate;
   final MealType? initialMealType;
+  final String? existingRecipeId;
   final bool isFromFridgeAnalysis;
 
   const RecipeWebViewScreen({
@@ -34,6 +35,7 @@ class RecipeWebViewScreen extends ConsumerStatefulWidget {
     this.initialDate,
     this.initialMealType,
     this.isFromFridgeAnalysis = false,
+    this.existingRecipeId,
   });
 
   @override
@@ -73,6 +75,38 @@ class _RecipeWebViewScreenState extends ConsumerState<RecipeWebViewScreen> with 
             
             if (mounted && webPageTitle != null && webPageTitle.isNotEmpty) {
               setState(() { _currentTitle = webPageTitle; });
+            }
+
+            // Log View History
+            try {
+              final repo = await ref.read(recipeRepositoryProvider.future);
+              
+                if (widget.existingRecipeId != null) {
+                await repo.logView(widget.existingRecipeId!);
+              } else {
+                // Check if already exists by URL (including temporary)
+                final match = await repo.findByUrl(url) ?? await repo.findByUrl(widget.url);
+                
+                if (match != null) {
+                   await repo.logView(match.id);
+                } else {
+                   // New Recipe -> Save as Temporary View History
+                   final titleToSave = (webPageTitle != null && webPageTitle.isNotEmpty) ? webPageTitle : widget.title;
+                   
+                   final newRecipe = Recipe(
+                      id: DateTime.now().microsecondsSinceEpoch.toString(),
+                      title: titleToSave,
+                      pageUrl: widget.url, 
+                      ogpImageUrl: widget.imageUrl ?? '',
+                      createdAt: DateTime.now(),
+                      lastViewedAt: DateTime.now(),
+                      isTemporary: true, // Key change: Temporary only
+                   );
+                   await repo.save(newRecipe);
+                }
+              }
+            } catch (e) {
+              debugPrint('Failed to log view history: $e');
             }
           },
         ),

@@ -853,7 +853,8 @@ class RecipeBookScreen extends ConsumerWidget {
               builder: (context) => RecipeWebViewScreen(
                 url: recipe.pageUrl, 
                 title: recipe.title, 
-                imageUrl: recipe.ogpImageUrl
+                imageUrl: recipe.ogpImageUrl,
+                existingRecipeId: recipe.id,
               )
             )
            );
