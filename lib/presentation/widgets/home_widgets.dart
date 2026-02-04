@@ -15,6 +15,8 @@ import '../mixins/ad_manager_mixin.dart';
 import '../mixins/receipt_scanner_mixin.dart';
 import 'dart:io';
 import 'help_icon.dart';
+import 'challenge_stamp/challenge_stamp_dialog.dart';
+
 
 // --- Home Header ---
 class HomeHeader extends ConsumerWidget {
@@ -62,6 +64,19 @@ class HomeHeader extends ConsumerWidget {
           ),
           Row(
             children: [
+              // Challenge Stamp Icon
+              _buildHeaderIconButton(
+                Icons.verified, // Or custom trophy icon
+                () {
+                  showDialog(
+                    context: context,
+                    builder: (context) => const ChallengeStampDialog(),
+                  );
+                },
+                color: AppColors.stoxPrimary,
+              ),
+              const SizedBox(width: 8),
+
                   _buildHeaderIconButton(Icons.photo_library, () => context.push('/photo_gallery')),
                   const SizedBox(width: 8),
                   Stack(
@@ -90,7 +105,7 @@ class HomeHeader extends ConsumerWidget {
     );
   }
 
-  Widget _buildHeaderIconButton(IconData icon, VoidCallback onPressed) {
+  Widget _buildHeaderIconButton(IconData icon, VoidCallback onPressed, {Color? color}) {
     return Container(
       width: 32,
       height: 32,
@@ -100,7 +115,7 @@ class HomeHeader extends ConsumerWidget {
       ),
       child: IconButton(
         padding: EdgeInsets.zero,
-        icon: Icon(icon, size: 20, color: Colors.black54),
+        icon: Icon(icon, size: 24, color: color ?? Colors.black54),
         onPressed: onPressed,
       ),
     );

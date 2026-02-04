@@ -49,6 +49,7 @@ class AiRecipeProposalScreen extends StatelessWidget {
                   MaterialPageRoute(
                     builder: (context) => RecipeSearchResultsScreen(
                       searchQuery: suggestion.name,
+                      isFromFridgeAnalysis: true,
                     ),
                   ),
                 );

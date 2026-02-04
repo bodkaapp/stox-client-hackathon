@@ -1,13 +1,15 @@
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart'; // [NEW]
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../config/app_colors.dart';
 
 import '../../domain/models/ingredient.dart';
 import '../../presentation/screens/ai_analyzed_stock_screen.dart';
+import '../../presentation/viewmodels/challenge_stamp_viewmodel.dart'; // [NEW]
 
-class AccountSettingsScreen extends StatelessWidget {
+class AccountSettingsScreen extends ConsumerWidget { // Changed to ConsumerWidget
   const AccountSettingsScreen({super.key});
 
   Future<void> _resetTutorial(BuildContext context) async {
@@ -42,7 +44,40 @@ class AccountSettingsScreen extends StatelessWidget {
     }
   }
 
+  Future<void> _resetChallengeStamps(BuildContext context, WidgetRef ref) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('確認'),
+        content: const Text('チャレンジスタンプの獲得状況をすべてリセットしますか？\nこの操作は取り消せません。'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('キャンセル'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: TextButton.styleFrom(
+              foregroundColor: Colors.red,
+            ),
+            child: const Text('リセット'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      await ref.read(challengeStampViewModelProvider.notifier).reset();
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('チャレンジスタンプをリセットしました')),
+        );
+      }
+    }
+  }
+
   void _openDebugAiResult(BuildContext context) {
+    // ... (same as before)
     final mockIngredients = [
       const Ingredient(
         id: 'debug_1',
@@ -94,7 +129,7 @@ class AccountSettingsScreen extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) { // Added WidgetRef ref
     return Scaffold(
       backgroundColor: AppColors.stoxBackground,
       appBar: AppBar(
@@ -123,6 +158,12 @@ class AccountSettingsScreen extends StatelessWidget {
                 icon: Icons.restart_alt,
                 title: 'チュートリアルからやり直す',
                 onTap: () => _resetTutorial(context),
+                isDestructive: true,
+              ),
+              _buildSettingsTile(
+                icon: Icons.refresh, // New icon
+                title: 'チャレンジスタンプをリセット',
+                onTap: () => _resetChallengeStamps(context, ref),
                 isDestructive: true,
               ),
                _buildSettingsTile(

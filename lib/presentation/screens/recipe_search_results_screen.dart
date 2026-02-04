@@ -12,12 +12,14 @@ class RecipeSearchResultsScreen extends StatefulWidget {
   final String searchQuery;
   final DateTime? initialDate;
   final MealType? initialMealType;
+  final bool isFromFridgeAnalysis;
 
   const RecipeSearchResultsScreen({
     super.key,
     required this.searchQuery,
     this.initialDate,
     this.initialMealType,
+    this.isFromFridgeAnalysis = false,
   });
 
   @override
@@ -191,6 +193,7 @@ class _RecipeSearchResultsScreenState extends State<RecipeSearchResultsScreen> {
                   imageUrl: imageUrl,
                   initialDate: widget.initialDate,
                   initialMealType: widget.initialMealType,
+                  isFromFridgeAnalysis: widget.isFromFridgeAnalysis,
                 ),
               ),
             ),
@@ -210,6 +213,7 @@ class _RecipeSearchResultsScreenState extends State<RecipeSearchResultsScreen> {
                 imageUrl: imageUrl,
                 initialDate: widget.initialDate,
                 initialMealType: widget.initialMealType,
+                isFromFridgeAnalysis: widget.isFromFridgeAnalysis,
               ),
             ),
           ),

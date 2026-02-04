@@ -4,6 +4,8 @@ import '../../config/app_colors.dart';
 import '../../domain/models/ingredient.dart';
 import '../../infrastructure/repositories/drift_ingredient_repository.dart';
 import '../viewmodels/shopping_viewmodel.dart';
+import '../../domain/models/challenge_stamp.dart'; // [NEW]
+import '../viewmodels/challenge_stamp_viewmodel.dart'; // [NEW]
 
 class ShoppingReceiptResultScreen extends ConsumerStatefulWidget {
   final List<Ingredient> receiptItems;
@@ -122,6 +124,9 @@ class _ShoppingReceiptResultScreenState extends ConsumerState<ShoppingReceiptRes
 
       // 4. Force refresh shopping list provider
       ref.invalidate(shoppingViewModelProvider);
+      
+      // [NEW] Challenge 6: Scan Receipt
+      await ref.read(challengeStampViewModelProvider.notifier).complete(ChallengeType.scanReceipt.id);
 
       if (mounted) {
         Navigator.pop(context, true);

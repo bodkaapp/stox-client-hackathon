@@ -12,6 +12,8 @@ import 'shopping_receipt_result_screen.dart';
 import '../widgets/voice_shopping_modal.dart';
 import '../mixins/receipt_scanner_mixin.dart';
 import '../widgets/help_icon.dart';
+import '../../domain/models/challenge_stamp.dart'; // [NEW]
+import '../viewmodels/challenge_stamp_viewmodel.dart'; // [NEW]
 
 class ShoppingScreen extends ConsumerStatefulWidget {
   final bool openAddModal;
@@ -445,9 +447,11 @@ class _ShoppingScreenState extends ConsumerState<ShoppingScreen> with AdManagerM
                   ? FloatingActionButton.extended(
                       onPressed: () async {
                         await ref.read(shoppingViewModelProvider.notifier).completeShoppingFlow();
-                        if (context.mounted) {
-                           ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('お買い物を完了しました')));
-                        }
+                         if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('お買い物を完了しました')));
+                            // [NEW] Challenge 5: Shopping Complete
+                            ref.read(challengeStampViewModelProvider.notifier).complete(ChallengeType.shoppingComplete.id);
+                         }
                       },
                       label: const Text('買い物を完了'),
                       icon: const Icon(Icons.check),

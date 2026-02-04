@@ -19,6 +19,9 @@ import 'food_camera_screen.dart';
 import 'recipe_search_results_screen.dart';
 import 'photo_viewer_screen.dart';
 import '../widgets/help_icon.dart';
+import '../../domain/models/challenge_stamp.dart';
+import '../viewmodels/challenge_stamp_viewmodel.dart';
+import '../widgets/challenge_stamp/congratulation_dialog.dart';
 
 
 // -----------------------------------------------------------------------------
@@ -110,6 +113,17 @@ class _MenuPlanScreenState extends ConsumerState<MenuPlanScreen> {
   Widget build(BuildContext context) {
     final selectedDate = ref.watch(selectedDateProvider);
     final mealPlansAsync = ref.watch(dailyMealPlanProvider(selectedDate));
+
+    // Listen for Challenge Completion Events
+    ref.listen<ChallengeType?>(challengeCompletionEventProvider, (previous, next) {
+      if (next != null) {
+        CongratulationDialog.show(context, next);
+        // Reset event is handled by provider override or state update logic if needed, 
+        // but since provider is state provider, next set will be new state.
+        // Ideally we consume it.
+        // For simplicity with StateProvider, we can leave it or set it back to null if we want to re-trigger same event (unlikely for stamps).
+      }
+    });
 
     return Scaffold(
       backgroundColor: const Color(0xFFFFFDFA),
@@ -864,6 +878,10 @@ class _MenuPlanScreenState extends ConsumerState<MenuPlanScreen> {
          completedAt: target.mealPlan.completedAt ?? DateTime.now(),
        );
        await repo.save(updatedPlan);
+       
+       // Challenge 7: Cook and Photo
+       await ref.read(challengeStampViewModelProvider.notifier).complete(ChallengeType.cookAndPhoto.id);
+
      } catch (e) {
         if (mounted) {
            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('画像の保存に失敗しました: $e')));

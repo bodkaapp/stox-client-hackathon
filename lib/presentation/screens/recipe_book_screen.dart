@@ -10,7 +10,10 @@ import 'cooking_mode_screen.dart';
 import 'recipe_search_results_screen.dart';
 import '../../domain/models/recipe.dart';
 import 'dart:io';
+import 'dart:io';
 import '../widgets/help_icon.dart';
+import '../../domain/models/challenge_stamp.dart'; // [NEW]
+import '../viewmodels/challenge_stamp_viewmodel.dart'; // [NEW]
 
 class RecipeBookScreen extends ConsumerWidget {
   const RecipeBookScreen({super.key});
@@ -45,7 +48,7 @@ class RecipeBookScreen extends ConsumerWidget {
           flex: 3,
           child: CustomScrollView(
             slivers: [
-              _buildHeaderAndSearch(context),
+              _buildHeaderAndSearch(context, ref),
               _buildTodaysMenuSection(context, ref),
               _buildCategoriesSection(),
               ..._buildRecentlyViewedSection(context, stateAsync),
@@ -160,7 +163,7 @@ class RecipeBookScreen extends ConsumerWidget {
   Widget _buildMobileLayout(BuildContext context, WidgetRef ref, AsyncValue<List<Recipe>> stateAsync) {
     return CustomScrollView(
       slivers: [
-        _buildHeaderAndSearch(context),
+        _buildHeaderAndSearch(context, ref),
         _buildTodaysMenuSection(context, ref),
         _buildCategoriesSection(),
         ..._buildRecentlyViewedSection(context, stateAsync),
@@ -172,7 +175,7 @@ class RecipeBookScreen extends ConsumerWidget {
 
   // --- Components ---
 
-  Widget _buildHeaderAndSearch(BuildContext context) {
+  Widget _buildHeaderAndSearch(BuildContext context, WidgetRef ref) {
     return SliverToBoxAdapter(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
@@ -245,6 +248,11 @@ class RecipeBookScreen extends ConsumerWidget {
                       ),
                     );
                   }
+                }
+                
+                // [NEW] Challenge 3: Search Recipe
+                if (intent != null) {
+                   ref.read(challengeStampViewModelProvider.notifier).complete(ChallengeType.searchRecipe.id);
                 }
               },
               decoration: InputDecoration(

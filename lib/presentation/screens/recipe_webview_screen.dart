@@ -13,6 +13,9 @@ import 'ai_ingredient_list_screen.dart';
 import 'recipe_schedule_screen.dart';
 import '../mixins/ad_manager_mixin.dart';
 import '../../domain/models/meal_plan.dart';
+import '../../domain/models/challenge_stamp.dart'; // [NEW]
+import '../viewmodels/challenge_stamp_viewmodel.dart'; // [NEW]
+import 'package:go_router/go_router.dart'; // [NEW]
 
 class RecipeWebViewScreen extends ConsumerStatefulWidget {
   final String url;
@@ -20,6 +23,7 @@ class RecipeWebViewScreen extends ConsumerStatefulWidget {
   final String? imageUrl;
   final DateTime? initialDate;
   final MealType? initialMealType;
+  final bool isFromFridgeAnalysis;
 
   const RecipeWebViewScreen({
     super.key,
@@ -28,6 +32,7 @@ class RecipeWebViewScreen extends ConsumerStatefulWidget {
     this.imageUrl,
     this.initialDate,
     this.initialMealType,
+    this.isFromFridgeAnalysis = false,
   });
 
   @override
@@ -235,22 +240,45 @@ class _RecipeWebViewScreenState extends ConsumerState<RecipeWebViewScreen> with 
             child: const Text('何もしない', style: TextStyle(color: Colors.grey)),
           ),
           TextButton(
-            onPressed: () {
+            onPressed: () async {
               Navigator.pop(dialogContext);
               if (!mounted) return;
-              Navigator.push(
-                screenContext,
-                MaterialPageRoute(
-                  builder: (context) => RecipeScheduleScreen(
-                    url: currentUrl ?? widget.url,
-                    title: _currentTitle,
-                    imageUrl: finalImageUrl,
-                    initialDate: widget.initialDate,
-                    initialMealType: widget.initialMealType,
+                if (!mounted) return;
+                
+                final result = await Navigator.push(
+                  screenContext,
+                  MaterialPageRoute(
+                    builder: (context) => RecipeScheduleScreen(
+                      url: currentUrl ?? widget.url,
+                      title: _currentTitle,
+                      imageUrl: finalImageUrl,
+                      initialDate: widget.initialDate,
+                      initialMealType: widget.initialMealType,
+                    ),
                   ),
-                ),
-              );
-            },
+                );
+
+                // [NEW] Challenge Logic
+                // RecipeScheduleScreen pops with true/false or nothing?
+                // Currently it pops with nothing (void) in the viewed code.
+                // Wait, checking RecipeScheduleScreen code again...
+                // It does `Navigator.pop(context);` without result.
+                // I need to update RecipeScheduleScreen to return true on success.
+                // Assuming I will do that next.
+                
+                if (result == true && mounted) {
+                   if (widget.isFromFridgeAnalysis) {
+                      // Challenge 1: Tutorial Flow
+                      await ref.read(challengeStampViewModelProvider.notifier).complete(ChallengeType.tutorial.id);
+                      context.go('/menu_plan');
+                   } else {
+                      // Challenge 2: Schedule from Recipe Page
+                      await ref.read(challengeStampViewModelProvider.notifier).complete(ChallengeType.scheduleRecipe.id);
+                      // Stay or go to menu plan? User didn't specify for Ch2. 
+                      // "Decide when to make... and register". Usually stay.
+                   }
+                }
+              },
             child: const Text('マイレシピ帳に登録する', style: TextStyle(color: AppColors.stoxText)),
           ),
           ElevatedButton(
@@ -333,6 +361,11 @@ class _RecipeWebViewScreenState extends ConsumerState<RecipeWebViewScreen> with 
               );
 
                if (!mounted) return;
+               
+               // [NEW] Challenge 4: Extract Ingredients
+               // Calling complete here.
+               await ref.read(challengeStampViewModelProvider.notifier).complete(ChallengeType.extractIngredients.id);
+
 
 
               final result = await Navigator.push(
