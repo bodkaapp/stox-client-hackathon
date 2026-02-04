@@ -22,6 +22,8 @@ import '../widgets/help_icon.dart';
 import '../../domain/models/challenge_stamp.dart';
 import '../viewmodels/challenge_stamp_viewmodel.dart';
 import '../widgets/challenge_stamp/congratulation_dialog.dart';
+import 'package:crypto/crypto.dart';
+import 'dart:convert';
 
 
 // -----------------------------------------------------------------------------
@@ -855,38 +857,110 @@ class _MenuPlanScreenState extends ConsumerState<MenuPlanScreen> {
     );
 
     if (result != null && result is String) {
-      await _saveImageToPlan(items, result);
+      await _saveImagesToPlan(items, [result]);
     }
   }
 
   Future<void> _pickAndSaveImage(List<MealPlanWithRecipe> items, ImageSource source) async {
     final picker = ImagePicker();
-    final picked = await picker.pickImage(source: source);
-    if (picked != null) {
-      await _saveImageToPlan(items, picked.path);
+    List<String> newPaths = [];
+
+    if (source == ImageSource.gallery) {
+      final pickedList = await picker.pickMultiImage();
+      if (pickedList.isNotEmpty) {
+        newPaths = pickedList.map((e) => e.path).toList();
+      }
+    } else {
+      final picked = await picker.pickImage(source: source);
+      if (picked != null) {
+        newPaths = [picked.path];
+      }
+    }
+
+    if (newPaths.isEmpty) return;
+
+    if (items.isEmpty) return;
+    final targetMealPlan = items.first.mealPlan;
+    
+    // Duplicate Check
+    final existingPaths = targetMealPlan.photos;
+    final nonDuplicatePaths = <String>[];
+    
+    // Calculate hashes for existing photos
+    final existingHashes = <String>{};
+    for (final path in existingPaths) {
+      try {
+        final hash = await _calculateFileHash(File(path));
+        if (hash != null) existingHashes.add(hash);
+      } catch (e) {
+        // Ignore errors for existing files
+      }
+    }
+
+    int duplicateCount = 0;
+    for (final path in newPaths) {
+      try {
+        final hash = await _calculateFileHash(File(path));
+        if (hash != null && existingHashes.contains(hash)) {
+          duplicateCount++;
+        } else {
+          // Also check against other new photos to prevent selecting same photo twice in one go selection (though picker usually handles this)
+          if(hash != null) {
+             existingHashes.add(hash); // Add to set to catch duplicates within selection
+          }
+          nonDuplicatePaths.add(path);
+        }
+      } catch (e) {
+        // If calculation fails, assume unique (or skip? safest to add)
+        nonDuplicatePaths.add(path);
+      }
+    }
+
+    if (duplicateCount > 0) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('$duplicateCount 枚の画像はすでに存在するためスキップされました')),
+        );
+      }
+    }
+
+    if (nonDuplicatePaths.isNotEmpty) {
+      await _saveImagesToPlan(items, nonDuplicatePaths);
     }
   }
 
-  Future<void> _saveImageToPlan(List<MealPlanWithRecipe> items, String path) async {
+  Future<String?> _calculateFileHash(File file) async {
+    if (!file.existsSync()) return null;
+    try {
+      final bytes = await file.readAsBytes();
+      final digest = sha256.convert(bytes);
+      return digest.toString();
+    } catch (e) {
+      debugPrint('Error calculating hash: $e');
+      return null;
+    }
+  }
+
+  Future<void> _saveImagesToPlan(List<MealPlanWithRecipe> items, List<String> paths) async {
     if (items.isEmpty) return;
     final target = items.first;
-     try {
-       final repo = await ref.read(mealPlanRepositoryProvider.future);
-       final updatedPlan = target.mealPlan.copyWith(
-         photos: [...target.mealPlan.photos, path],
-         isDone: true,
-         completedAt: target.mealPlan.completedAt ?? DateTime.now(),
-       );
-       await repo.save(updatedPlan);
-       
-       // Challenge 7: Cook and Photo
-       await ref.read(challengeStampViewModelProvider.notifier).complete(ChallengeType.cookAndPhoto.id);
+    try {
+      final repo = await ref.read(mealPlanRepositoryProvider.future);
+      final updatedPlan = target.mealPlan.copyWith(
+        photos: [...target.mealPlan.photos, ...paths],
+        isDone: true,
+        completedAt: target.mealPlan.completedAt ?? DateTime.now(),
+      );
+      await repo.save(updatedPlan);
+      
+      // Challenge 7: Cook and Photo
+      await ref.read(challengeStampViewModelProvider.notifier).complete(ChallengeType.cookAndPhoto.id);
 
-     } catch (e) {
-        if (mounted) {
-           ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('画像の保存に失敗しました: $e')));
-        }
-     }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('画像の保存に失敗しました: $e')));
+      }
+    }
   }
 
   void _onCook(List<MealPlanWithRecipe> items) {

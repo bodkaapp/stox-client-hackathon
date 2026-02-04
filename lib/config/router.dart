@@ -96,7 +96,7 @@ GoRouter router(RouterRef ref) {
       GoRoute(
         path: '/food_camera',
         parentNavigatorKey: _rootNavigatorKey,
-        builder: (context, state) => const FoodCameraScreen(createMealPlanOnCapture: true),
+        builder: (context, state) => const FoodCameraScreen(createMealPlanOnCapture: false),
       ),
       GoRoute(
         path: '/photo_gallery',
