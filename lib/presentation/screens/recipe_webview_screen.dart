@@ -16,6 +16,7 @@ import '../../domain/models/meal_plan.dart';
 import '../../domain/models/challenge_stamp.dart'; // [NEW]
 import '../viewmodels/challenge_stamp_viewmodel.dart'; // [NEW]
 import 'package:go_router/go_router.dart'; // [NEW]
+import '../../config/router.dart';
 
 class RecipeWebViewScreen extends ConsumerStatefulWidget {
   final String url;
@@ -266,16 +267,34 @@ class _RecipeWebViewScreenState extends ConsumerState<RecipeWebViewScreen> with 
                 // I need to update RecipeScheduleScreen to return true on success.
                 // Assuming I will do that next.
                 
-                if (result == true && mounted) {
+                if (result is Map && result['success'] == true && mounted) {
+                   final selectedDate = result['date'] as DateTime?;
+                   
+                   // Complete challenges first
                    if (widget.isFromFridgeAnalysis) {
-                      // Challenge 1: Tutorial Flow
                       await ref.read(challengeStampViewModelProvider.notifier).complete(ChallengeType.tutorial.id);
-                      context.go('/menu_plan');
                    } else {
-                      // Challenge 2: Schedule from Recipe Page
                       await ref.read(challengeStampViewModelProvider.notifier).complete(ChallengeType.scheduleRecipe.id);
-                      // Stay or go to menu plan? User didn't specify for Ch2. 
-                      // "Decide when to make... and register". Usually stay.
+                   }
+
+                   // Navigate based on date selection
+                   if (selectedDate != null) {
+                     // Close the WebView first
+                     if (Navigator.canPop(context)) {
+                        Navigator.pop(context);
+                     }
+                     // Date decided -> Go to Menu Plan for that date using routerProvider
+                     ref.read(routerProvider).go(Uri(path: '/menu_plan', queryParameters: {'date': selectedDate.toIso8601String()}).toString());
+                   } else {
+                     // Undecided -> Stay or maybe go to recipe book? 
+                     // User request: "If date and time are decided... navigate to menu plan".
+                     // If undecided, maybe just stay here (which is what pop does, but we already popped dialog).
+                     // But we are in RecipeWebViewScreen.
+                     // If isFromFridgeAnalysis, we used to go to /menu_plan effectively.
+                     if (widget.isFromFridgeAnalysis) {
+                        context.go('/menu_plan');
+                     }
+                     // Otherwise stay in RecipeWebViewScreen
                    }
                 }
               },
@@ -383,7 +402,7 @@ class _RecipeWebViewScreenState extends ConsumerState<RecipeWebViewScreen> with 
               
               // If result is recipeId (String), go to Schedule
               if (result is String && result.isNotEmpty && mounted) {
-                 Navigator.push(
+                 final scheduleResult = await Navigator.push(
                     screenContext,
                     MaterialPageRoute(
                       builder: (context) => RecipeScheduleScreen(
@@ -396,6 +415,18 @@ class _RecipeWebViewScreenState extends ConsumerState<RecipeWebViewScreen> with 
                       ),
                     ),
                  );
+
+                 if (scheduleResult is Map && scheduleResult['success'] == true && mounted) {
+                    final selectedDate = scheduleResult['date'] as DateTime?;
+                    if (selectedDate != null) {
+                       // Close the WebView first
+                       if (Navigator.canPop(context)) {
+                          Navigator.pop(context);
+                       }
+                       // Navigate using routerProvider
+                       ref.read(routerProvider).go(Uri(path: '/menu_plan', queryParameters: {'date': selectedDate.toIso8601String()}).toString());
+                    }
+                 }
               }
             },
             style: ElevatedButton.styleFrom(backgroundColor: AppColors.stoxPrimary),

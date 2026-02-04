@@ -155,7 +155,10 @@ class _RecipeScheduleScreenState extends ConsumerState<RecipeScheduleScreen> {
       }
       
       if (mounted) {
-        Navigator.pop(context, true); // Close Schedule Screen
+        Navigator.pop(context, {
+          'success': true,
+          'date': _selectedDate,
+        }); // Close Schedule Screen
         ScaffoldMessenger.of(context).showSnackBar(
            const SnackBar(content: Text('マイレシピ帳に登録しました')),
         );

@@ -911,18 +911,40 @@ class _MenuPlanScreenState extends ConsumerState<MenuPlanScreen> {
     );
   }
 
-  void _onAddDish(MealType type) {
+  void _onAddDish(MealType type) async {
     // When adding dish, we might want to default to currently selected date in the view
     final date = ref.read(selectedDateProvider);
     
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => SearchModal(
-        initialDate: date,
-        initialMealType: type,
-      ),
-    );
+    final intent = await SearchModal.show(context, initialDate: date, initialMealType: type);
+
+    if (!mounted || intent == null) return;
+
+    if (intent is UrlSearchIntent) {
+      if (mounted) {
+        await Navigator.of(context, rootNavigator: true).push(
+          MaterialPageRoute(
+            builder: (context) => RecipeWebViewScreen(
+              url: intent.url,
+              title: '読み込み中...',
+              initialDate: date,
+              initialMealType: type,
+            ),
+          ),
+        );
+      }
+    } else if (intent is TextSearchIntent) {
+      if (mounted) {
+        await Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => RecipeSearchResultsScreen(
+              searchQuery: intent.query,
+              initialDate: date,
+              initialMealType: type,
+            ),
+          ),
+        );
+      }
+    }
   }
 }
