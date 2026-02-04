@@ -22,7 +22,7 @@ final todaysMenuProvider = AutoDisposeStreamProvider<List<Recipe>>.internal(
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef TodaysMenuRef = AutoDisposeStreamProviderRef<List<Recipe>>;
-String _$pastMenusHash() => r'bee904e46b80f155aeb708e9fd30733db19fef07';
+String _$pastMenusHash() => r'b5e25c3b85c7a4e9512a5467ac2c4c24ecb07283';
 
 /// See also [pastMenus].
 @ProviderFor(pastMenus)

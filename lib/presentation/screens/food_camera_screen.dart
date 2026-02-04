@@ -16,7 +16,10 @@ import 'photo_viewer_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 import '../../domain/models/meal_plan.dart';
+import '../../domain/models/photo_analysis.dart';
 import '../../infrastructure/repositories/drift_meal_plan_repository.dart';
+import '../../infrastructure/repositories/ai_recipe_repository.dart';
+import '../../infrastructure/repositories/drift_photo_analysis_repository.dart';
 
 class FoodCameraScreen extends ConsumerStatefulWidget {
   final bool createMealPlanOnCapture;
@@ -584,11 +587,19 @@ class _FoodCameraScreenState extends ConsumerState<FoodCameraScreen> with Widget
         await _saveToMealPlan(file.path);
       }
 
+      // Trigger Analysis Logic
+      // Don't await this, let it run in background
+      _analyzeAndSave(file); 
+
       if (mounted) {
-        setState(() { _lastCapturedPhoto = file; });
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('写真を保存しました')),
-        );
+         Navigator.of(context).push(
+           MaterialPageRoute(
+             builder: (_) => PhotoViewerScreen(
+               filePath: file.path,
+               isNewCapture: true,  // Indicate this is a fresh capture
+             ),
+           ),
+         );
       }
     } catch (e) {
       debugPrint('Error saving photo: $e');
@@ -597,6 +608,38 @@ class _FoodCameraScreenState extends ConsumerState<FoodCameraScreen> with Widget
           SnackBar(content: Text('保存に失敗しました: $e')),
         );
       }
+    }
+  }
+
+  Future<void> _analyzeAndSave(File imageFile) async {
+    try {
+      final bytes = await imageFile.readAsBytes();
+      final aiRepo = await ref.read(aiRecipeRepositoryProvider); // Not a future anymore? Check usage. It seems it is a provider returning object, so read(provider) is enough if not async provider.
+      // Wait, aiRecipeRepository is @Riverpod(keepAlive: true) AiRecipeRepository aiRecipeRepository(...)
+      // So it is AutoDisposeProvider or Provider (functional).
+      // Generated code: `aiRecipeRepositoryProvider` is `AutoDisposeProvider<AiRecipeRepository>`.
+      // So `ref.read(aiRecipeRepositoryProvider)` returns `AiRecipeRepository`. 
+      
+      final analysisResult = await aiRepo.analyzeFoodImage(bytes);
+      
+      final photoAnalysisRepo = await ref.read(photoAnalysisRepositoryProvider.future);
+      
+      final analysis = PhotoAnalysis(
+        photoPath: imageFile.path,
+        analyzedAt: DateTime.now(),
+        calories: analysisResult.totalCalories,
+        protein: analysisResult.protein,
+        fat: analysisResult.fat,
+        carbs: analysisResult.carbs,
+        foodName: analysisResult.foodName,
+        resultText: analysisResult.displayText,
+      );
+
+      await photoAnalysisRepo.save(analysis);
+      debugPrint('Analysis saved for ${imageFile.path}');
+      
+    } catch (e) {
+      debugPrint('Error analyzing and saving photo: $e');
     }
   }
 

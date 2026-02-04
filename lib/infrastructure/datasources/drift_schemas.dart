@@ -123,3 +123,18 @@ class Notifications extends Table {
   DateTimeColumn get createdAt => dateTime()();
   BoolColumn get isRead => boolean().withDefault(const Constant(false))();
 }
+
+@DataClassName('PhotoAnalysisEntity')
+class PhotoAnalyses extends Table {
+  TextColumn get photoPath => text()();
+  DateTimeColumn get analyzedAt => dateTime()();
+  IntColumn get calories => integer().nullable()();
+  RealColumn get protein => real().nullable()();
+  RealColumn get fat => real().nullable()();
+  RealColumn get carbs => real().nullable()();
+  TextColumn get foodName => text().nullable()();
+  TextColumn get resultText => text().nullable()(); // Full markdown text for display
+
+  @override
+  Set<Column> get primaryKey => {photoPath};
+}

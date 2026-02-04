@@ -503,6 +503,125 @@ Markdownのコードブロックを含めないでください。
       ];
     }
   }
+
+  /// 料理の画像を解析してカロリーとPFCバランスを推定する
+  Future<FoodAnalysisResult> analyzeFoodImage(Uint8List imageBytes, {String? mimeType}) async {
+//     final prompt = '''
+// この料理の写真を分析して、カロリーとPFCバランス（タンパク質、脂質、炭水化物）を推定してください。
+// また、内訳として各食材の概算も出してください。
+
+// 出力は以下のJSON形式のみを返してください。Markdownのコードブロックを含めないでください。
+
+// {
+//   "total_calories": 420,
+//   "pfc": {
+//     "p": 28.0,
+//     "f": 18.0,
+//     "c": 36.0
+//   },
+//   "breakdown": [
+//     {
+//       "name": "料理名",
+//       "calories": 420,
+//       "ingredients": [
+//          {"name": "材料名", "amount": "150g", "comment": "解説"},
+//          {"name": "材料名", "amount": "ひとつかみ", "comment": "解説"}
+//       ]
+//     }
+//   ],
+//   "comment": "分析コメント"
+// }
+// ''';
+    final prompt = '''
+この料理の写真を分析して、カロリーとPFCバランス（タンパク質、脂質、炭水化物）を推定してください。
+
+【重要な指示】
+もし写真が料理や食材でない場合、または分析が不可能な場合は、カロリーやPFCは0またはnullにし、
+`display_text` には「具体的な料理や食材を特定することはできませんが、この画像は[画像を客観的に見た感想]ですね🫶」という形式で、文末に「🫶」をつけた親しみやすい感想を入れてください。硬い表現は避けてください。
+
+料理の場合は、以下のMarkdown形式のテキストを `display_text` に生成してください。
+
+## 推定栄養素（1食分）
+
+| 項目 | 推定値 |
+| --- | --- |
+| 総エネルギー | 約 〇〇 kcal |
+| タンパク質 (P) | 約 〇〇 g |
+| 脂質 (F) | 約 〇〇 g |
+| 炭水化物 (C) | 約 〇〇 g |
+
+## 内訳の目安
+
+- 料理名（約 ◯◯ kcal）
+  - 材料名（分量目安）： 解説
+  ...
+
+## 分析コメント
+
+  分析コメントを表示
+
+出力は以下のJSON形式のみを返してください。Markdownのコードブロックを含めないでください。
+"display_text" フィールドに、上記のMarkdown形式のテキスト（または非料理時のメッセージ）をそのまま入れてください。
+
+{
+  "total_calories": 数値(kcal),
+  "pfc": {
+    "p": 数値(g),
+    "f": 数値(g),
+    "c": 数値(g)
+  },
+  "food_name": "料理名",
+  "display_text": "Markdown形式のテキスト"
+}
+''';
+
+    final finalMimeType = mimeType ?? 'image/jpeg';
+
+    final content = [
+      Content.multi([
+        TextPart(prompt),
+        DataPart(finalMimeType, imageBytes),
+      ])
+    ];
+
+    try {
+      final response = await _model.generateContent(content);
+      final responseText = response.text;
+
+      if (responseText == null) {
+        throw Exception('AIからの応答が空でした。');
+      }
+
+      String cleanJson = responseText.trim();
+      if (cleanJson.startsWith('```json')) {
+        cleanJson = cleanJson.replaceFirst('```json', '').replaceFirst('```', '').trim();
+      } else if (cleanJson.startsWith('```')) {
+        cleanJson = cleanJson.replaceFirst('```', '').replaceFirst('```', '').trim();
+      }
+
+      final jsonMatch = RegExp(r'\{.*\}', dotAll: true).stringMatch(cleanJson);
+      if (jsonMatch != null) {
+        cleanJson = jsonMatch;
+      }
+
+      final Map<String, dynamic> jsonMap = json.decode(cleanJson);
+      
+      final pfcMap = jsonMap['pfc'] as Map<String, dynamic>?;
+
+      return FoodAnalysisResult(
+        totalCalories: (jsonMap['total_calories'] as num?)?.toInt(),
+        protein: (pfcMap?['p'] as num?)?.toDouble(),
+        fat: (pfcMap?['f'] as num?)?.toDouble(),
+        carbs: (pfcMap?['c'] as num?)?.toDouble(),
+        foodName: jsonMap['food_name'] as String?,
+        displayText: jsonMap['display_text'] as String? ?? '解析結果を取得できませんでした。',
+      );
+
+    } catch (e) {
+      debugPrint('Error analyzing food image: $e');
+      throw Exception('料理の解析に失敗しました: $e');
+    }
+  }
 }
 
 class AiRecipeAnalysisResult {
@@ -521,6 +640,24 @@ class AiRecipeSuggestion {
     required this.name,
     required this.description,
     required this.usedIngredients,
+  });
+}
+
+class FoodAnalysisResult {
+  final int? totalCalories;
+  final double? protein;
+  final double? fat;
+  final double? carbs;
+  final String? foodName;
+  final String displayText;
+
+  FoodAnalysisResult({
+    this.totalCalories,
+    this.protein,
+    this.fat,
+    this.carbs,
+    this.foodName,
+    required this.displayText,
   });
 }
 

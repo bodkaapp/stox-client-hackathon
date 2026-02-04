@@ -3275,6 +3275,446 @@ class RecipeIngredientsCompanion
   }
 }
 
+class $PhotoAnalysesTable extends PhotoAnalyses
+    with TableInfo<$PhotoAnalysesTable, PhotoAnalysisEntity> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $PhotoAnalysesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _photoPathMeta =
+      const VerificationMeta('photoPath');
+  @override
+  late final GeneratedColumn<String> photoPath = GeneratedColumn<String>(
+      'photo_path', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _analyzedAtMeta =
+      const VerificationMeta('analyzedAt');
+  @override
+  late final GeneratedColumn<DateTime> analyzedAt = GeneratedColumn<DateTime>(
+      'analyzed_at', aliasedName, false,
+      type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  static const VerificationMeta _caloriesMeta =
+      const VerificationMeta('calories');
+  @override
+  late final GeneratedColumn<int> calories = GeneratedColumn<int>(
+      'calories', aliasedName, true,
+      type: DriftSqlType.int, requiredDuringInsert: false);
+  static const VerificationMeta _proteinMeta =
+      const VerificationMeta('protein');
+  @override
+  late final GeneratedColumn<double> protein = GeneratedColumn<double>(
+      'protein', aliasedName, true,
+      type: DriftSqlType.double, requiredDuringInsert: false);
+  static const VerificationMeta _fatMeta = const VerificationMeta('fat');
+  @override
+  late final GeneratedColumn<double> fat = GeneratedColumn<double>(
+      'fat', aliasedName, true,
+      type: DriftSqlType.double, requiredDuringInsert: false);
+  static const VerificationMeta _carbsMeta = const VerificationMeta('carbs');
+  @override
+  late final GeneratedColumn<double> carbs = GeneratedColumn<double>(
+      'carbs', aliasedName, true,
+      type: DriftSqlType.double, requiredDuringInsert: false);
+  static const VerificationMeta _foodNameMeta =
+      const VerificationMeta('foodName');
+  @override
+  late final GeneratedColumn<String> foodName = GeneratedColumn<String>(
+      'food_name', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _resultTextMeta =
+      const VerificationMeta('resultText');
+  @override
+  late final GeneratedColumn<String> resultText = GeneratedColumn<String>(
+      'result_text', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  @override
+  List<GeneratedColumn> get $columns => [
+        photoPath,
+        analyzedAt,
+        calories,
+        protein,
+        fat,
+        carbs,
+        foodName,
+        resultText
+      ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'photo_analyses';
+  @override
+  VerificationContext validateIntegrity(
+      Insertable<PhotoAnalysisEntity> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('photo_path')) {
+      context.handle(_photoPathMeta,
+          photoPath.isAcceptableOrUnknown(data['photo_path']!, _photoPathMeta));
+    } else if (isInserting) {
+      context.missing(_photoPathMeta);
+    }
+    if (data.containsKey('analyzed_at')) {
+      context.handle(
+          _analyzedAtMeta,
+          analyzedAt.isAcceptableOrUnknown(
+              data['analyzed_at']!, _analyzedAtMeta));
+    } else if (isInserting) {
+      context.missing(_analyzedAtMeta);
+    }
+    if (data.containsKey('calories')) {
+      context.handle(_caloriesMeta,
+          calories.isAcceptableOrUnknown(data['calories']!, _caloriesMeta));
+    }
+    if (data.containsKey('protein')) {
+      context.handle(_proteinMeta,
+          protein.isAcceptableOrUnknown(data['protein']!, _proteinMeta));
+    }
+    if (data.containsKey('fat')) {
+      context.handle(
+          _fatMeta, fat.isAcceptableOrUnknown(data['fat']!, _fatMeta));
+    }
+    if (data.containsKey('carbs')) {
+      context.handle(
+          _carbsMeta, carbs.isAcceptableOrUnknown(data['carbs']!, _carbsMeta));
+    }
+    if (data.containsKey('food_name')) {
+      context.handle(_foodNameMeta,
+          foodName.isAcceptableOrUnknown(data['food_name']!, _foodNameMeta));
+    }
+    if (data.containsKey('result_text')) {
+      context.handle(
+          _resultTextMeta,
+          resultText.isAcceptableOrUnknown(
+              data['result_text']!, _resultTextMeta));
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {photoPath};
+  @override
+  PhotoAnalysisEntity map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return PhotoAnalysisEntity(
+      photoPath: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}photo_path'])!,
+      analyzedAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}analyzed_at'])!,
+      calories: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}calories']),
+      protein: attachedDatabase.typeMapping
+          .read(DriftSqlType.double, data['${effectivePrefix}protein']),
+      fat: attachedDatabase.typeMapping
+          .read(DriftSqlType.double, data['${effectivePrefix}fat']),
+      carbs: attachedDatabase.typeMapping
+          .read(DriftSqlType.double, data['${effectivePrefix}carbs']),
+      foodName: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}food_name']),
+      resultText: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}result_text']),
+    );
+  }
+
+  @override
+  $PhotoAnalysesTable createAlias(String alias) {
+    return $PhotoAnalysesTable(attachedDatabase, alias);
+  }
+}
+
+class PhotoAnalysisEntity extends DataClass
+    implements Insertable<PhotoAnalysisEntity> {
+  final String photoPath;
+  final DateTime analyzedAt;
+  final int? calories;
+  final double? protein;
+  final double? fat;
+  final double? carbs;
+  final String? foodName;
+  final String? resultText;
+  const PhotoAnalysisEntity(
+      {required this.photoPath,
+      required this.analyzedAt,
+      this.calories,
+      this.protein,
+      this.fat,
+      this.carbs,
+      this.foodName,
+      this.resultText});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['photo_path'] = Variable<String>(photoPath);
+    map['analyzed_at'] = Variable<DateTime>(analyzedAt);
+    if (!nullToAbsent || calories != null) {
+      map['calories'] = Variable<int>(calories);
+    }
+    if (!nullToAbsent || protein != null) {
+      map['protein'] = Variable<double>(protein);
+    }
+    if (!nullToAbsent || fat != null) {
+      map['fat'] = Variable<double>(fat);
+    }
+    if (!nullToAbsent || carbs != null) {
+      map['carbs'] = Variable<double>(carbs);
+    }
+    if (!nullToAbsent || foodName != null) {
+      map['food_name'] = Variable<String>(foodName);
+    }
+    if (!nullToAbsent || resultText != null) {
+      map['result_text'] = Variable<String>(resultText);
+    }
+    return map;
+  }
+
+  PhotoAnalysesCompanion toCompanion(bool nullToAbsent) {
+    return PhotoAnalysesCompanion(
+      photoPath: Value(photoPath),
+      analyzedAt: Value(analyzedAt),
+      calories: calories == null && nullToAbsent
+          ? const Value.absent()
+          : Value(calories),
+      protein: protein == null && nullToAbsent
+          ? const Value.absent()
+          : Value(protein),
+      fat: fat == null && nullToAbsent ? const Value.absent() : Value(fat),
+      carbs:
+          carbs == null && nullToAbsent ? const Value.absent() : Value(carbs),
+      foodName: foodName == null && nullToAbsent
+          ? const Value.absent()
+          : Value(foodName),
+      resultText: resultText == null && nullToAbsent
+          ? const Value.absent()
+          : Value(resultText),
+    );
+  }
+
+  factory PhotoAnalysisEntity.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return PhotoAnalysisEntity(
+      photoPath: serializer.fromJson<String>(json['photoPath']),
+      analyzedAt: serializer.fromJson<DateTime>(json['analyzedAt']),
+      calories: serializer.fromJson<int?>(json['calories']),
+      protein: serializer.fromJson<double?>(json['protein']),
+      fat: serializer.fromJson<double?>(json['fat']),
+      carbs: serializer.fromJson<double?>(json['carbs']),
+      foodName: serializer.fromJson<String?>(json['foodName']),
+      resultText: serializer.fromJson<String?>(json['resultText']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'photoPath': serializer.toJson<String>(photoPath),
+      'analyzedAt': serializer.toJson<DateTime>(analyzedAt),
+      'calories': serializer.toJson<int?>(calories),
+      'protein': serializer.toJson<double?>(protein),
+      'fat': serializer.toJson<double?>(fat),
+      'carbs': serializer.toJson<double?>(carbs),
+      'foodName': serializer.toJson<String?>(foodName),
+      'resultText': serializer.toJson<String?>(resultText),
+    };
+  }
+
+  PhotoAnalysisEntity copyWith(
+          {String? photoPath,
+          DateTime? analyzedAt,
+          Value<int?> calories = const Value.absent(),
+          Value<double?> protein = const Value.absent(),
+          Value<double?> fat = const Value.absent(),
+          Value<double?> carbs = const Value.absent(),
+          Value<String?> foodName = const Value.absent(),
+          Value<String?> resultText = const Value.absent()}) =>
+      PhotoAnalysisEntity(
+        photoPath: photoPath ?? this.photoPath,
+        analyzedAt: analyzedAt ?? this.analyzedAt,
+        calories: calories.present ? calories.value : this.calories,
+        protein: protein.present ? protein.value : this.protein,
+        fat: fat.present ? fat.value : this.fat,
+        carbs: carbs.present ? carbs.value : this.carbs,
+        foodName: foodName.present ? foodName.value : this.foodName,
+        resultText: resultText.present ? resultText.value : this.resultText,
+      );
+  PhotoAnalysisEntity copyWithCompanion(PhotoAnalysesCompanion data) {
+    return PhotoAnalysisEntity(
+      photoPath: data.photoPath.present ? data.photoPath.value : this.photoPath,
+      analyzedAt:
+          data.analyzedAt.present ? data.analyzedAt.value : this.analyzedAt,
+      calories: data.calories.present ? data.calories.value : this.calories,
+      protein: data.protein.present ? data.protein.value : this.protein,
+      fat: data.fat.present ? data.fat.value : this.fat,
+      carbs: data.carbs.present ? data.carbs.value : this.carbs,
+      foodName: data.foodName.present ? data.foodName.value : this.foodName,
+      resultText:
+          data.resultText.present ? data.resultText.value : this.resultText,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PhotoAnalysisEntity(')
+          ..write('photoPath: $photoPath, ')
+          ..write('analyzedAt: $analyzedAt, ')
+          ..write('calories: $calories, ')
+          ..write('protein: $protein, ')
+          ..write('fat: $fat, ')
+          ..write('carbs: $carbs, ')
+          ..write('foodName: $foodName, ')
+          ..write('resultText: $resultText')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(photoPath, analyzedAt, calories, protein, fat,
+      carbs, foodName, resultText);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is PhotoAnalysisEntity &&
+          other.photoPath == this.photoPath &&
+          other.analyzedAt == this.analyzedAt &&
+          other.calories == this.calories &&
+          other.protein == this.protein &&
+          other.fat == this.fat &&
+          other.carbs == this.carbs &&
+          other.foodName == this.foodName &&
+          other.resultText == this.resultText);
+}
+
+class PhotoAnalysesCompanion extends UpdateCompanion<PhotoAnalysisEntity> {
+  final Value<String> photoPath;
+  final Value<DateTime> analyzedAt;
+  final Value<int?> calories;
+  final Value<double?> protein;
+  final Value<double?> fat;
+  final Value<double?> carbs;
+  final Value<String?> foodName;
+  final Value<String?> resultText;
+  final Value<int> rowid;
+  const PhotoAnalysesCompanion({
+    this.photoPath = const Value.absent(),
+    this.analyzedAt = const Value.absent(),
+    this.calories = const Value.absent(),
+    this.protein = const Value.absent(),
+    this.fat = const Value.absent(),
+    this.carbs = const Value.absent(),
+    this.foodName = const Value.absent(),
+    this.resultText = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  PhotoAnalysesCompanion.insert({
+    required String photoPath,
+    required DateTime analyzedAt,
+    this.calories = const Value.absent(),
+    this.protein = const Value.absent(),
+    this.fat = const Value.absent(),
+    this.carbs = const Value.absent(),
+    this.foodName = const Value.absent(),
+    this.resultText = const Value.absent(),
+    this.rowid = const Value.absent(),
+  })  : photoPath = Value(photoPath),
+        analyzedAt = Value(analyzedAt);
+  static Insertable<PhotoAnalysisEntity> custom({
+    Expression<String>? photoPath,
+    Expression<DateTime>? analyzedAt,
+    Expression<int>? calories,
+    Expression<double>? protein,
+    Expression<double>? fat,
+    Expression<double>? carbs,
+    Expression<String>? foodName,
+    Expression<String>? resultText,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (photoPath != null) 'photo_path': photoPath,
+      if (analyzedAt != null) 'analyzed_at': analyzedAt,
+      if (calories != null) 'calories': calories,
+      if (protein != null) 'protein': protein,
+      if (fat != null) 'fat': fat,
+      if (carbs != null) 'carbs': carbs,
+      if (foodName != null) 'food_name': foodName,
+      if (resultText != null) 'result_text': resultText,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  PhotoAnalysesCompanion copyWith(
+      {Value<String>? photoPath,
+      Value<DateTime>? analyzedAt,
+      Value<int?>? calories,
+      Value<double?>? protein,
+      Value<double?>? fat,
+      Value<double?>? carbs,
+      Value<String?>? foodName,
+      Value<String?>? resultText,
+      Value<int>? rowid}) {
+    return PhotoAnalysesCompanion(
+      photoPath: photoPath ?? this.photoPath,
+      analyzedAt: analyzedAt ?? this.analyzedAt,
+      calories: calories ?? this.calories,
+      protein: protein ?? this.protein,
+      fat: fat ?? this.fat,
+      carbs: carbs ?? this.carbs,
+      foodName: foodName ?? this.foodName,
+      resultText: resultText ?? this.resultText,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (photoPath.present) {
+      map['photo_path'] = Variable<String>(photoPath.value);
+    }
+    if (analyzedAt.present) {
+      map['analyzed_at'] = Variable<DateTime>(analyzedAt.value);
+    }
+    if (calories.present) {
+      map['calories'] = Variable<int>(calories.value);
+    }
+    if (protein.present) {
+      map['protein'] = Variable<double>(protein.value);
+    }
+    if (fat.present) {
+      map['fat'] = Variable<double>(fat.value);
+    }
+    if (carbs.present) {
+      map['carbs'] = Variable<double>(carbs.value);
+    }
+    if (foodName.present) {
+      map['food_name'] = Variable<String>(foodName.value);
+    }
+    if (resultText.present) {
+      map['result_text'] = Variable<String>(resultText.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PhotoAnalysesCompanion(')
+          ..write('photoPath: $photoPath, ')
+          ..write('analyzedAt: $analyzedAt, ')
+          ..write('calories: $calories, ')
+          ..write('protein: $protein, ')
+          ..write('fat: $fat, ')
+          ..write('carbs: $carbs, ')
+          ..write('foodName: $foodName, ')
+          ..write('resultText: $resultText, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -3289,6 +3729,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $NotificationsTable notifications = $NotificationsTable(this);
   late final $RecipeIngredientsTable recipeIngredients =
       $RecipeIngredientsTable(this);
+  late final $PhotoAnalysesTable photoAnalyses = $PhotoAnalysesTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -3301,7 +3742,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
         userSettings,
         ingredientAddHistories,
         notifications,
-        recipeIngredients
+        recipeIngredients,
+        photoAnalyses
       ];
 }
 
@@ -4960,6 +5402,224 @@ typedef $$RecipeIngredientsTableProcessedTableManager = ProcessedTableManager<
     ),
     RecipeIngredientEntity,
     PrefetchHooks Function()>;
+typedef $$PhotoAnalysesTableCreateCompanionBuilder = PhotoAnalysesCompanion
+    Function({
+  required String photoPath,
+  required DateTime analyzedAt,
+  Value<int?> calories,
+  Value<double?> protein,
+  Value<double?> fat,
+  Value<double?> carbs,
+  Value<String?> foodName,
+  Value<String?> resultText,
+  Value<int> rowid,
+});
+typedef $$PhotoAnalysesTableUpdateCompanionBuilder = PhotoAnalysesCompanion
+    Function({
+  Value<String> photoPath,
+  Value<DateTime> analyzedAt,
+  Value<int?> calories,
+  Value<double?> protein,
+  Value<double?> fat,
+  Value<double?> carbs,
+  Value<String?> foodName,
+  Value<String?> resultText,
+  Value<int> rowid,
+});
+
+class $$PhotoAnalysesTableFilterComposer
+    extends Composer<_$AppDatabase, $PhotoAnalysesTable> {
+  $$PhotoAnalysesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get photoPath => $composableBuilder(
+      column: $table.photoPath, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get analyzedAt => $composableBuilder(
+      column: $table.analyzedAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get calories => $composableBuilder(
+      column: $table.calories, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<double> get protein => $composableBuilder(
+      column: $table.protein, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<double> get fat => $composableBuilder(
+      column: $table.fat, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<double> get carbs => $composableBuilder(
+      column: $table.carbs, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get foodName => $composableBuilder(
+      column: $table.foodName, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get resultText => $composableBuilder(
+      column: $table.resultText, builder: (column) => ColumnFilters(column));
+}
+
+class $$PhotoAnalysesTableOrderingComposer
+    extends Composer<_$AppDatabase, $PhotoAnalysesTable> {
+  $$PhotoAnalysesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get photoPath => $composableBuilder(
+      column: $table.photoPath, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get analyzedAt => $composableBuilder(
+      column: $table.analyzedAt, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get calories => $composableBuilder(
+      column: $table.calories, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<double> get protein => $composableBuilder(
+      column: $table.protein, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<double> get fat => $composableBuilder(
+      column: $table.fat, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<double> get carbs => $composableBuilder(
+      column: $table.carbs, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get foodName => $composableBuilder(
+      column: $table.foodName, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get resultText => $composableBuilder(
+      column: $table.resultText, builder: (column) => ColumnOrderings(column));
+}
+
+class $$PhotoAnalysesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $PhotoAnalysesTable> {
+  $$PhotoAnalysesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get photoPath =>
+      $composableBuilder(column: $table.photoPath, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get analyzedAt => $composableBuilder(
+      column: $table.analyzedAt, builder: (column) => column);
+
+  GeneratedColumn<int> get calories =>
+      $composableBuilder(column: $table.calories, builder: (column) => column);
+
+  GeneratedColumn<double> get protein =>
+      $composableBuilder(column: $table.protein, builder: (column) => column);
+
+  GeneratedColumn<double> get fat =>
+      $composableBuilder(column: $table.fat, builder: (column) => column);
+
+  GeneratedColumn<double> get carbs =>
+      $composableBuilder(column: $table.carbs, builder: (column) => column);
+
+  GeneratedColumn<String> get foodName =>
+      $composableBuilder(column: $table.foodName, builder: (column) => column);
+
+  GeneratedColumn<String> get resultText => $composableBuilder(
+      column: $table.resultText, builder: (column) => column);
+}
+
+class $$PhotoAnalysesTableTableManager extends RootTableManager<
+    _$AppDatabase,
+    $PhotoAnalysesTable,
+    PhotoAnalysisEntity,
+    $$PhotoAnalysesTableFilterComposer,
+    $$PhotoAnalysesTableOrderingComposer,
+    $$PhotoAnalysesTableAnnotationComposer,
+    $$PhotoAnalysesTableCreateCompanionBuilder,
+    $$PhotoAnalysesTableUpdateCompanionBuilder,
+    (
+      PhotoAnalysisEntity,
+      BaseReferences<_$AppDatabase, $PhotoAnalysesTable, PhotoAnalysisEntity>
+    ),
+    PhotoAnalysisEntity,
+    PrefetchHooks Function()> {
+  $$PhotoAnalysesTableTableManager(_$AppDatabase db, $PhotoAnalysesTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$PhotoAnalysesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$PhotoAnalysesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$PhotoAnalysesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<String> photoPath = const Value.absent(),
+            Value<DateTime> analyzedAt = const Value.absent(),
+            Value<int?> calories = const Value.absent(),
+            Value<double?> protein = const Value.absent(),
+            Value<double?> fat = const Value.absent(),
+            Value<double?> carbs = const Value.absent(),
+            Value<String?> foodName = const Value.absent(),
+            Value<String?> resultText = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              PhotoAnalysesCompanion(
+            photoPath: photoPath,
+            analyzedAt: analyzedAt,
+            calories: calories,
+            protein: protein,
+            fat: fat,
+            carbs: carbs,
+            foodName: foodName,
+            resultText: resultText,
+            rowid: rowid,
+          ),
+          createCompanionCallback: ({
+            required String photoPath,
+            required DateTime analyzedAt,
+            Value<int?> calories = const Value.absent(),
+            Value<double?> protein = const Value.absent(),
+            Value<double?> fat = const Value.absent(),
+            Value<double?> carbs = const Value.absent(),
+            Value<String?> foodName = const Value.absent(),
+            Value<String?> resultText = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              PhotoAnalysesCompanion.insert(
+            photoPath: photoPath,
+            analyzedAt: analyzedAt,
+            calories: calories,
+            protein: protein,
+            fat: fat,
+            carbs: carbs,
+            foodName: foodName,
+            resultText: resultText,
+            rowid: rowid,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$PhotoAnalysesTableProcessedTableManager = ProcessedTableManager<
+    _$AppDatabase,
+    $PhotoAnalysesTable,
+    PhotoAnalysisEntity,
+    $$PhotoAnalysesTableFilterComposer,
+    $$PhotoAnalysesTableOrderingComposer,
+    $$PhotoAnalysesTableAnnotationComposer,
+    $$PhotoAnalysesTableCreateCompanionBuilder,
+    $$PhotoAnalysesTableUpdateCompanionBuilder,
+    (
+      PhotoAnalysisEntity,
+      BaseReferences<_$AppDatabase, $PhotoAnalysesTable, PhotoAnalysisEntity>
+    ),
+    PhotoAnalysisEntity,
+    PrefetchHooks Function()>;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -4981,4 +5641,6 @@ class $AppDatabaseManager {
       $$NotificationsTableTableManager(_db, _db.notifications);
   $$RecipeIngredientsTableTableManager get recipeIngredients =>
       $$RecipeIngredientsTableTableManager(_db, _db.recipeIngredients);
+  $$PhotoAnalysesTableTableManager get photoAnalyses =>
+      $$PhotoAnalysesTableTableManager(_db, _db.photoAnalyses);
 }

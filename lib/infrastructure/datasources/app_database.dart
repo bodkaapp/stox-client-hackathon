@@ -9,12 +9,12 @@ import 'package:flutter/foundation.dart';
 
 part 'app_database.g.dart';
 
-@DriftDatabase(tables: [Recipes, Ingredients, MealPlans, SearchHistories, UserSettings, IngredientAddHistories, Notifications, RecipeIngredients])
+@DriftDatabase(tables: [Recipes, Ingredients, MealPlans, SearchHistories, UserSettings, IngredientAddHistories, Notifications, RecipeIngredients, PhotoAnalyses])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 6;
+  int get schemaVersion => 7;
 
   @override
   MigrationStrategy get migration {
@@ -39,6 +39,9 @@ class AppDatabase extends _$AppDatabase {
         }
         if (from < 6) {
           await m.addColumn(mealPlans, mealPlans.completedAt);
+        }
+        if (from < 7) {
+          await m.createTable(photoAnalyses);
         }
       },
       beforeOpen: (details) async {
