@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../config/app_colors.dart';
 import '../../domain/models/ingredient.dart';
 import '../../infrastructure/repositories/drift_ingredient_repository.dart';
+import '../../infrastructure/repositories/ai_recipe_repository.dart';
 
 // Local model for added items in this session
 class AddedIngredientItem {
@@ -38,6 +39,7 @@ class _IngredientAddModalState extends ConsumerState<IngredientAddModal> {
   double _quantity = 1.0;
 
   List<String> _suggestions = [];
+  bool _isAnalyzing = false; // AI analysis state
 
   @override
   void initState() {
@@ -79,6 +81,63 @@ class _IngredientAddModalState extends ConsumerState<IngredientAddModal> {
       _categoryController.clear();
       _quantity = 1.0;
     });
+  }
+
+  Future<void> _addWithAi() async {
+    final text = _nameController.text.trim();
+    if (text.isEmpty) return;
+
+    setState(() {
+      _isAnalyzing = true;
+    });
+
+    try {
+      final aiRepo = ref.read(aiRecipeRepositoryProvider);
+      final ingredients = await aiRepo.parseShoppingList(text);
+
+      if (ingredients.isNotEmpty) {
+        setState(() {
+          for (final item in ingredients) {
+            _addedItems.add(AddedIngredientItem(
+              name: item.name,
+              quantity: item.amount,
+              category: item.category,
+            ));
+          }
+          // Clear inputs on success
+          _nameController.clear();
+          _categoryController.clear();
+          _quantity = 1.0;
+        });
+        
+        if (mounted) {
+           ScaffoldMessenger.of(context).showSnackBar(
+             SnackBar(content: Text('${ingredients.length}件をリストに追加しました')),
+           );
+        }
+      } else {
+        if (mounted) {
+           ScaffoldMessenger.of(context).showSnackBar(
+             const SnackBar(content: Text('AIで解析できませんでした')),
+           );
+        }
+      }
+    } catch (e) {
+      debugPrint("AI Add Error: $e");
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('エラー: $e')),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isAnalyzing = false;
+        });
+        // Re-focus for next input
+        _nameFocusNode.requestFocus();
+      }
+    }
   }
 
   void _onSuggestionTap(String suggestion) {
@@ -154,19 +213,43 @@ class _IngredientAddModalState extends ConsumerState<IngredientAddModal> {
            BoxShadow(color: Colors.black12, blurRadius: 40, offset: Offset(0, -8))
         ],
       ),
-      child: Column(
+      child: Stack(
         children: [
-          _buildHeader(),
-          
-          // List Area - Expanded to take up remaining space in the fixed 30% height
-          Expanded(
-            child: _addedItems.isEmpty 
-              ? _buildEmptyState() 
-              : _buildAddedList(),
-          ),
+          Column(
+            children: [
+              _buildHeader(),
+              
+              // List Area - Expanded to take up remaining space in the fixed 30% height
+              Expanded(
+                child: _addedItems.isEmpty 
+                  ? _buildEmptyState() 
+                  : _buildAddedList(),
+              ),
 
-          // Input Form - pinned at bottom
-          _buildInputForm(),
+              // Input Form - pinned at bottom
+              _buildInputForm(),
+            ],
+          ),
+          
+          if (_isAnalyzing)
+            Positioned.fill(
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.black.withOpacity(0.3),
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+                ),
+                child: const Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      CircularProgressIndicator(color: Colors.white),
+                      SizedBox(height: 16),
+                      Text('AIが解析中...', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                    ],
+                  ),
+                ),
+              ),
+            ),
         ],
       ),
     );
@@ -428,13 +511,39 @@ class _IngredientAddModalState extends ConsumerState<IngredientAddModal> {
                 ),
               ),
               const SizedBox(width: 8),
+
+              // AI Add Button
+              GestureDetector(
+                onTap: _addWithAi,
+                child: Container(
+                  height: 44,
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  decoration: BoxDecoration(
+                    color: AppColors.stoxAccent.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: AppColors.stoxAccent.withOpacity(0.5)),
+                  ),
+                  alignment: Alignment.center,
+                  child: Row(
+                    children: const [
+                      Icon(Icons.auto_awesome, color: AppColors.stoxAccent, size: 16),
+                      SizedBox(width: 4),
+                      Text(
+                        'AI',
+                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.stoxAccent),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
               
               // Add Button
               GestureDetector(
                 onTap: _addItem,
                 child: Container(
                   height: 44,
-                  padding: const EdgeInsets.symmetric(horizontal: 32),
+                  padding: const EdgeInsets.symmetric(horizontal: 24), // Reduced padding to fit
                   decoration: BoxDecoration(
                     color: AppColors.stoxPrimary,
                     borderRadius: BorderRadius.circular(12),

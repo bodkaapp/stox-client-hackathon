@@ -6,6 +6,7 @@ import 'package:permission_handler/permission_handler.dart';
 import '../../config/app_colors.dart';
 import '../../domain/models/ingredient.dart';
 import '../../infrastructure/repositories/drift_ingredient_repository.dart';
+import '../../infrastructure/repositories/ai_recipe_repository.dart';
 
 class VoiceShoppingModal extends ConsumerStatefulWidget {
   final IngredientStatus targetStatus;
@@ -28,6 +29,7 @@ class _VoiceShoppingModalState extends ConsumerState<VoiceShoppingModal> with Si
   late Animation<double> _scaleAnimation;
 
   bool _isListeningTarget = false; // To mask the gap between restarts
+  bool _isAnalyzing = false; // New: Analyzing state
 
   @override
   void initState() {
@@ -77,9 +79,9 @@ class _VoiceShoppingModalState extends ConsumerState<VoiceShoppingModal> with Si
              // Often we want to restart listening if we are not finished
              // But let's check if we explicitly stopped.
              // If we want continuous loop:
-            if (mounted && !_speechToText.isListening && _isListeningTarget) {
+            if (mounted && !_speechToText.isListening && _isListeningTarget && !_isAnalyzing) {
                  Future.delayed(const Duration(milliseconds: 500), () {
-                   if (mounted && !_speechToText.isListening && _isListeningTarget) {
+                   if (mounted && !_speechToText.isListening && _isListeningTarget && !_isAnalyzing) {
                      _startListening();
                    }
                 });
@@ -99,7 +101,7 @@ class _VoiceShoppingModalState extends ConsumerState<VoiceShoppingModal> with Si
 
   /// Start listening
   void _startListening() async {
-    if (!_speechEnabled) return;
+    if (!_speechEnabled || _isAnalyzing) return;
     
     setState(() {
       _isListeningTarget = true;
@@ -140,13 +142,18 @@ class _VoiceShoppingModalState extends ConsumerState<VoiceShoppingModal> with Si
     });
 
     if (result.finalResult) {
+      // Pause listening while analyzing
+      _speechToText.stop(); 
       _processRecognizedText(result.recognizedWords);
     }
   }
 
   Future<void> _processRecognizedText(String text) async {
     final cleanedText = text.trim();
-    if (cleanedText.isEmpty) return;
+    if (cleanedText.isEmpty) {
+        if (_isListeningTarget) _startListening();
+        return;
+    }
 
     // Check for exit command
     if (cleanedText.contains('追加終わり') || cleanedText.contains('終了')) { // Flexible matching
@@ -159,97 +166,63 @@ class _VoiceShoppingModalState extends ConsumerState<VoiceShoppingModal> with Si
       return;
     }
 
-    // Check for delete command
-    // Simple logic: if text ends with "削除" or "消して", assume delete mode for the preceding word
-    bool isDelete = false;
-    String targetName = cleanedText;
-
-    if (targetName.endsWith('削除')) {
-      isDelete = true;
-      targetName = targetName.replaceAll('削除', '').trim();
-    } else if (targetName.endsWith('消して')) {
-      isDelete = true;
-      targetName = targetName.replaceAll('消して', '').trim();
-    }
-
-    // Split items if multiple (only for add mode mostly, but maybe delete multiple?)
-    // "トマトとキャベツを削除" -> tricky. 
-    // Let's assume split works first.
-    final items = targetName.split(RegExp(r'[と、\s]+')); 
-    
-    for (var item in items) {
-      if (item.trim().isEmpty) continue;
-      final name = item.trim();
-      
-      if (isDelete) {
-        await _deleteIngredient(name);
-      } else {
-        await _addIngredient(name);
-      }
-    }
-    
-    // Clear last words for display reset
     setState(() {
-      _lastWords = '';
+      _isAnalyzing = true;
     });
-  }
 
-  Future<void> _addIngredient(String name) async {
-    final repo = await ref.read(ingredientRepositoryProvider.future);
-    
-    final newIngredient = Ingredient(
-      id: '${DateTime.now().millisecondsSinceEpoch}_${name.hashCode}',
-      name: name,
-      standardName: name, 
-      category: '未分類', 
-      unit: '個',
-      amount: 1.0,
-      status: widget.targetStatus, // Use dynamic status
-      storageType: StorageType.fridge,
-      purchaseDate: DateTime.now(),
-      expiryDate: DateTime.now().add(const Duration(days: 7)),
-    );
+    try {
+      // Call Gemini for parsing
+      final aiRepo = ref.read(aiRecipeRepositoryProvider);
+      final ingredients = await aiRepo.parseShoppingList(cleanedText);
 
-    await repo.save(newIngredient);
-    await repo.incrementInfoUsageCount(name);
+      if (ingredients.isNotEmpty) {
+        // Save parsed ingredients
+        final repo = await ref.read(ingredientRepositoryProvider.future);
+        
+        for (final item in ingredients) {
+          final newItem = item.copyWith(
+            status: widget.targetStatus,
+            // ID needs to be unique if AI didn't ensure it (it doesn't fully)
+            id: '${DateTime.now().millisecondsSinceEpoch}_${item.name.hashCode}',
+          );
+          
+          await repo.save(newItem);
+          await repo.incrementInfoUsageCount(newItem.name);
+          
+          if (mounted) {
+            setState(() {
+              _recognizedItems.add('${newItem.name} (${newItem.category})');
+            });
+          }
+        }
+      } else {
+         // Fallback or empty result
+         if (mounted) {
+             ScaffoldMessenger.of(context).showSnackBar(
+               const SnackBar(content: Text('商品を認識できませんでした')),
+             );
+         }
+      }
 
-    if (mounted) {
-      setState(() {
-        _recognizedItems.add('$name (追加)');
-      });
-    }
-  }
-
-  Future<void> _deleteIngredient(String name) async {
-    final repo = await ref.read(ingredientRepositoryProvider.future);
-    final allItems = await repo.getAll();
-    
-    // Find item with same name and matching status (or any status? usually matching status)
-    // If targetStatus is Stock, we only delete from Stock? Or generally by name?
-    // Safer to delete only from current view context.
-    
-    final targets = allItems.where((i) => i.name == name && i.status == widget.targetStatus).toList();
-
-    if (targets.isEmpty) {
-      // Maybe nice to show a toast "Not found"
-      return;
-    }
-
-    // Delete one logic (oldest or just first)
-    // Let's delete ALL matching items? Or just one?
-    // "Delete apple" usually implies deleting the apple entry. 
-    // If multiple apples entries, user might want to delete all or one. 
-    // Safe bet: Delete ALL matching name in this context? Or just one?
-    // Let's delete ALL for now as it's cleaner than leftover duplicates.
-    
-    for (var target in targets) {
-      await repo.delete(target.id);
-    }
-    
-    if (mounted) {
-      setState(() {
-        _recognizedItems.add('$name (削除: ${targets.length}件)');
-      });
+    } catch (e) {
+      debugPrint("AI Processing Error: $e");
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('エラーが発生しました: $e')),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isAnalyzing = false;
+          _lastWords = ''; // Reset display text
+        });
+        
+        // Resume listening if still active
+        if (_isListeningTarget) {
+          _startListening();
+        }
+      }
     }
   }
 
@@ -285,27 +258,31 @@ class _VoiceShoppingModalState extends ConsumerState<VoiceShoppingModal> with Si
                animation: _scaleAnimation,
                builder: (context, child) {
                  return Transform.scale(
-                   scale: _isListeningTarget ? _scaleAnimation.value : 1.0,
+                   scale: (_isListeningTarget && !_isAnalyzing) ? _scaleAnimation.value : 1.0,
                    child: Container(
                      width: 80,
                      height: 80,
                      decoration: BoxDecoration(
-                       color: _isListeningTarget ? AppColors.stoxPrimary : Colors.grey.shade300,
+                       color: _isAnalyzing 
+                           ? AppColors.stoxAccent // Different color for analyzing
+                           : (_isListeningTarget ? AppColors.stoxPrimary : Colors.grey.shade300),
                        shape: BoxShape.circle,
                        boxShadow: [
-                         if (_isListeningTarget)
+                         if (_isListeningTarget || _isAnalyzing)
                            BoxShadow(
-                             color: AppColors.stoxPrimary.withOpacity(0.4),
+                             color: (_isAnalyzing ? AppColors.stoxAccent : AppColors.stoxPrimary).withOpacity(0.4),
                              blurRadius: 20,
                              spreadRadius: 5,
                            )
                        ],
                      ),
-                     child: Icon(
-                       _isListeningTarget ? Icons.mic : Icons.mic_off,
-                       color: Colors.white,
-                       size: 40,
-                     ),
+                     child: _isAnalyzing
+                         ? const Center(child: CircularProgressIndicator(color: Colors.white))
+                         : Icon(
+                           _isListeningTarget ? Icons.mic : Icons.mic_off,
+                           color: Colors.white,
+                           size: 40,
+                         ),
                    ),
                  );
                },
@@ -315,18 +292,20 @@ class _VoiceShoppingModalState extends ConsumerState<VoiceShoppingModal> with Si
            const SizedBox(height: 16), // Reduced from 24
            
            Text(
-             _isListeningTarget ? '聞いています...' : 'タップして開始',
-             style: const TextStyle(
+             _isAnalyzing 
+                 ? 'AIが解析中...' 
+                 : (_isListeningTarget ? '聞いています...' : 'タップして開始'),
+             style: TextStyle(
                fontSize: 18,
                fontWeight: FontWeight.bold,
-               color: AppColors.stoxText,
+               color: _isAnalyzing ? AppColors.stoxAccent : AppColors.stoxText,
              ),
            ),
            
            const SizedBox(height: 8),
            
            Text(
-             _lastWords.isNotEmpty ? '「$_lastWords」' : '材料名 + 「追加」or「削除」\n「追加終わり」で終了',
+             _lastWords.isNotEmpty ? '「$_lastWords」' : '商品名を話しかけてください\n例：「長ネギ」「豚肉とキャベツ」',
              textAlign: TextAlign.center,
              style: const TextStyle(
                fontSize: 14,
@@ -347,7 +326,7 @@ class _VoiceShoppingModalState extends ConsumerState<VoiceShoppingModal> with Si
                      children: const [
                        Icon(Icons.format_list_bulleted, size: 48, color: Colors.black12),
                        SizedBox(height: 8),
-                       Text('操作履歴がここに表示されます', style: TextStyle(color: AppColors.stoxSubText, fontSize: 12)),
+                       Text('追加履歴がここに表示されます', style: TextStyle(color: AppColors.stoxSubText, fontSize: 12)),
                      ],
                    ),
                  )
@@ -355,8 +334,7 @@ class _VoiceShoppingModalState extends ConsumerState<VoiceShoppingModal> with Si
                    padding: const EdgeInsets.symmetric(horizontal: 24),
                    itemCount: _recognizedItems.length,
                    itemBuilder: (context, index) {
-                     // Show latest on top? Or bottom?
-                     // Let's reverse display so latest is top
+                     // Show latest on top
                      final item = _recognizedItems[_recognizedItems.length - 1 - index];
                      return Container(
                        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 0),
@@ -365,18 +343,19 @@ class _VoiceShoppingModalState extends ConsumerState<VoiceShoppingModal> with Si
                        ),
                        child: Row(
                          children: [
-                           Icon(
-                             item.contains('削除') ? Icons.delete_outline : Icons.check_circle, 
-                             color: item.contains('削除') ? Colors.red : AppColors.stoxGreen, 
+                           const Icon(
+                             Icons.check_circle, 
+                             color: AppColors.stoxGreen, 
                              size: 20
                            ),
                            const SizedBox(width: 12),
-                           Text(
-                             item,
-                             style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.stoxText),
+                           Expanded(
+                             child: Text(
+                               item,
+                               style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.stoxText),
+                             ),
                            ),
-                           const Spacer(),
-                           const Text('完了', style: TextStyle(fontSize: 10, color: AppColors.stoxSubText)),
+                           const Text('追加済', style: TextStyle(fontSize: 10, color: AppColors.stoxSubText)),
                          ],
                        ),
                      );
