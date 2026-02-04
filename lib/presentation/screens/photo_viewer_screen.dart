@@ -8,6 +8,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/models/photo_analysis.dart';
 import '../../infrastructure/repositories/drift_photo_analysis_repository.dart';
 
+import '../components/ai_suggestion_button.dart';
+import '../../infrastructure/repositories/ai_recipe_repository.dart';
+
 part 'photo_viewer_screen.g.dart';
 
 class PhotoViewerScreen extends ConsumerStatefulWidget {
@@ -27,6 +30,66 @@ class PhotoViewerScreen extends ConsumerStatefulWidget {
 class _PhotoViewerScreenState extends ConsumerState<PhotoViewerScreen> {
   bool _showInfo = true;
   bool _hasShownCompletionMessage = false;
+  bool _isAnalyzing = false;
+
+  Future<void> _analyzePhoto() async {
+    setState(() {
+      _isAnalyzing = true;
+    });
+
+    try {
+      final file = File(widget.filePath);
+      if (!file.existsSync()) {
+        if (mounted) {
+           ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('ファイルが見つかりません')));
+           setState(() => _isAnalyzing = false);
+        }
+        return;
+      }
+
+      final bytes = await file.readAsBytes();
+      final aiRepo = ref.read(aiRecipeRepositoryProvider);
+      
+      // Analyze
+      final analysisResult = await aiRepo.analyzeFoodImage(bytes);
+      
+      // Save
+      final photoAnalysisRepo = await ref.read(photoAnalysisRepositoryProvider.future);
+      final analysis = PhotoAnalysis(
+        photoPath: widget.filePath,
+        analyzedAt: DateTime.now(),
+        calories: analysisResult.totalCalories,
+        protein: analysisResult.protein,
+        fat: analysisResult.fat,
+        carbs: analysisResult.carbs,
+        foodName: analysisResult.foodName,
+        resultText: analysisResult.displayText,
+      );
+
+      await photoAnalysisRepo.save(analysis);
+      
+      if (mounted) {
+        setState(() {
+          _isAnalyzing = false;
+          _hasShownCompletionMessage = true; // Avoid double toast if we want, or show specific one
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('解析が完了しました')),
+        );
+      }
+
+    } catch (e) {
+      debugPrint('Error analyzing photo: $e');
+      if (mounted) {
+        setState(() {
+          _isAnalyzing = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('解析に失敗しました: $e')),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -34,8 +97,9 @@ class _PhotoViewerScreenState extends ConsumerState<PhotoViewerScreen> {
     
     // Listen for completion
     ref.listen(photoAnalysisByPathProvider(widget.filePath), (previous, next) {
-      if (widget.isNewCapture && !_hasShownCompletionMessage && next.value != null) {
-        // Analysis finished (data arrived)
+      if (widget.isNewCapture && !_hasShownCompletionMessage && next.value != null && !_isAnalyzing) {
+        // Only show if it was an auto-analysis from capture, not manual trigger (handled in _analyzePhoto)
+        // But logic can be simpler: just show if data arrives.
         setState(() => _hasShownCompletionMessage = true);
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('料理の写真の解析が終わりました。')),
@@ -89,30 +153,35 @@ class _PhotoViewerScreenState extends ConsumerState<PhotoViewerScreen> {
                   ),
                   child: analysisAsync.when(
                     data: (analysis) {
-                      // Case 1: No data yet, but it's a new capture -> Loading
-                      if (analysis == null && widget.isNewCapture) {
+                      // Case 1: Analyzing in progress (Manual or Auto)
+                      if (_isAnalyzing || (analysis == null && widget.isNewCapture)) {
                         return Center(
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               const CircularProgressIndicator(color: Colors.pinkAccent),
                               const SizedBox(height: 16),
-                              const Text('解析中...', style: TextStyle(color: Colors.grey)),
+                              Text(_isAnalyzing ? 'AIが解析中...' : '解析中...', style: const TextStyle(color: Colors.grey)),
                             ],
                           ),
                         );
                       }
                       
-                      // Case 2: No data and NOT a new capture (or analysis failed/timeout logic elsewhere) -> Empty
+                      // Case 2: No data (Trigger Manual Analysis)
                       if (analysis == null) {
-                         return Center(
-                           child: ListView(
-                             controller: scrollController,
-                             children: const [
-                               SizedBox(height: 20),
-                               Center(child: Text('解析データがありません', style: TextStyle(color: Colors.grey))),
-                             ],
-                           ),
+                         return Column(
+                           mainAxisAlignment: MainAxisAlignment.center,
+                           children: [
+                             const Text('解析データがありません', style: TextStyle(color: Colors.grey)),
+                             const SizedBox(height: 16),
+                             Padding(
+                               padding: const EdgeInsets.symmetric(horizontal: 32.0),
+                               child: AiSuggestionButton(
+                                 label: 'AIで栄養価を解析する',
+                                 onTap: _analyzePhoto,
+                               ),
+                             ),
+                           ],
                          );
                       }
 

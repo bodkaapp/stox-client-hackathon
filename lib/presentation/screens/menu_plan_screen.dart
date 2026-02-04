@@ -246,7 +246,7 @@ class _MenuPlanScreenState extends ConsumerState<MenuPlanScreen> with AdManagerM
 
         Expanded(
           child: mealPlansAsync.when(
-            data: (data) => _buildMealSections(data),
+            data: (data) => _buildMealSections(data, selectedDate),
             loading: () => const Center(child: CircularProgressIndicator(color: AppColors.stoxPrimary)),
             error: (err, stack) => Center(child: Text('Error: $err')),
           ),
@@ -292,7 +292,7 @@ class _MenuPlanScreenState extends ConsumerState<MenuPlanScreen> with AdManagerM
 
         Expanded(
           child: mealPlansAsync.when(
-            data: (data) => _buildMealSections(data),
+            data: (data) => _buildMealSections(data, selectedDate),
             loading: () => const Center(child: CircularProgressIndicator(color: AppColors.stoxPrimary)),
             error: (err, stack) => Center(child: Text('Error: $err')),
           ),
@@ -301,7 +301,7 @@ class _MenuPlanScreenState extends ConsumerState<MenuPlanScreen> with AdManagerM
     );
   }
 
-  Widget _buildMealSections(List<MealPlanWithRecipe> plans) {
+  Widget _buildMealSections(List<MealPlanWithRecipe> plans, DateTime selectedDate) {
     final breakfast = plans.where((p) => p.mealPlan.mealType == MealType.breakfast).toList();
     final lunch = plans.where((p) => p.mealPlan.mealType == MealType.lunch).toList();
     final dinner = plans.where((p) => p.mealPlan.mealType == MealType.dinner).toList();
@@ -320,6 +320,7 @@ class _MenuPlanScreenState extends ConsumerState<MenuPlanScreen> with AdManagerM
           items: breakfast,
           isHorizontal: false,
           type: MealType.breakfast,
+          selectedDate: selectedDate,
         ),
         const SizedBox(height: 24),
         _buildSection(
@@ -331,6 +332,7 @@ class _MenuPlanScreenState extends ConsumerState<MenuPlanScreen> with AdManagerM
           items: lunch,
           isHorizontal: false, 
           type: MealType.lunch,
+          selectedDate: selectedDate,
         ),
         const SizedBox(height: 24),
         _buildSection(
@@ -342,6 +344,7 @@ class _MenuPlanScreenState extends ConsumerState<MenuPlanScreen> with AdManagerM
           items: dinner,
           isHorizontal: false,
           type: MealType.dinner,
+          selectedDate: selectedDate,
         ),
         const SizedBox(height: 24),
         _buildPreMadeSection(
@@ -357,6 +360,7 @@ class _MenuPlanScreenState extends ConsumerState<MenuPlanScreen> with AdManagerM
           items: undecided,
           isHorizontal: false,
           type: MealType.undecided,
+          selectedDate: selectedDate,
         ),
         const SizedBox(height: 80),
       ],
@@ -372,7 +376,46 @@ class _MenuPlanScreenState extends ConsumerState<MenuPlanScreen> with AdManagerM
     required List<MealPlanWithRecipe> items,
     required bool isHorizontal,
     required MealType type,
+    required DateTime selectedDate,
   }) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final targetDate = DateTime(selectedDate.year, selectedDate.month, selectedDate.day);
+    final isPast = targetDate.isBefore(today);
+    final isToday = targetDate.isAtSameMomentAs(today);
+
+    // Text Logic
+    final String emptyStateText = isPast ? '献立はありません' : '予定はありません';
+
+    // Button Visibility Logic
+    bool showAiButton = false;
+    
+    if (!isPast) {
+      if (!isToday) {
+        // Future: Always show
+        showAiButton = true;
+      } else {
+        // Today: Check time limits
+        switch (type) {
+          case MealType.breakfast:
+            showAiButton = now.hour < 11; // Until 11:00
+            break;
+          case MealType.lunch:
+            showAiButton = now.hour < 15; // Until 15:00
+            break;
+          case MealType.dinner:
+            showAiButton = now.hour < 21; // Until 21:00
+            break;
+          default:
+            // For others (Undecided, Snack etc.), keep shown for today
+            showAiButton = true; 
+            break;
+        }
+      }
+    }
+    // Specific override: If type is 'preMade', we might generally want to show it or logic handled in _buildPreMadeSection? 
+    // _buildSection is seemingly for B/L/D/Undecided. PreMade uses _buildPreMadeSection.
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -455,8 +498,8 @@ class _MenuPlanScreenState extends ConsumerState<MenuPlanScreen> with AdManagerM
              ),
              child: Column(
                children: [
-                 const Text('予定はありません', style: TextStyle(fontSize: 12, color: Color(0xFFA8A29E))),
-                 if (type != MealType.undecided) ...[
+                 Text(emptyStateText, style: const TextStyle(fontSize: 12, color: Color(0xFFA8A29E))),
+                 if (showAiButton && type != MealType.undecided) ...[
                    const SizedBox(height: 12),
                    SizedBox(
                      width: double.infinity,
