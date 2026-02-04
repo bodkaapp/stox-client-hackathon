@@ -622,6 +622,80 @@ Markdownのコードブロックを含めないでください。
       throw Exception('料理の解析に失敗しました: $e');
     }
   }
+  /// 献立を提案する
+  Future<List<AiRecipeSuggestion>> suggestMenuPlan({
+    required DateTime targetDate,
+    required String mealType,
+    required List<String> surroundingMeals,
+    required List<String> stockItems,
+    required List<String> shoppingListItems,
+  }) async {
+    final prompt = '''
+あなたはプロの栄養士でシェフです。
+${targetDate.month}月${targetDate.day}日の「$mealType」の献立を提案してください。
+
+【コンテキスト】
+この日の前後の食事は以下の通りです。栄養バランスや味のバランス（和洋中など）を考慮してください。
+$surroundingMeals
+
+【今の状況】
+- 冷蔵庫にあるもの（在庫）: ${stockItems.join(', ')}
+- 買い物リストにあるもの: ${shoppingListItems.join(', ')}
+
+【依頼】
+以下の3つのパターンの献立を提案してください。
+1. **バランス重視**: 前後の食事とのバランスを最優先した提案。
+2. **在庫活用**: 「冷蔵庫にあるもの」を優先的に使った提案（なければバランス重視でOK）。
+3. **買い出し活用**: 「買い物リストにあるもの」も組み合わせた提案（なければバランス重視でOK）。
+
+【出力形式】
+JSON配列形式のみで返してください。Markdownのコードブロックは不要です。
+
+[
+  {
+    "name": "料理名",
+    "description": "提案の理由やポイント（50文字以内）",
+    "usedIngredients": ["使用する主な食材1", "使用する主な食材2"]
+  },
+  ... (合計3つ)
+]
+''';
+
+  final content = [Content.text(prompt)];
+
+    try {
+      final response = await _model.generateContent(content);
+      final responseText = response.text;
+
+      if (responseText == null) return [];
+
+      String cleanJson = responseText.trim();
+      if (cleanJson.startsWith('```json')) {
+        cleanJson = cleanJson.replaceFirst('```json', '').replaceFirst('```', '').trim();
+      } else if (cleanJson.startsWith('```')) {
+        cleanJson = cleanJson.replaceFirst('```', '').replaceFirst('```', '').trim();
+      }
+
+      final jsonMatch = RegExp(r'\[.*\]', dotAll: true).stringMatch(cleanJson);
+      if (jsonMatch != null) {
+        cleanJson = jsonMatch;
+      }
+
+      final List<dynamic> jsonList = json.decode(cleanJson);
+      return jsonList.map((e) {
+        return AiRecipeSuggestion(
+          name: e['name'] ?? '',
+          description: e['description'] ?? '',
+          usedIngredients: (e['usedIngredients'] as List<dynamic>?)?.map((i) => i.toString()).toList() ?? [],
+        );
+      }).toList();
+    } catch (e) {
+      debugPrint('Error suggesting menu plan: $e');
+      return [
+        AiRecipeSuggestion(name: '旬の食材を使った定食', description: 'バランスの良い食事です', usedIngredients: ['旬の野菜', '肉または魚']),
+      ];
+    }
+  }
 }
 
 class AiRecipeAnalysisResult {

@@ -24,6 +24,10 @@ import '../viewmodels/challenge_stamp_viewmodel.dart';
 import '../widgets/challenge_stamp/congratulation_dialog.dart';
 import 'package:crypto/crypto.dart';
 import 'dart:convert';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
+import '../mixins/ad_manager_mixin.dart';
+import 'ai_menu_proposal_loading_screen.dart';
+import '../components/ai_suggestion_button.dart';
 
 
 // -----------------------------------------------------------------------------
@@ -71,7 +75,7 @@ class MenuPlanScreen extends ConsumerStatefulWidget {
   ConsumerState<MenuPlanScreen> createState() => _MenuPlanScreenState();
 }
 
-class _MenuPlanScreenState extends ConsumerState<MenuPlanScreen> {
+class _MenuPlanScreenState extends ConsumerState<MenuPlanScreen> with AdManagerMixin {
   late ScrollController _dateScrollController;
   bool _isMonthlyView = false;
   DateTime _focusedMonth = DateTime.now();
@@ -81,6 +85,7 @@ class _MenuPlanScreenState extends ConsumerState<MenuPlanScreen> {
     super.initState();
     initializeDateFormatting('ja');
     _dateScrollController = ScrollController();
+    loadRewardedAd(); // Load Ad on Init
     
     if (widget.initialDate != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -108,6 +113,7 @@ class _MenuPlanScreenState extends ConsumerState<MenuPlanScreen> {
   @override
   void dispose() {
     _dateScrollController.dispose();
+    disposeAd();
     super.dispose();
   }
 
@@ -447,8 +453,20 @@ class _MenuPlanScreenState extends ConsumerState<MenuPlanScreen> {
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(color: const Color(0xFFE7E5E4)),
              ),
-             child: const Center(
-               child: Text('予定はありません', style: TextStyle(fontSize: 12, color: Color(0xFFA8A29E))),
+             child: Column(
+               children: [
+                 const Text('予定はありません', style: TextStyle(fontSize: 12, color: Color(0xFFA8A29E))),
+                 if (type != MealType.undecided) ...[
+                   const SizedBox(height: 12),
+                   SizedBox(
+                     width: double.infinity,
+                     child: AiSuggestionButton(
+                       onTap: () => _onAskAi(type),
+                       label: 'AIに献立を提案してもらう',
+                     ),
+                   ),
+                 ],
+               ],
              ),
            )
         else if (isHorizontal)
@@ -790,6 +808,28 @@ class _MenuPlanScreenState extends ConsumerState<MenuPlanScreen> {
         ],
       ),
     );
+  }
+
+
+  Future<void> _onAskAi(MealType type) async {
+    final result = await showAdAndExecute(
+      context: context,
+      preAdTitle: 'AI献立提案',
+      preAdContent: '広告を視聴して、AIに献立を提案してもらいますか？\n（今の冷蔵庫の中身や前後の食事バランスを考慮します）',
+      confirmButtonText: '広告を見て提案してもらう',
+    );
+
+    if (result && mounted) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => AiMenuProposalLoadingScreen(
+            targetDate: ref.read(selectedDateProvider),
+            mealType: type,
+          ),
+        ),
+      );
+    }
   }
 
   void _onMadeIt(List<MealPlanWithRecipe> items) {
