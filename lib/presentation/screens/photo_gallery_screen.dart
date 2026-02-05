@@ -4,30 +4,30 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import '../../domain/models/meal_plan.dart';
-import '../../infrastructure/repositories/drift_meal_plan_repository.dart';
+import '../../domain/models/food_photo.dart';
+import '../../infrastructure/repositories/drift_food_photo_repository.dart';
 import 'dart:io';
 import 'photo_viewer_screen.dart';
 
-final photoGalleryProvider = AsyncNotifierProvider.autoDispose<PhotoGalleryNotifier, List<MealPlan>>(
+final photoGalleryProvider = AsyncNotifierProvider.autoDispose<PhotoGalleryNotifier, List<FoodPhoto>>(
   PhotoGalleryNotifier.new,
 );
 
-class PhotoGalleryNotifier extends AutoDisposeAsyncNotifier<List<MealPlan>> {
+class PhotoGalleryNotifier extends AutoDisposeAsyncNotifier<List<FoodPhoto>> {
   bool _hasMore = true;
   static const int _limit = 50;
 
   bool get hasMore => _hasMore;
 
   @override
-  FutureOr<List<MealPlan>> build() async {
+  FutureOr<List<FoodPhoto>> build() async {
     _hasMore = true;
     return _fetch(offset: 0);
   }
 
-  Future<List<MealPlan>> _fetch({required int offset}) async {
-    final repo = await ref.watch(mealPlanRepositoryProvider.future);
-    final newItems = await repo.getWithPhotos(limit: _limit, offset: offset);
+  Future<List<FoodPhoto>> _fetch({required int offset}) async {
+    final repo = await ref.watch(foodPhotoRepositoryProvider.future);
+    final newItems = await repo.getAll(limit: _limit, offset: offset);
     if (newItems.length < _limit) {
       _hasMore = false;
     }
@@ -38,13 +38,13 @@ class PhotoGalleryNotifier extends AutoDisposeAsyncNotifier<List<MealPlan>> {
     final currentList = state.valueOrNull;
     if (currentList == null || !_hasMore || state.isLoading) return;
 
-    state = const AsyncLoading<List<MealPlan>>().copyWithPrevious(state);
+    state = const AsyncLoading<List<FoodPhoto>>().copyWithPrevious(state);
 
     try {
       final newItems = await _fetch(offset: currentList.length);
       state = AsyncData([...currentList, ...newItems]);
     } catch (e, s) {
-      state = AsyncError<List<MealPlan>>(e, s).copyWithPrevious(state);
+      state = AsyncError<List<FoodPhoto>>(e, s).copyWithPrevious(state);
     }
   }
 }
@@ -72,13 +72,13 @@ class PhotoGalleryScreen extends ConsumerWidget {
           }
 
           // Group by Date
-          final grouped = <DateTime, List<String>>{};
-          for (final plan in plans) {
-            final dateKey = DateTime(plan.date.year, plan.date.month, plan.date.day);
+          final grouped = <DateTime, List<FoodPhoto>>{};
+          for (final photo in plans) {
+            final dateKey = DateTime(photo.createdAt.year, photo.createdAt.month, photo.createdAt.day);
             if (!grouped.containsKey(dateKey)) {
               grouped[dateKey] = [];
             }
-            grouped[dateKey]!.addAll(plan.photos);
+            grouped[dateKey]!.add(photo);
           }
           
           final sortedDates = grouped.keys.toList()..sort((a, b) => b.compareTo(a));
@@ -105,8 +105,8 @@ class PhotoGalleryScreen extends ConsumerWidget {
                   );
                 }
                 final date = sortedDates[index];
-                final photos = grouped[date]!;
-                return _buildDateSection(context, date, photos);
+                final photoItems = grouped[date]!;
+                return _buildDateSection(context, date, photoItems);
               },
             ),
           );
@@ -117,7 +117,7 @@ class PhotoGalleryScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildDateSection(BuildContext context, DateTime date, List<String> photos) {
+  Widget _buildDateSection(BuildContext context, DateTime date, List<FoodPhoto> photoItems) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -134,22 +134,26 @@ class PhotoGalleryScreen extends ConsumerWidget {
                   color: Colors.black87,
                 ),
               ),
-              TextButton.icon(
-                onPressed: () {
-                   context.go(Uri(path: '/menu_plan', queryParameters: {
-                     'date': date.toIso8601String(),
-                     'from_gallery': 'true',
-                   }).toString());
-                },
-                icon: const Icon(Icons.calendar_today, size: 16),
-                label: Text(AppLocalizations.of(context)!.actionViewMenuPlan, style: const TextStyle(fontSize: 12)), // 献立計画表を見る
-                style: TextButton.styleFrom(
-                  foregroundColor: Colors.pinkAccent,
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  minimumSize: Size.zero,
-                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              // Only show the link if at least one photo in this section has a mealPlanId
+              if (photoItems.any((p) => p.mealPlanId != null))
+                TextButton.icon(
+                  onPressed: () {
+                     // Find first mealPlanId
+                     final firstMealPlanId = photoItems.firstWhere((p) => p.mealPlanId != null).mealPlanId;
+                     context.go(Uri(path: '/menu_plan', queryParameters: {
+                       'date': date.toIso8601String(),
+                       'from_gallery': 'true',
+                     }).toString());
+                  },
+                  icon: const Icon(Icons.calendar_today, size: 16),
+                  label: Text(AppLocalizations.of(context)!.actionViewMenuPlan, style: const TextStyle(fontSize: 12)), // 献立計画表を見る
+                  style: TextButton.styleFrom(
+                    foregroundColor: Colors.pinkAccent,
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    minimumSize: Size.zero,
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
                 ),
-              ),
             ],
           ),
         ),
@@ -162,9 +166,9 @@ class PhotoGalleryScreen extends ConsumerWidget {
             crossAxisSpacing: 4,
             mainAxisSpacing: 4,
           ),
-          itemCount: photos.length,
+          itemCount: photoItems.length,
           itemBuilder: (context, index) {
-            return _buildPhotoItem(context, photos[index]);
+            return _buildPhotoItem(context, photoItems[index].path);
           },
         ),
       ],

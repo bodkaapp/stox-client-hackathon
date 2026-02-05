@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:convert';
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:path/path.dart' as p;
@@ -9,12 +10,12 @@ import 'package:flutter/foundation.dart';
 
 part 'app_database.g.dart';
 
-@DriftDatabase(tables: [Recipes, Ingredients, MealPlans, SearchHistories, UserSettings, IngredientAddHistories, Notifications, RecipeIngredients, PhotoAnalyses])
+@DriftDatabase(tables: [Recipes, Ingredients, MealPlans, SearchHistories, UserSettings, IngredientAddHistories, Notifications, RecipeIngredients, PhotoAnalyses, FoodPhotos])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 9;
+  int get schemaVersion => 10;
 
   @override
   MigrationStrategy get migration {
@@ -48,6 +49,26 @@ class AppDatabase extends _$AppDatabase {
         }
         if (from < 9) {
           await m.addColumn(recipes, recipes.isTemporary);
+        }
+        if (from < 10) {
+          await m.createTable(foodPhotos);
+          
+          // Migrate existing photos from MealPlans to FoodPhotos
+          final allPlans = await select(mealPlans).get();
+          for (final plan in allPlans) {
+            try {
+              final photoPaths = (json.decode(plan.photos) as List<dynamic>).map((e) => e.toString()).toList();
+              for (final path in photoPaths) {
+                await into(foodPhotos).insert(FoodPhotosCompanion.insert(
+                  path: path,
+                  createdAt: plan.completedAt ?? plan.date,
+                  mealPlanId: Value(plan.originalId),
+                ), mode: InsertMode.insertOrReplace);
+              }
+            } catch (e) {
+              debugPrint('Error migrating photos for plan ${plan.originalId}: $e');
+            }
+          }
         }
       },
       beforeOpen: (details) async {

@@ -140,3 +140,16 @@ class PhotoAnalyses extends Table {
   @override
   Set<Column> get primaryKey => {photoPath};
 }
+
+@DataClassName('FoodPhotoEntity')
+class FoodPhotos extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get path => text()();
+  DateTimeColumn get createdAt => dateTime()();
+  TextColumn get mealPlanId => text().nullable()(); // Links to MealPlans.originalId
+
+  @override
+  List<String> get customConstraints => [
+    'UNIQUE (path)'
+  ];
+}

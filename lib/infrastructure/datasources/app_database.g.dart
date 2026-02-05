@@ -3803,6 +3803,270 @@ class PhotoAnalysesCompanion extends UpdateCompanion<PhotoAnalysisEntity> {
   }
 }
 
+class $FoodPhotosTable extends FoodPhotos
+    with TableInfo<$FoodPhotosTable, FoodPhotoEntity> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $FoodPhotosTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+      'id', aliasedName, false,
+      hasAutoIncrement: true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+  static const VerificationMeta _pathMeta = const VerificationMeta('path');
+  @override
+  late final GeneratedColumn<String> path = GeneratedColumn<String>(
+      'path', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _createdAtMeta =
+      const VerificationMeta('createdAt');
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+      'created_at', aliasedName, false,
+      type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  static const VerificationMeta _mealPlanIdMeta =
+      const VerificationMeta('mealPlanId');
+  @override
+  late final GeneratedColumn<String> mealPlanId = GeneratedColumn<String>(
+      'meal_plan_id', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  @override
+  List<GeneratedColumn> get $columns => [id, path, createdAt, mealPlanId];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'food_photos';
+  @override
+  VerificationContext validateIntegrity(Insertable<FoodPhotoEntity> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('path')) {
+      context.handle(
+          _pathMeta, path.isAcceptableOrUnknown(data['path']!, _pathMeta));
+    } else if (isInserting) {
+      context.missing(_pathMeta);
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(_createdAtMeta,
+          createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta));
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('meal_plan_id')) {
+      context.handle(
+          _mealPlanIdMeta,
+          mealPlanId.isAcceptableOrUnknown(
+              data['meal_plan_id']!, _mealPlanIdMeta));
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  FoodPhotoEntity map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return FoodPhotoEntity(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      path: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}path'])!,
+      createdAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
+      mealPlanId: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}meal_plan_id']),
+    );
+  }
+
+  @override
+  $FoodPhotosTable createAlias(String alias) {
+    return $FoodPhotosTable(attachedDatabase, alias);
+  }
+}
+
+class FoodPhotoEntity extends DataClass implements Insertable<FoodPhotoEntity> {
+  final int id;
+  final String path;
+  final DateTime createdAt;
+  final String? mealPlanId;
+  const FoodPhotoEntity(
+      {required this.id,
+      required this.path,
+      required this.createdAt,
+      this.mealPlanId});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['path'] = Variable<String>(path);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    if (!nullToAbsent || mealPlanId != null) {
+      map['meal_plan_id'] = Variable<String>(mealPlanId);
+    }
+    return map;
+  }
+
+  FoodPhotosCompanion toCompanion(bool nullToAbsent) {
+    return FoodPhotosCompanion(
+      id: Value(id),
+      path: Value(path),
+      createdAt: Value(createdAt),
+      mealPlanId: mealPlanId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(mealPlanId),
+    );
+  }
+
+  factory FoodPhotoEntity.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return FoodPhotoEntity(
+      id: serializer.fromJson<int>(json['id']),
+      path: serializer.fromJson<String>(json['path']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      mealPlanId: serializer.fromJson<String?>(json['mealPlanId']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'path': serializer.toJson<String>(path),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'mealPlanId': serializer.toJson<String?>(mealPlanId),
+    };
+  }
+
+  FoodPhotoEntity copyWith(
+          {int? id,
+          String? path,
+          DateTime? createdAt,
+          Value<String?> mealPlanId = const Value.absent()}) =>
+      FoodPhotoEntity(
+        id: id ?? this.id,
+        path: path ?? this.path,
+        createdAt: createdAt ?? this.createdAt,
+        mealPlanId: mealPlanId.present ? mealPlanId.value : this.mealPlanId,
+      );
+  FoodPhotoEntity copyWithCompanion(FoodPhotosCompanion data) {
+    return FoodPhotoEntity(
+      id: data.id.present ? data.id.value : this.id,
+      path: data.path.present ? data.path.value : this.path,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      mealPlanId:
+          data.mealPlanId.present ? data.mealPlanId.value : this.mealPlanId,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('FoodPhotoEntity(')
+          ..write('id: $id, ')
+          ..write('path: $path, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('mealPlanId: $mealPlanId')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, path, createdAt, mealPlanId);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is FoodPhotoEntity &&
+          other.id == this.id &&
+          other.path == this.path &&
+          other.createdAt == this.createdAt &&
+          other.mealPlanId == this.mealPlanId);
+}
+
+class FoodPhotosCompanion extends UpdateCompanion<FoodPhotoEntity> {
+  final Value<int> id;
+  final Value<String> path;
+  final Value<DateTime> createdAt;
+  final Value<String?> mealPlanId;
+  const FoodPhotosCompanion({
+    this.id = const Value.absent(),
+    this.path = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.mealPlanId = const Value.absent(),
+  });
+  FoodPhotosCompanion.insert({
+    this.id = const Value.absent(),
+    required String path,
+    required DateTime createdAt,
+    this.mealPlanId = const Value.absent(),
+  })  : path = Value(path),
+        createdAt = Value(createdAt);
+  static Insertable<FoodPhotoEntity> custom({
+    Expression<int>? id,
+    Expression<String>? path,
+    Expression<DateTime>? createdAt,
+    Expression<String>? mealPlanId,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (path != null) 'path': path,
+      if (createdAt != null) 'created_at': createdAt,
+      if (mealPlanId != null) 'meal_plan_id': mealPlanId,
+    });
+  }
+
+  FoodPhotosCompanion copyWith(
+      {Value<int>? id,
+      Value<String>? path,
+      Value<DateTime>? createdAt,
+      Value<String?>? mealPlanId}) {
+    return FoodPhotosCompanion(
+      id: id ?? this.id,
+      path: path ?? this.path,
+      createdAt: createdAt ?? this.createdAt,
+      mealPlanId: mealPlanId ?? this.mealPlanId,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (path.present) {
+      map['path'] = Variable<String>(path.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (mealPlanId.present) {
+      map['meal_plan_id'] = Variable<String>(mealPlanId.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('FoodPhotosCompanion(')
+          ..write('id: $id, ')
+          ..write('path: $path, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('mealPlanId: $mealPlanId')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -3818,6 +4082,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $RecipeIngredientsTable recipeIngredients =
       $RecipeIngredientsTable(this);
   late final $PhotoAnalysesTable photoAnalyses = $PhotoAnalysesTable(this);
+  late final $FoodPhotosTable foodPhotos = $FoodPhotosTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -3831,7 +4096,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
         ingredientAddHistories,
         notifications,
         recipeIngredients,
-        photoAnalyses
+        photoAnalyses,
+        foodPhotos
       ];
 }
 
@@ -5739,6 +6005,156 @@ typedef $$PhotoAnalysesTableProcessedTableManager = ProcessedTableManager<
     ),
     PhotoAnalysisEntity,
     PrefetchHooks Function()>;
+typedef $$FoodPhotosTableCreateCompanionBuilder = FoodPhotosCompanion Function({
+  Value<int> id,
+  required String path,
+  required DateTime createdAt,
+  Value<String?> mealPlanId,
+});
+typedef $$FoodPhotosTableUpdateCompanionBuilder = FoodPhotosCompanion Function({
+  Value<int> id,
+  Value<String> path,
+  Value<DateTime> createdAt,
+  Value<String?> mealPlanId,
+});
+
+class $$FoodPhotosTableFilterComposer
+    extends Composer<_$AppDatabase, $FoodPhotosTable> {
+  $$FoodPhotosTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get path => $composableBuilder(
+      column: $table.path, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get mealPlanId => $composableBuilder(
+      column: $table.mealPlanId, builder: (column) => ColumnFilters(column));
+}
+
+class $$FoodPhotosTableOrderingComposer
+    extends Composer<_$AppDatabase, $FoodPhotosTable> {
+  $$FoodPhotosTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get path => $composableBuilder(
+      column: $table.path, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get mealPlanId => $composableBuilder(
+      column: $table.mealPlanId, builder: (column) => ColumnOrderings(column));
+}
+
+class $$FoodPhotosTableAnnotationComposer
+    extends Composer<_$AppDatabase, $FoodPhotosTable> {
+  $$FoodPhotosTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get path =>
+      $composableBuilder(column: $table.path, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<String> get mealPlanId => $composableBuilder(
+      column: $table.mealPlanId, builder: (column) => column);
+}
+
+class $$FoodPhotosTableTableManager extends RootTableManager<
+    _$AppDatabase,
+    $FoodPhotosTable,
+    FoodPhotoEntity,
+    $$FoodPhotosTableFilterComposer,
+    $$FoodPhotosTableOrderingComposer,
+    $$FoodPhotosTableAnnotationComposer,
+    $$FoodPhotosTableCreateCompanionBuilder,
+    $$FoodPhotosTableUpdateCompanionBuilder,
+    (
+      FoodPhotoEntity,
+      BaseReferences<_$AppDatabase, $FoodPhotosTable, FoodPhotoEntity>
+    ),
+    FoodPhotoEntity,
+    PrefetchHooks Function()> {
+  $$FoodPhotosTableTableManager(_$AppDatabase db, $FoodPhotosTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$FoodPhotosTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$FoodPhotosTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$FoodPhotosTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            Value<String> path = const Value.absent(),
+            Value<DateTime> createdAt = const Value.absent(),
+            Value<String?> mealPlanId = const Value.absent(),
+          }) =>
+              FoodPhotosCompanion(
+            id: id,
+            path: path,
+            createdAt: createdAt,
+            mealPlanId: mealPlanId,
+          ),
+          createCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            required String path,
+            required DateTime createdAt,
+            Value<String?> mealPlanId = const Value.absent(),
+          }) =>
+              FoodPhotosCompanion.insert(
+            id: id,
+            path: path,
+            createdAt: createdAt,
+            mealPlanId: mealPlanId,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$FoodPhotosTableProcessedTableManager = ProcessedTableManager<
+    _$AppDatabase,
+    $FoodPhotosTable,
+    FoodPhotoEntity,
+    $$FoodPhotosTableFilterComposer,
+    $$FoodPhotosTableOrderingComposer,
+    $$FoodPhotosTableAnnotationComposer,
+    $$FoodPhotosTableCreateCompanionBuilder,
+    $$FoodPhotosTableUpdateCompanionBuilder,
+    (
+      FoodPhotoEntity,
+      BaseReferences<_$AppDatabase, $FoodPhotosTable, FoodPhotoEntity>
+    ),
+    FoodPhotoEntity,
+    PrefetchHooks Function()>;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -5762,4 +6178,6 @@ class $AppDatabaseManager {
       $$RecipeIngredientsTableTableManager(_db, _db.recipeIngredients);
   $$PhotoAnalysesTableTableManager get photoAnalyses =>
       $$PhotoAnalysesTableTableManager(_db, _db.photoAnalyses);
+  $$FoodPhotosTableTableManager get foodPhotos =>
+      $$FoodPhotosTableTableManager(_db, _db.foodPhotos);
 }

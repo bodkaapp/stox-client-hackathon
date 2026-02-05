@@ -19,8 +19,10 @@ import 'package:uuid/uuid.dart';
 import '../../domain/models/meal_plan.dart';
 import '../../domain/models/photo_analysis.dart';
 import '../../infrastructure/repositories/drift_meal_plan_repository.dart';
+import '../../infrastructure/repositories/drift_food_photo_repository.dart';
 import '../../infrastructure/repositories/ai_recipe_repository.dart';
 import '../../infrastructure/repositories/drift_photo_analysis_repository.dart';
+import '../../domain/models/food_photo.dart';
 
 class FoodCameraScreen extends ConsumerStatefulWidget {
   final bool createMealPlanOnCapture;
@@ -583,10 +585,8 @@ class _FoodCameraScreenState extends ConsumerState<FoodCameraScreen> with Widget
 
       await Gal.putImage(file.path, album: 'STOX');
 
-      // Auto-Save Logic
-      if (widget.createMealPlanOnCapture) {
-        await _saveToMealPlan(file.path);
-      }
+      // Auto-Save Logic (Now saves to FoodPhotos first)
+      await _savePhotoRecord(file.path);
 
 
 
@@ -612,26 +612,43 @@ class _FoodCameraScreenState extends ConsumerState<FoodCameraScreen> with Widget
 
 
 
-  Future<void> _saveToMealPlan(String photoPath) async {
+  Future<void> _savePhotoRecord(String photoPath) async {
     try {
-      final repo = await ref.read(mealPlanRepositoryProvider.future);
+      final photoRepo = await ref.read(foodPhotoRepositoryProvider.future);
       final now = DateTime.now();
-      
-      final mealPlan = MealPlan(
-        id: const Uuid().v4(),
-        recipeId: '', // No recipe
-        date: now,
-        mealType: _getMealTypeFromTime(now),
-        isDone: true,
-        completedAt: now,
-        photos: [photoPath],
+      String? mealPlanId;
+
+      if (widget.createMealPlanOnCapture) {
+        final mealPlanRepo = await ref.read(mealPlanRepositoryProvider.future);
+        mealPlanId = const Uuid().v4();
+        
+        final mealPlan = MealPlan(
+          id: mealPlanId,
+          recipeId: '', // No recipe
+          date: now,
+          mealType: _getMealTypeFromTime(now),
+          isDone: true,
+          completedAt: now,
+          photos: [photoPath],
+        );
+        
+        await mealPlanRepo.save(mealPlan);
+      }
+
+      final foodPhoto = FoodPhoto(
+        id: 0, // Auto-increment
+        path: photoPath,
+        createdAt: now,
+        mealPlanId: mealPlanId,
       );
-      
-      await repo.save(mealPlan);
+
+      await photoRepo.save(foodPhoto);
     } catch (e) {
-      debugPrint('Error auto-saving meal plan: $e');
+      debugPrint('Error saving photo record: $e');
     }
   }
+
+  // Removed old _saveToMealPlan
 
   MealType _getMealTypeFromTime(DateTime time) {
     final hour = time.hour;

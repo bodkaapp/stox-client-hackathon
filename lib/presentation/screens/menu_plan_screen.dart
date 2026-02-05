@@ -32,6 +32,8 @@ import '../mixins/ad_manager_mixin.dart';
 import 'ai_menu_proposal_loading_screen.dart';
 import '../components/ai_suggestion_button.dart';
 import '../../l10n/generated/app_localizations.dart';
+import '../../domain/models/food_photo.dart';
+import '../../infrastructure/repositories/drift_food_photo_repository.dart';
 
 
 // -----------------------------------------------------------------------------
@@ -1158,6 +1160,17 @@ class _MenuPlanScreenState extends ConsumerState<MenuPlanScreen> with AdManagerM
       
       // Challenge 7: Cook and Photo
       await ref.read(challengeStampViewModelProvider.notifier).complete(ChallengeType.cookAndPhoto.id);
+
+      // Save to FoodPhotos also
+      final photoRepo = await ref.read(foodPhotoRepositoryProvider.future);
+      for (final path in paths) {
+        await photoRepo.save(FoodPhoto(
+          id: 0,
+          path: path,
+          createdAt: DateTime.now(),
+          mealPlanId: target.mealPlan.id,
+        ));
+      }
 
     } catch (e) {
       if (mounted) {
