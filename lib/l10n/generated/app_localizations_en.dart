@@ -271,7 +271,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get stockHelpDescription =>
-      'Screen to check inventory of food and daily necessities. You can check quantity and expiration dates.';
+      'Screen to check inventory of food and daily necessities. You can check quantity and expiration dates.\nBy tapping the \"+\" button, you can add inventory by voice or delete it all at once.';
 
   @override
   String get menuPlanTitle => 'Menu Plan';
@@ -281,7 +281,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get menuPlanHelpDescription =>
-      'Screen to plan upcoming meals or review past recipes.';
+      'Screen to plan upcoming meals or review past recipes.\nYou can also post a photo taken after making it.';
 
   @override
   String get recipeBookTitle => 'My Recipe Book';

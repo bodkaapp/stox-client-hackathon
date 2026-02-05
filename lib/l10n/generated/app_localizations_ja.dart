@@ -269,7 +269,8 @@ class AppLocalizationsJa extends AppLocalizations {
   String get stockHelpTitle => '在庫一覧画面';
 
   @override
-  String get stockHelpDescription => '家にある食材や日用品の在庫を確認する画面です。個数や賞味期限の確認ができます';
+  String get stockHelpDescription =>
+      '家にある食材や日用品の在庫を確認する画面です。個数や賞味期限の確認ができます。\n「＋」ボタンをタップすると、在庫を声で追加したり、まとめて削除することができます';
 
   @override
   String get menuPlanTitle => '献立計画表';
@@ -279,7 +280,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get menuPlanHelpDescription =>
-      'これから作る料理の献立を計画したり、前に作った料理のレシピを振り返ったりする画面です。';
+      'これから作る料理の献立を計画したり、前に作った料理のレシピを振り返ったりする画面です。\n作った後に撮影した写真を貼っておくこともできます。';
 
   @override
   String get recipeBookTitle => 'マイレシピ帳';
