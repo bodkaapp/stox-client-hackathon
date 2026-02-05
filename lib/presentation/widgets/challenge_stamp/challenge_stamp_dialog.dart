@@ -2,9 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../config/app_colors.dart';
 import '../../viewmodels/challenge_stamp_viewmodel.dart';
-import '../../viewmodels/challenge_stamp_viewmodel.dart';
 import '../../../domain/models/challenge_stamp.dart';
-import 'challenge_guide_dialog.dart'; // [NEW]
+import 'challenge_guide_dialog.dart';
 
 class ChallengeStampDialog extends ConsumerWidget {
   const ChallengeStampDialog({super.key});

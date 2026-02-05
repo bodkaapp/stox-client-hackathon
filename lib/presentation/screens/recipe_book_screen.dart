@@ -318,21 +318,6 @@ class RecipeBookScreen extends ConsumerWidget {
                         if (recipes.isNotEmpty)
                           Row(
                             children: [
-                              TextButton(
-                                onPressed: () {},
-                                style: TextButton.styleFrom(
-                                  foregroundColor: AppColors.stoxAccent, // Changed to Accent
-                                  textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-                                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                ),
-                                  child: Row(
-                                    children: [
-                                      Text(AppLocalizations.of(context)!.recipeEdit), // 編集する
-                                      const Icon(Icons.chevron_right, size: 16),
-                                    ],
-                                  ),
-                              ),
-                              const SizedBox(width: 8),
                               ElevatedButton(
                                 onPressed: () {
                                   Navigator.of(context, rootNavigator: true).push(
