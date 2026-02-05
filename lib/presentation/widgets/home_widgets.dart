@@ -202,7 +202,7 @@ class TodaysMenuCard extends ConsumerWidget {
                     ],
                   ),
                   TextButton(
-                    onPressed: () => context.push('/recipe_book'),
+                    onPressed: () => context.go('/menu_plan'),
                     child: Text(
                       AppLocalizations.of(context)!.homeChangeMenu,
                       style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.stoxPrimary),

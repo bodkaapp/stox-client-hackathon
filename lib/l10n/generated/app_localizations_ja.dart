@@ -40,7 +40,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get homeRegisterMenu => '登録する';
 
   @override
-  String get homeChangeMenu => '変更';
+  String get homeChangeMenu => '献立を変更する';
 
   @override
   String get homeNoMenuPlan => '今日の献立はまだありません';

@@ -15,7 +15,7 @@
   "homeHelpDescription": "アプリのメインの画面です。この「？」アイコンをタップすると、画面の使い方が表示されます。",
   "homeTodaysMenu": "今日の献立",
   "homeRegisterMenu": "登録する",
-  "homeChangeMenu": "変更",
+  "homeChangeMenu": "献立を変更する",
   "homeNoMenuPlan": "今日の献立はまだありません",
   "homeViewRecipe": "レシピを見る",
   "homeShoppingList": "買うもの",

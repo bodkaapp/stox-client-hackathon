@@ -161,7 +161,7 @@ abstract class AppLocalizations {
   /// No description provided for @homeChangeMenu.
   ///
   /// In ja, this message translates to:
-  /// **'変更'**
+  /// **'献立を変更する'**
   String get homeChangeMenu;
 
   /// No description provided for @homeNoMenuPlan.
