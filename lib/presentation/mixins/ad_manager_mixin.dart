@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import '../../config/app_colors.dart';
+import '../../l10n/generated/app_localizations.dart';
 
 /// Mixin to handle Rewarded Ad logic
 mixin AdManagerMixin<T extends StatefulWidget> on State<T> {
@@ -41,7 +42,8 @@ mixin AdManagerMixin<T extends StatefulWidget> on State<T> {
     required BuildContext context,
     required String preAdTitle,
     required String preAdContent,
-    String confirmButtonText = '広告を見て実行する',
+
+    String? confirmButtonText, 
     String? postAdMessage,
     VoidCallback? onConsent,
   }) async {
@@ -55,12 +57,12 @@ mixin AdManagerMixin<T extends StatefulWidget> on State<T> {
         actions: [
           TextButton(
              onPressed: () => Navigator.pop(context, false),
-             child: const Text('キャンセル', style: TextStyle(color: Colors.grey)),
+             child: Text(AppLocalizations.of(context)!.actionCancel, style: const TextStyle(color: Colors.grey)), // キャンセル
           ),
           ElevatedButton(
              onPressed: () => Navigator.pop(context, true),
              style: ElevatedButton.styleFrom(backgroundColor: AppColors.stoxPrimary),
-             child: Text(confirmButtonText, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+             child: Text(confirmButtonText ?? AppLocalizations.of(context)!.adExecuteAction, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)), // 広告を見て実行する
           ),
         ],
       ),
@@ -96,7 +98,7 @@ mixin AdManagerMixin<T extends StatefulWidget> on State<T> {
       // Let's show a snackbar and return false for now to encourage ad watching.
        if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('広告の読み込みに失敗しました。通信環境を確認して再度お試しください。')),
+          SnackBar(content: Text(AppLocalizations.of(context)!.adLoadError)), // 広告の読み込みに失敗しました。通信環境を確認して再度お試しください。
         );
       }
       return false;
@@ -148,7 +150,7 @@ mixin AdManagerMixin<T extends StatefulWidget> on State<T> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('次へ'),
+              child: Text(AppLocalizations.of(context)!.actionNext), // 次へ
             )
           ],
         ),

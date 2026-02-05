@@ -1,6 +1,7 @@
 
 import 'dart:io';
 import 'package:flutter/material.dart';
+import '../../l10n/generated/app_localizations.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
@@ -41,7 +42,7 @@ class _PhotoViewerScreenState extends ConsumerState<PhotoViewerScreen> {
       final file = File(widget.filePath);
       if (!file.existsSync()) {
         if (mounted) {
-           ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('ファイルが見つかりません')));
+           ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.fileNotFound))); // ファイルが見見つかりません
            setState(() => _isAnalyzing = false);
         }
         return;
@@ -74,7 +75,7 @@ class _PhotoViewerScreenState extends ConsumerState<PhotoViewerScreen> {
           _hasShownCompletionMessage = true; // Avoid double toast if we want, or show specific one
         });
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('解析が完了しました')),
+          SnackBar(content: Text(AppLocalizations.of(context)!.analysisComplete)), // 解析が完了しました
         );
       }
 
@@ -85,7 +86,7 @@ class _PhotoViewerScreenState extends ConsumerState<PhotoViewerScreen> {
           _isAnalyzing = false;
         });
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('解析に失敗しました: $e')),
+          SnackBar(content: Text('${AppLocalizations.of(context)!.analysisFailed}: $e')), // 解析に失敗しました
         );
       }
     }
@@ -102,7 +103,7 @@ class _PhotoViewerScreenState extends ConsumerState<PhotoViewerScreen> {
         // But logic can be simpler: just show if data arrives.
         setState(() => _hasShownCompletionMessage = true);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('料理の写真の解析が終わりました。')),
+          SnackBar(content: Text(AppLocalizations.of(context)!.foodPhotoAnalysisComplete)), // 料理の写真の解析が終わりました。
         );
       }
     });
@@ -121,7 +122,7 @@ class _PhotoViewerScreenState extends ConsumerState<PhotoViewerScreen> {
           IconButton(
             icon: const Icon(Icons.share),
             onPressed: () {
-              Share.shareXFiles([XFile(widget.filePath)], text: 'Stoxで撮影しました');
+              Share.shareXFiles([XFile(widget.filePath)], text: AppLocalizations.of(context)!.sharedWithStox); // STOXで撮影しました
             },
           ),
         ],
@@ -172,12 +173,12 @@ class _PhotoViewerScreenState extends ConsumerState<PhotoViewerScreen> {
                          return Column(
                            mainAxisAlignment: MainAxisAlignment.center,
                            children: [
-                             const Text('解析データがありません', style: TextStyle(color: Colors.grey)),
+                             Text(AppLocalizations.of(context)!.noAnalysisData, style: const TextStyle(color: Colors.grey)), // 解析データがありません
                              const SizedBox(height: 16),
                              Padding(
                                padding: const EdgeInsets.symmetric(horizontal: 32.0),
                                child: AiSuggestionButton(
-                                 label: 'AIで栄養価を解析する',
+                                 label: AppLocalizations.of(context)!.actionAnalyzeNutritionWithAi, // AIで栄養価を解析する
                                  onTap: _analyzePhoto,
                                ),
                              ),
@@ -210,7 +211,7 @@ class _PhotoViewerScreenState extends ConsumerState<PhotoViewerScreen> {
                       );
                     },
                     loading: () => const Center(child: CircularProgressIndicator(color: Colors.pinkAccent)),
-                    error: (err, stack) => Center(child: Text('エラーが発生しました: $err')),
+                    error: (err, stack) => Center(child: Text('${AppLocalizations.of(context)!.errorOccurred}: $err')), // エラーが発生しました
                   ),
                 );
               },

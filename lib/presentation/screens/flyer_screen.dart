@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../l10n/generated/app_localizations.dart';
 import '../../config/app_colors.dart';
 import '../components/circle_action_button.dart';
 import 'my_area_setting_screen.dart';
@@ -16,7 +17,7 @@ class FlyerScreen extends StatelessWidget {
         child: Column(
           children: [
             _buildHeader(context),
-            _buildStoreTabs(),
+            _buildStoreTabs(context),
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.only(bottom: 100), // Bottom padding for navigation
@@ -27,7 +28,7 @@ class FlyerScreen extends StatelessWidget {
                     const SizedBox(height: 24),
                     _buildNewFlyers(context),
                     const SizedBox(height: 24),
-                    _buildRecommended(),
+                    _buildRecommended(context),
                   ],
                 ),
               ),
@@ -57,10 +58,10 @@ class FlyerScreen extends StatelessWidget {
               const SizedBox(width: 8),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: const [
+                children: [
                   Text(
-                    'チラシ (仮デザイン)',
-                    style: TextStyle(
+                    '${AppLocalizations.of(context)!.titleFlyer} (${AppLocalizations.of(context)!.labelDraftDesign})', // チラシ (仮デザイン)
+                    style: const TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
                         color: AppColors.stoxText,
@@ -100,16 +101,16 @@ class FlyerScreen extends StatelessWidget {
                   }
                 },
                 itemBuilder: (context) => [
-                  const PopupMenuItem(
+                  PopupMenuItem(
                     value: 'my_area',
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(Icons.location_on_outlined,
                             color: AppColors.stoxSubText, size: 20),
-                        SizedBox(width: 8),
-                        Text('マイエリア設定',
-                            style: TextStyle(color: AppColors.stoxText)),
+                        const SizedBox(width: 8),
+                        Text(AppLocalizations.of(context)!.myAreaSetting, // マイエリア設定
+                            style: const TextStyle(color: AppColors.stoxText)),
                       ],
                     ),
                   ),
@@ -128,10 +129,10 @@ class FlyerScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildStoreTabs() {
+  Widget _buildStoreTabs(BuildContext context) {
     final stores = [
       {
-        'name': 'おすすめ',
+        'name': AppLocalizations.of(context)!.labelRecommended, // おすすめ
         'selected': true,
       },
       {
@@ -211,12 +212,12 @@ class FlyerScreen extends StatelessWidget {
         children: [
           const SizedBox(height: 16),
           Row(
-            children: const [
+            children: [
               Icon(Icons.location_on_outlined, size: 20, color: AppColors.stoxText),
               SizedBox(width: 4),
               Text(
-                '近くのお店のチラシ',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.stoxText),
+                AppLocalizations.of(context)!.nearbyFlyers, // 近くのお店のチラシ
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.stoxText),
               ),
             ],
           ),
@@ -247,7 +248,7 @@ class FlyerScreen extends StatelessWidget {
                   imageUrl:
                       'https://lh3.googleusercontent.com/aida-public/AB6AXuBSF3PCO5EX8LhY7FjvwOpX1Y1MMSj8i5b05HZoFIOiT9jkysT3PydPTzIDvp520s2A8rDG0xAKpBJLL1apmUDGpy_2fqZ34wr8cx186NQb7OLtcm7IlpqB7D9c80dKsDmAsBoBxqhNlg0faO10E3iE-Iw4g_w6SzkAH6PUxtEq9Uz_BphwFCGeJWGWJNoaxg_T3Xm5RIlRYZD8DpiKdi_It2vhNDY0lBvZGJphLpMH5wEfoR7zIUafxKHauuMCW4PFWp19f3ODnWKI',
                   title: 'REGZAフェア まとめ買い...',
-                  badge: '新着あり',
+                  badge: AppLocalizations.of(context)!.newArrivals, // 新着あり
                   badgeColor: Colors.amber,
                 ),
               ),
@@ -264,9 +265,9 @@ class FlyerScreen extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            '新着のチラシ',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.stoxText),
+          Text(
+            AppLocalizations.of(context)!.newFlyers, // 新着のチラシ
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.stoxText),
           ),
           const SizedBox(height: 12),
           // Grid 1
@@ -468,7 +469,7 @@ class FlyerScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildRecommended() {
+  Widget _buildRecommended(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
       child: Column(
@@ -476,14 +477,14 @@ class FlyerScreen extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
-                '今日のおすすめ商品',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.stoxText),
+              Text(
+                AppLocalizations.of(context)!.todaysRecommended, // 今日のおすすめ商品
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.stoxText),
               ),
               Row(
-                children: const [
-                  Text('すべて見る', style: TextStyle(fontSize: 12, color: AppColors.stoxSubText)),
-                  Icon(Icons.chevron_right, size: 16, color: AppColors.stoxSubText),
+                children: [
+                  Text(AppLocalizations.of(context)!.homeViewAll, style: const TextStyle(fontSize: 12, color: AppColors.stoxSubText)), // すべて見る
+                  const Icon(Icons.chevron_right, size: 16, color: AppColors.stoxSubText),
                 ],
               ),
             ],
@@ -518,26 +519,26 @@ class FlyerScreen extends StatelessWidget {
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    children: const [
+                    children: [
                       Text(
-                        'NEW ITEM',
-                        style: TextStyle(
+                        AppLocalizations.of(context)!.labelNewItem, // NEW ITEM
+                        style: const TextStyle(
                           fontSize: 10,
                           fontWeight: FontWeight.bold,
                           color: Colors.grey,
                         ),
                       ),
-                      SizedBox(height: 4),
-                      Text(
-                        'NEW 日産リーフ誕生',
+                      const SizedBox(height: 4),
+                      const Text(
+                        'NEW 日産リーフ誕生', // Assuming brand names are not localized for now
                         style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.bold,
                             color: AppColors.stoxText),
                       ),
-                      SizedBox(height: 4),
-                      Text(
-                        '日産自動車',
+                      const SizedBox(height: 4),
+                      const Text(
+                        '日産自動車', // Assuming brand names are not localized for now
                         style: TextStyle(fontSize: 12, color: AppColors.stoxSubText),
                       ),
                     ],

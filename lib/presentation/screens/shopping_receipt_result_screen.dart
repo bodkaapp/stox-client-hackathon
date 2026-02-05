@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../l10n/generated/app_localizations.dart';
 import '../../config/app_colors.dart';
 import '../../domain/models/ingredient.dart';
 import '../../infrastructure/repositories/drift_ingredient_repository.dart';
@@ -131,7 +132,7 @@ class _ShoppingReceiptResultScreenState extends ConsumerState<ShoppingReceiptRes
       if (mounted) {
         Navigator.pop(context, true);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('在庫を更新しました')),
+          SnackBar(content: Text(AppLocalizations.of(context)!.stockUpdated)), // 在庫を更新しました
         );
       }
     } catch (e) {
@@ -140,7 +141,7 @@ class _ShoppingReceiptResultScreenState extends ConsumerState<ShoppingReceiptRes
       });
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-           SnackBar(content: Text('保存に失敗しました: $e')),
+           SnackBar(content: Text('${AppLocalizations.of(context)!.saveFailed}: $e')), // 保存に失敗しました
         );
       }
     }
@@ -151,7 +152,7 @@ class _ShoppingReceiptResultScreenState extends ConsumerState<ShoppingReceiptRes
     if (widget.receiptItems.isEmpty) {
       return Scaffold(
         backgroundColor: AppColors.stoxBackground,
-        appBar: AppBar(title: const Text('レシート解析結果'), centerTitle: true),
+        appBar: AppBar(title: Text(AppLocalizations.of(context)!.receiptAnalysisResultTitle), centerTitle: true), // レシート解析結果
         body: SafeArea(
           child: Column(
             children: [
@@ -178,7 +179,7 @@ class _ShoppingReceiptResultScreenState extends ConsumerState<ShoppingReceiptRes
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     ),
-                    child: const Text('もう一回撮影する', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+                    child: Text(AppLocalizations.of(context)!.actionRetakePhoto, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)), // もう一回撮影する
                   ),
                 ),
               ),
@@ -190,7 +191,7 @@ class _ShoppingReceiptResultScreenState extends ConsumerState<ShoppingReceiptRes
 
     return Scaffold(
       backgroundColor: AppColors.stoxBackground,
-      appBar: AppBar(title: const Text('レシート解析結果'), centerTitle: true),
+      appBar: AppBar(title: Text(AppLocalizations.of(context)!.receiptAnalysisResultTitle), centerTitle: true), // レシート解析結果
       body: SafeArea(
         child: Column(
           children: [
@@ -199,8 +200,8 @@ class _ShoppingReceiptResultScreenState extends ConsumerState<ShoppingReceiptRes
                 padding: const EdgeInsets.all(16),
                 children: [
                   _buildSection(
-                    title: '在庫にする',
-                    description: 'レシートと買物リストの両方にありました。\n在庫に登録します。',
+                    title: AppLocalizations.of(context)!.actionSetToStock, // 在庫にする
+                    description: AppLocalizations.of(context)!.receiptSectionMatchedDescription, // レシートと買物リストの両方にありました。\n在庫に登録します。
                     items: _matchedItems,
                     checkedSet: _matchedItemsToCheck,
                     icon: Icons.check_circle,
@@ -208,8 +209,8 @@ class _ShoppingReceiptResultScreenState extends ConsumerState<ShoppingReceiptRes
                   ),
                   const SizedBox(height: 24),
                   _buildSection(
-                    title: '新規に追加',
-                    description: '買物リストにありませんでした。\n在庫に追加しますか？',
+                    title: AppLocalizations.of(context)!.actionAddNew, // 新規に追加
+                    description: AppLocalizations.of(context)!.receiptSectionNewDescription, // 買い物リストにありませんでした。\n在庫に追加しますか？
                     items: _newDetailItems,
                     checkedSet: _newItemsToCheck,
                     icon: Icons.add_circle,
@@ -217,8 +218,8 @@ class _ShoppingReceiptResultScreenState extends ConsumerState<ShoppingReceiptRes
                   ),
                   const SizedBox(height: 24),
                   _buildSection(
-                    title: '未購入',
-                    description: 'レシートにありませんでした。\n買い忘れていませんか？',
+                    title: AppLocalizations.of(context)!.statusUnpurchased, // 未購入
+                    description: AppLocalizations.of(context)!.receiptSectionUnpurchasedDescription, // レシートにありませんでした。\n買い忘れていませんか？
                     items: _unpurchasedItems,
                     checkedSet: _ignoredItemsToCheck,
                     icon: Icons.help,
@@ -296,7 +297,7 @@ class _ShoppingReceiptResultScreenState extends ConsumerState<ShoppingReceiptRes
                     activeColor: AppColors.stoxPrimary,
                     controlAffinity: ListTileControlAffinity.leading,
                     secondary: isUnpurchased 
-                        ? (isChecked ? const Text('在庫にする', style: TextStyle(fontSize: 10, color: AppColors.stoxPrimary)) : const Text('リストに残す', style: TextStyle(fontSize: 10, color: Colors.grey)))
+                        ? (isChecked ? Text(AppLocalizations.of(context)!.actionSetToStock, style: const TextStyle(fontSize: 10, color: AppColors.stoxPrimary)) : Text(AppLocalizations.of(context)!.actionKeepInList, style: const TextStyle(fontSize: 10, color: Colors.grey))) // 在庫にする, リストに残す
                         : null,
                   ),
                   if (!isLast) const Divider(height: 1, indent: 16, endIndent: 16),
@@ -327,7 +328,7 @@ class _ShoppingReceiptResultScreenState extends ConsumerState<ShoppingReceiptRes
               padding: const EdgeInsets.symmetric(vertical: 16),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             ),
-            child: const Text('完了', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+            child: Text(AppLocalizations.of(context)!.actionFinish, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)), // 完了
           ),
         ),
       ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../l10n/generated/app_localizations.dart';
 import '../../config/app_colors.dart';
 import '../../domain/models/recipe.dart';
 import '../components/recipe_list_card.dart';
@@ -24,20 +25,20 @@ class RecentlyViewedRecipesScreen extends ConsumerWidget {
             icon: const Icon(Icons.arrow_back, color: AppColors.stoxText),
             onPressed: () => Navigator.pop(context),
           ),
-          title: const Text(
-            '履歴', // Changed title slightly to be neutral or keep 'レシピ一覧'? User didn't specify screen title change, just tabs. But 'レシピ一覧' is fine.
-            style: TextStyle(
+          title: Text(
+            AppLocalizations.of(context)!.titleHistory, // 履歴
+            style: const TextStyle(
                 color: AppColors.stoxText,
                 fontSize: 18,
                 fontWeight: FontWeight.normal),
           ),
-          bottom: const TabBar(
+          bottom: TabBar(
             labelColor: AppColors.stoxPrimary,
             unselectedLabelColor: AppColors.stoxText,
             indicatorColor: AppColors.stoxPrimary,
             tabs: [
-              Tab(text: '最近見たレシピ'),
-              Tab(text: '最近登録したレシピ'),
+              Tab(text: AppLocalizations.of(context)!.tabRecentlyViewed), // 最近見たレシピ
+              Tab(text: AppLocalizations.of(context)!.tabRecentlyAdded), // 最近登録したレシピ
             ],
           ),
         ),
@@ -72,7 +73,7 @@ class _RecipeList extends ConsumerWidget {
         if (recipes.isEmpty) {
           return Center(
             child: Text(
-              type == _ListType.viewed ? '最近見たレシピはありません' : '登録されたレシピはありません',
+              type == _ListType.viewed ? AppLocalizations.of(context)!.noRecentlyViewedRecipes : AppLocalizations.of(context)!.noRecentlyAddedRecipes, // 最近見たレシピはありません : 登録されたレシピはありません
               style: const TextStyle(color: AppColors.stoxSubText),
             ),
           );
@@ -139,7 +140,7 @@ class _RecipeList extends ConsumerWidget {
                 // Parse back to DateTime for better formatting if needed, or just display
                 // "2026/02/05" -> "2026年2月5日"
                 final parts = item.split('/').map(int.parse).toList();
-                final dateLabel = '${parts[0]}年${parts[1]}月${parts[2]}日';
+                final dateLabel = AppLocalizations.of(context)!.dateYMD(parts[0], parts[1], parts[2]); // ${parts[0]}年${parts[1]}月${parts[2]}日
                 
                 return Padding(
                   padding: const EdgeInsets.fromLTRB(20, 24, 20, 8),

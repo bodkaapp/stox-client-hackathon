@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../config/app_colors.dart';
 import '../viewmodels/recipe_book_viewmodel.dart';
@@ -10,10 +11,11 @@ import 'cooking_mode_screen.dart';
 import 'recipe_search_results_screen.dart';
 import '../../domain/models/recipe.dart';
 import 'dart:io';
-import 'dart:io';
+
 import '../widgets/help_icon.dart';
-import '../../domain/models/challenge_stamp.dart'; // [NEW]
-import '../viewmodels/challenge_stamp_viewmodel.dart'; // [NEW]
+import '../../domain/models/challenge_stamp.dart';
+import '../viewmodels/challenge_stamp_viewmodel.dart';
+import '../../l10n/generated/app_localizations.dart';
 
 class RecipeBookScreen extends ConsumerWidget {
   const RecipeBookScreen({super.key});
@@ -50,7 +52,7 @@ class RecipeBookScreen extends ConsumerWidget {
             slivers: [
               _buildHeaderAndSearch(context, ref),
               _buildTodaysMenuSection(context, ref),
-              _buildCategoriesSection(),
+              _buildCategoriesSection(context),
               ..._buildRecentlyViewedSection(context, stateAsync),
               const SliverPadding(padding: EdgeInsets.only(bottom: 100)),
             ],
@@ -72,13 +74,13 @@ class RecipeBookScreen extends ConsumerWidget {
                    child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Row(
+                      Row(
                         children: [
                           Icon(Icons.calendar_month, color: Color(0xFFA8A29E), size: 20),
 
                           SizedBox(width: 6),
                           Text(
-                            '過去の献立',
+                            AppLocalizations.of(context)!.recipePastMenus, // 過去の献立
                             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF292524)),
                           ),
                         ],
@@ -92,8 +94,8 @@ class RecipeBookScreen extends ConsumerWidget {
                             ),
                           );
                         },
-                        child: const Text(
-                          'すべて見る',
+                        child: Text(
+                          AppLocalizations.of(context)!.recipeViewAll, // すべて見る
                           style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF78716C)),
                         ),
                       ),
@@ -108,10 +110,10 @@ class RecipeBookScreen extends ConsumerWidget {
                         return pastMenusAsync.when(
                           data: (dailyMenus) {
                             if (dailyMenus.isEmpty) {
-                              return const Center(
+                              return Center(
                                 child: Padding(
                                   padding: EdgeInsets.all(20),
-                                  child: Text('過去の献立はありません', style: TextStyle(color: Color(0xFF78716C))),
+                                  child: Text(AppLocalizations.of(context)!.recipeNoPastMenus, style: TextStyle(color: Color(0xFF78716C))), // 過去の献立はありません
                                 ),
                               );
                             }
@@ -165,7 +167,7 @@ class RecipeBookScreen extends ConsumerWidget {
       slivers: [
         _buildHeaderAndSearch(context, ref),
         _buildTodaysMenuSection(context, ref),
-        _buildCategoriesSection(),
+        _buildCategoriesSection(context),
         ..._buildRecentlyViewedSection(context, stateAsync),
         _buildPastMenusSection(context, ref),
         const SliverPadding(padding: EdgeInsets.only(bottom: 100)),
@@ -197,21 +199,21 @@ class RecipeBookScreen extends ConsumerWidget {
                     const SizedBox(width: 8),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      children: const [
+                      children: [
                         Text(
-                          'マイレシピ帳',
-                          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.stoxText, height: 1.0),
+                          AppLocalizations.of(context)!.recipeBookTitle,
+                          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.stoxText, height: 1.0),
                         ),
-                        Text(
+                        const Text(
                           'RECIPE BOOK',
                           style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.stoxAccent, letterSpacing: 1.0),
                         ),
                       ],
                     ),
                     const SizedBox(width: 8),
-                    const HelpIcon(
-                      title: 'マイレシピ帳画面',
-                      description: 'レシピを検索したり、献立を計画したり、作った料理のレシピを記録したりする画面です。',
+                    HelpIcon(
+                      title: AppLocalizations.of(context)!.recipeBookHelpTitle,
+                      description: AppLocalizations.of(context)!.recipeBookHelpDescription,
                     ),
                   ],
                 ),
@@ -229,7 +231,7 @@ class RecipeBookScreen extends ConsumerWidget {
                       MaterialPageRoute(
                         builder: (context) => RecipeWebViewScreen(
                           url: intent.url,
-                          title: '読み込み中...',
+                          title: AppLocalizations.of(context)!.menuLoading, // 読み込み中...
                         ),
                       ),
                     );
@@ -256,7 +258,7 @@ class RecipeBookScreen extends ConsumerWidget {
                 }
               },
               decoration: InputDecoration(
-                hintText: 'レシピを検索またはURLを入力',
+                hintText: AppLocalizations.of(context)!.recipeSearchPlaceholder, // レシピを検索またはURLを入力
                 hintStyle: const TextStyle(color: Color(0xFF78716C), fontSize: 14), // text-stone-500
                 prefixIcon: const Icon(Icons.search, color: Color(0xFFA8A29E)), // text-stone-400
                 filled: true,
@@ -291,9 +293,9 @@ class RecipeBookScreen extends ConsumerWidget {
           return todaysMenuAsync.when(
             data: (recipes) {
                 final now = DateTime.now();
-                final weekDays = ['月', '火', '水', '木', '金', '土', '日'];
-                final weekDayStr = weekDays[now.weekday - 1];
-                final dateStr = '${now.month}月${now.day}日 ($weekDayStr)';
+                // '月', '火', '水', '木', '金', '土', '日'
+                final dateStr = DateFormat.MMMEd(Localizations.localeOf(context).toString()).format(now); // ${now.month}月${now.day}日 ($weekDayStr)
+
 
                 return Padding(
                 padding: const EdgeInsets.all(20.0),
@@ -303,12 +305,12 @@ class RecipeBookScreen extends ConsumerWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Row(
+                        Row(
                           children: [
                             Icon(Icons.calendar_today, color: AppColors.stoxPrimary, size: 20),
                             SizedBox(width: 6),
                             Text(
-                              '今日の献立',
+                            AppLocalizations.of(context)!.recipeTodaysMenu, // 今日の献立
                               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF292524)),
                             ),
                           ],
@@ -323,12 +325,12 @@ class RecipeBookScreen extends ConsumerWidget {
                                   textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
                                   tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                                 ),
-                                child: const Row(
-                                  children: [
-                                    Text('編集する'),
-                                    Icon(Icons.chevron_right, size: 16),
-                                  ],
-                                ),
+                                  child: Row(
+                                    children: [
+                                      Text(AppLocalizations.of(context)!.recipeEdit), // 編集する
+                                      const Icon(Icons.chevron_right, size: 16),
+                                    ],
+                                  ),
                               ),
                               const SizedBox(width: 8),
                               ElevatedButton(
@@ -349,11 +351,11 @@ class RecipeBookScreen extends ConsumerWidget {
                                   ),
                                   tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                                 ),
-                                child: const Row(
+                                child: Row(
                                   children: [
                                     Icon(Icons.restaurant_menu, size: 16),
-                                    SizedBox(width: 4),
-                                    Text('今すぐ作る', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                                    const SizedBox(width: 4),
+                                    Text(AppLocalizations.of(context)!.recipeCookNow, style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)), // 今すぐ作る
                                   ],
                                 ),
                               ),
@@ -386,15 +388,15 @@ class RecipeBookScreen extends ConsumerWidget {
                             children: [
                               const Icon(Icons.add_circle_outline, color: Color(0xFFA8A29E), size: 32),
                               const SizedBox(height: 8),
-                              const Text(
-                                'まだ今日の献立がありません',
-                                style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF78716C)),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                '追加する',
-                                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.stoxPrimary.withOpacity(0.8)),
-                              ),
+                                Text(
+                                  AppLocalizations.of(context)!.recipeNoTodaysMenu, // まだ今日の献立がありません
+                                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF78716C)),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  AppLocalizations.of(context)!.recipeAdd, // 追加する
+                                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.stoxPrimary.withOpacity(0.8)),
+                                ),
                             ],
                           ),
                         ),
@@ -454,7 +456,7 @@ class RecipeBookScreen extends ConsumerWidget {
                                           color: const Color(0xFFFEF3C7), // bg-amber-100
                                           borderRadius: BorderRadius.circular(12),
                                         ),
-                                        child: Text('$count品', style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFFB45309))),
+                                        child: Text(AppLocalizations.of(context)!.recipeItemsCount(count), style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFFB45309))), // $count品
                                       ),
                                     ],
                                   ),
@@ -572,7 +574,7 @@ class RecipeBookScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildCategoriesSection() {
+  Widget _buildCategoriesSection(BuildContext context) {
     return SliverToBoxAdapter(
       child: SizedBox(
         height: 90,
@@ -580,17 +582,17 @@ class RecipeBookScreen extends ConsumerWidget {
           scrollDirection: Axis.horizontal,
           padding: const EdgeInsets.symmetric(horizontal: 20),
           children: [
-            _buildCategoryItem('主菜', Icons.restaurant, AppColors.stoxBannerBg, AppColors.stoxPrimary),
+            _buildCategoryItem(AppLocalizations.of(context)!.recipeCategoryMain, Icons.restaurant, AppColors.stoxBannerBg, AppColors.stoxPrimary), // 主菜
             const SizedBox(width: 12),
-            _buildCategoryItem('副菜', Icons.eco, const Color(0xFFF0FDF4), const Color(0xFF16A34A)),
+            _buildCategoryItem(AppLocalizations.of(context)!.recipeCategorySide, Icons.eco, const Color(0xFFF0FDF4), const Color(0xFF16A34A)), // 副菜
             const SizedBox(width: 12),
-            _buildCategoryItem('時短', Icons.timer, const Color(0xFFEFF6FF), const Color(0xFF2563EB)),
+            _buildCategoryItem(AppLocalizations.of(context)!.recipeCategoryQuick, Icons.timer, const Color(0xFFEFF6FF), const Color(0xFF2563EB)), // 時短
             const SizedBox(width: 12),
-            _buildCategoryItem('おつまみ', Icons.liquor, const Color(0xFFFAF5FF), const Color(0xFF9333EA)),
+            _buildCategoryItem(AppLocalizations.of(context)!.recipeCategorySnack, Icons.liquor, const Color(0xFFFAF5FF), const Color(0xFF9333EA)), // おつまみ
             const SizedBox(width: 12),
-            _buildCategoryItem('お気に入り', Icons.favorite, const Color(0xFFF5F5F4), const Color(0xFF78716C)),
+            _buildCategoryItem(AppLocalizations.of(context)!.recipeCategoryFavorite, Icons.favorite, const Color(0xFFF5F5F4), const Color(0xFF78716C)), // お気に入り
             const SizedBox(width: 12),
-            _buildCategoryItem('その他', Icons.more_horiz, const Color(0xFFF5F5F4), const Color(0xFF78716C)),
+            _buildCategoryItem(AppLocalizations.of(context)!.recipeCategoryOther, Icons.more_horiz, const Color(0xFFF5F5F4), const Color(0xFF78716C)), // その他
           ],
         ),
       ),
@@ -611,12 +613,12 @@ class RecipeBookScreen extends ConsumerWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Row(
+                  Row(
                     children: [
                       Icon(Icons.history, color: AppColors.stoxPrimary, size: 20),
                       SizedBox(width: 6),
                       Text(
-                        '最近見たレシピ',
+                        AppLocalizations.of(context)!.recipeRecentlyViewed, // 最近見たレシピ
                         style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF292524)),
                       ),
                     ],
@@ -630,8 +632,8 @@ class RecipeBookScreen extends ConsumerWidget {
                         ),
                       );
                     },
-                    child: const Text(
-                      'すべて見る',
+                    child: Text(
+                      AppLocalizations.of(context)!.recipeViewAll, // すべて見る
                       style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF78716C)),
                     ),
                   ),
@@ -671,12 +673,12 @@ class RecipeBookScreen extends ConsumerWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Row(
+              Row(
                 children: [
                   Icon(Icons.calendar_month, color: Color(0xFFA8A29E), size: 20),
                   SizedBox(width: 6),
                   Text(
-                    '過去の献立',
+                    AppLocalizations.of(context)!.recipePastMenus, // 過去の献立
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF292524)),
                   ),
                 ],
@@ -690,8 +692,8 @@ class RecipeBookScreen extends ConsumerWidget {
                     ),
                   );
                 },
-                child: const Text(
-                  'すべて見る',
+                child: Text(
+                  AppLocalizations.of(context)!.recipeViewAll, // すべて見る
                   style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF78716C)),
                 ),
               ),
@@ -705,10 +707,10 @@ class RecipeBookScreen extends ConsumerWidget {
               return pastMenusAsync.when(
                 data: (dailyMenus) {
                   if (dailyMenus.isEmpty) {
-                    return const Center(
+                    return Center(
                       child: Padding(
                         padding: EdgeInsets.all(20),
-                        child: Text('過去の献立はありません', style: TextStyle(color: Color(0xFF78716C))),
+                        child: Text(AppLocalizations.of(context)!.recipeNoPastMenus, style: TextStyle(color: Color(0xFF78716C))), // 過去の献立はありません
                       ),
                     );
                   }
@@ -899,7 +901,7 @@ class RecipeBookScreen extends ConsumerWidget {
                     children: [
                       if (recipe.createdAt != null)
                         Text(
-                          '${recipe.createdAt.month}/${recipe.createdAt.day} 追加',
+                          AppLocalizations.of(context)!.recipeAddedDate(DateFormat('M/d').format(recipe.createdAt)), // ${recipe.createdAt.month}/${recipe.createdAt.day} 追加
                           style: const TextStyle(fontSize: 10, color: Color(0xFF78716C)),
                         ),
                     ],

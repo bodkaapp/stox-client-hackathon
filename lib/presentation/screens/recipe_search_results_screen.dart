@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import '../../l10n/generated/app_localizations.dart';
 import 'package:http/http.dart' as http;
 import '../../config/app_colors.dart';
 import 'recipe_webview_screen.dart';
@@ -63,13 +64,13 @@ class _RecipeSearchResultsScreenState extends State<RecipeSearchResultsScreen> {
         });
       } else {
         setState(() {
-          _errorMessage = '検索に失敗しました (${response.statusCode})';
+          _errorMessage = '${AppLocalizations.of(context)!.searchFailedMessage} (${response.statusCode})'; // 検索に失敗しました
           _isLoading = false;
         });
       }
     } catch (e) {
       setState(() {
-        _errorMessage = '通信エラーが発生しました';
+        _errorMessage = AppLocalizations.of(context)!.errorNetwork; // 通信エラーが発生しました
         _isLoading = false;
       });
     }
@@ -88,7 +89,7 @@ class _RecipeSearchResultsScreenState extends State<RecipeSearchResultsScreen> {
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          '「${widget.searchQuery}」の検索結果',
+          AppLocalizations.of(context)!.recipeSearchResults(widget.searchQuery), // 「${widget.searchQuery}」の検索結果
           style: const TextStyle(color: AppColors.stoxText, fontSize: 18, fontWeight: FontWeight.normal),
         ),
       ),
@@ -96,7 +97,7 @@ class _RecipeSearchResultsScreenState extends State<RecipeSearchResultsScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildSectionHeader('レシピサイトから'),
+            _buildSectionHeader(AppLocalizations.of(context)!.labelFromRecipeSites), // レシピサイトから
             _buildWebResultsSection(),
             const SizedBox(height: 32),
           ],
@@ -149,19 +150,17 @@ class _RecipeSearchResultsScreenState extends State<RecipeSearchResultsScreen> {
             Text(_errorMessage!, style: const TextStyle(color: Colors.red)),
             TextButton(
                 onPressed: _fetchWebRecipes, 
-                child: const Text('再試行', style: TextStyle(color: AppColors.stoxPrimary))
+                child: Text(AppLocalizations.of(context)!.retake, style: const TextStyle(color: AppColors.stoxPrimary)) // 再試行 (やり直す)
             ),
           ],
         ),
       );
     }
 
-    if (_webResults.isEmpty) {
-      return const Padding(
-        padding: EdgeInsets.symmetric(horizontal: 16),
-        child: Text('レシピサイトに結果が見つかりませんでした', style: TextStyle(color: AppColors.stoxSubText)),
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: Text(AppLocalizations.of(context)!.noRecipeSearchResults, style: const TextStyle(color: AppColors.stoxSubText)), // レシピサイトに結果が見つかりませんでした
       );
-    }
 
     return ListView.builder(
       shrinkWrap: true,

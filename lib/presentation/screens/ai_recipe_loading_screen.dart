@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import '../../l10n/generated/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -24,12 +25,20 @@ class AiRecipeLoadingScreen extends ConsumerStatefulWidget {
 }
 
 class _AiRecipeLoadingScreenState extends ConsumerState<AiRecipeLoadingScreen> {
-  String _displayText = 'AIが写真を解析しています…';
+  String _displayText = '';
   List<String> _ingredients = [];
   List<AiRecipeSuggestion> _recipeSuggestions = [];
   bool _analysisComplete = false;
   bool _hasError = false;
   Timer? _animationTimer;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_displayText.isEmpty && !_hasError) {
+      _displayText = AppLocalizations.of(context)!.aiRecipeAnalyzingPhoto; // AIが写真を解析しています…
+    }
+  }
 
   @override
   void initState() {
@@ -129,7 +138,7 @@ class _AiRecipeLoadingScreenState extends ConsumerState<AiRecipeLoadingScreen> {
     // Change text when animation starts (or slightly before/after)
     if (mounted) {
        setState(() {
-         _displayText = 'AIがレシピを考えています…\n発見: ${_ingredients.first}'; 
+         _displayText = AppLocalizations.of(context)!.aiRecipeThinkingWithIngredient(_ingredients.first); // AIがレシピを考えています…\n${_ingredients.first}があります
        });
     }
 
@@ -143,7 +152,7 @@ class _AiRecipeLoadingScreenState extends ConsumerState<AiRecipeLoadingScreen> {
       if (currentIndex < _ingredients.length) {
         setState(() {
            // Keep the main message, update the ingredient part
-          _displayText = 'AIがレシピを考えています…\n発見: ${_ingredients[currentIndex]}';
+          _displayText = AppLocalizations.of(context)!.aiRecipeThinkingWithIngredient(_ingredients[currentIndex]); // AIがレシピを考えています…\n${_ingredients[currentIndex]}があります
         });
         currentIndex++;
       } else {
@@ -244,7 +253,7 @@ class _AiRecipeLoadingScreenState extends ConsumerState<AiRecipeLoadingScreen> {
                const Icon(Icons.error_outline, size: 64, color: Color(0xFFEF9F27)),
                const SizedBox(height: 24),
                Text(
-                 '商品が見つかりませんでした',
+                 AppLocalizations.of(context)!.aiRecipeNoItemsFound, // 商品が見つかりませんでした
                  textAlign: TextAlign.center,
                  style: GoogleFonts.outfit(
                    fontSize: 22,
@@ -253,10 +262,10 @@ class _AiRecipeLoadingScreenState extends ConsumerState<AiRecipeLoadingScreen> {
                  ),
                ),
                const SizedBox(height: 16),
-               const Text(
-                 '写真から食材を特定できませんでした。\nもう一度撮影するか、レシピを検索してください。',
+               Text(
+                 AppLocalizations.of(context)!.aiRecipeNoIdentification, // 写真から食材を特定できませんでした。\nもう一度撮影するか、レシピを検索してください。
                  textAlign: TextAlign.center,
-                 style: TextStyle(
+                 style: const TextStyle(
                    color: Color(0xFF666666),
                    height: 1.5,
                  ),
@@ -266,8 +275,8 @@ class _AiRecipeLoadingScreenState extends ConsumerState<AiRecipeLoadingScreen> {
                // Retake Button
                ElevatedButton.icon(
                   onPressed: _onErrorRetake,
-                  icon: const Icon(Icons.camera_alt, color: Colors.white),
-                  label: const Text('もう一度撮影する', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+                   icon: const Icon(Icons.camera_alt, color: Colors.white),
+                   label: Text(AppLocalizations.of(context)!.actionRetakePhoto, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)), // もう一度撮影する
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFFEF9F27),
                     padding: const EdgeInsets.symmetric(vertical: 16),
@@ -279,8 +288,8 @@ class _AiRecipeLoadingScreenState extends ConsumerState<AiRecipeLoadingScreen> {
                // Search Button
                OutlinedButton.icon(
                   onPressed: _onErrorSearchAction,
-                  icon: const Icon(Icons.search, color: Color(0xFFEF9F27)),
-                  label: const Text('レシピを検索する', style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFFEF9F27))),
+                   icon: const Icon(Icons.search, color: Color(0xFFEF9F27)),
+                   label: Text(AppLocalizations.of(context)!.actionSearchRecipe, style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFFEF9F27))), // レシピを検索する
                   style: OutlinedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     side: const BorderSide(color: Color(0xFFEF9F27)),
@@ -291,8 +300,8 @@ class _AiRecipeLoadingScreenState extends ConsumerState<AiRecipeLoadingScreen> {
                
                // Skip Button
                TextButton(
-                 onPressed: _onErrorSkip,
-                 child: const Text('スキップする', style: TextStyle(color: Color(0xFF8A8A8A))),
+                onPressed: _onErrorSkip,
+                 child: Text(AppLocalizations.of(context)!.actionSkip, style: const TextStyle(color: Color(0xFF8A8A8A))), // スキップする
                ),
             ],
           ),

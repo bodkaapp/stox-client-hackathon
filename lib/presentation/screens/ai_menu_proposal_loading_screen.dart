@@ -1,5 +1,5 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
+import '../../l10n/generated/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
@@ -26,8 +26,16 @@ class AiMenuProposalLoadingScreen extends ConsumerStatefulWidget {
 }
 
 class _AiMenuProposalLoadingScreenState extends ConsumerState<AiMenuProposalLoadingScreen> {
-  String _displayText = '献立を考えています...';
+  String _displayText = '';
   bool _hasError = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_displayText.isEmpty && !_hasError) {
+      _displayText = AppLocalizations.of(context)!.aiMenuThinking; // 献立を考えています...
+    }
+  }
 
   @override
   void initState() {
@@ -59,24 +67,25 @@ class _AiMenuProposalLoadingScreenState extends ConsumerState<AiMenuProposalLoad
         final recipe = await recipeRepo.getById(plan.recipeId);
         if (recipe == null) continue;
 
+        final l10n = AppLocalizations.of(context)!;
         String dayLabel = '';
         if (plan.date.day == targetDate.day) {
-          dayLabel = '今日';
+          dayLabel = l10n.dateToday; // 今日
         } else if (plan.date.day == targetDate.subtract(const Duration(days: 1)).day) {
-          dayLabel = '昨日';
+          dayLabel = l10n.dateYesterday; // 昨日
         } else if (plan.date.day == targetDate.add(const Duration(days: 1)).day) {
-          dayLabel = '明日';
+          dayLabel = l10n.dateTomorrow; // 明日
         } else {
-          dayLabel = DateFormat('M/d').format(plan.date);
+          dayLabel = DateFormat(l10n.shortDateFormat).format(plan.date); // DateFormat('M/d').format(plan.date)
         }
 
         String typeLabel = _getMealTypeLabel(plan.mealType);
-        surroundingMeals.add('$dayLabelの$typeLabel: ${recipe.title}');
+        surroundingMeals.add(l10n.aiMenuSurroundingMeal(dayLabel, typeLabel, recipe.title)); // '$dayLabelの$typeLabel: ${recipe.title}'
       }
 
       if (mounted) {
         setState(() {
-          _displayText = '冷蔵庫の中身を確認しています...';
+          _displayText = AppLocalizations.of(context)!.aiMenuCheckingStock; // 冷蔵庫の中身を確認しています...
         });
       }
 
@@ -95,7 +104,7 @@ class _AiMenuProposalLoadingScreenState extends ConsumerState<AiMenuProposalLoad
 
       if (mounted) {
         setState(() {
-          _displayText = 'AIがメニューを生成しています...';
+          _displayText = AppLocalizations.of(context)!.aiMenuGenerating; // AIがメニューを生成しています...
         });
       }
 
@@ -111,7 +120,7 @@ class _AiMenuProposalLoadingScreenState extends ConsumerState<AiMenuProposalLoad
       // 6. Navigate
       if (mounted) {
         if (suggestions.isEmpty) {
-           throw Exception('提案を作成できませんでした');
+           throw Exception(AppLocalizations.of(context)!.aiMenuGenerationFailed); // 提案を作成できませんでした
         }
         
         Navigator.pushReplacement(
@@ -129,21 +138,22 @@ class _AiMenuProposalLoadingScreenState extends ConsumerState<AiMenuProposalLoad
       if (mounted) {
         setState(() {
           _hasError = true;
-          _displayText = 'エラーが発生しました。\nもう一度お試しください。';
+          _displayText = AppLocalizations.of(context)!.errorOccurredTryAgain; // エラーが発生しました。\nもう一度お試しください。
         });
       }
     }
   }
 
   String _getMealTypeLabel(MealType type) {
+    final l10n = AppLocalizations.of(context)!;
     switch (type) {
-      case MealType.breakfast: return '朝食';
-      case MealType.lunch: return '昼食';
-      case MealType.dinner: return '夕食';
-      case MealType.snack: return '間食';
-      case MealType.preMade: return '作り置き';
-      case MealType.other: return 'その他';
-      case MealType.undecided: return '時間未定';
+      case MealType.breakfast: return l10n.menuBreakfast; // 朝食
+      case MealType.lunch: return l10n.menuLunch; // 昼食
+      case MealType.dinner: return l10n.menuDinner; // 夕食
+      case MealType.snack: return l10n.menuSnack; // 間食
+      case MealType.preMade: return l10n.menuMealPrep; // 作り置き
+      case MealType.other: return l10n.recipeCategoryOther; // その他
+      case MealType.undecided: return l10n.menuUndecided; // 時間未定
     }
   }
 
@@ -180,7 +190,7 @@ class _AiMenuProposalLoadingScreenState extends ConsumerState<AiMenuProposalLoad
                   backgroundColor: const Color(0xFFEF9F27),
                   foregroundColor: Colors.white,
                 ),
-                child: const Text('戻る'),
+                child: Text(AppLocalizations.of(context)!.actionBack), // 戻る
               ),
             ]
           ],

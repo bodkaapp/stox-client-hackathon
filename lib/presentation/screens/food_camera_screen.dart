@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:async'; // Added for Timer
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
+import '../../l10n/generated/app_localizations.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart'; // Added for context.go
 // import 'package:volume_controller/volume_controller.dart'; // Removed volume_controller
@@ -49,21 +50,21 @@ class _FoodCameraScreenState extends ConsumerState<FoodCameraScreen> with Widget
   int _selectedFilterIndex = 0;
   File? _lastCapturedPhoto;
 
-  final List<FilterItem> _filters = [ // ... existing filters ...
+  final List<FilterItem> _filters = [
     FilterItem(name: 'Original', matrix: null),
-    FilterItem(name: 'Fresh (YU1)', matrix: [
+    FilterItem(name: 'Fresh', matrix: [ // YU1
       1.2, 0.0, 0.0, 0.0, 10.0,
       0.0, 1.1, 0.0, 0.0, 5.0,
       0.0, 0.0, 1.0, 0.0, 0.0,
       0.0, 0.0, 0.0, 1.0, 0.0,
     ]),
-    FilterItem(name: 'Warm (Juno)', matrix: [
+    FilterItem(name: 'Warm', matrix: [ // Juno
       1.3, 0.0, 0.0, 0.0, 20.0,
       0.0, 1.15, 0.0, 0.0, 10.0,
       0.0, 0.0, 0.9, 0.0, 0.0,
       0.0, 0.0, 0.0, 1.0, 0.0,
     ]),
-    FilterItem(name: 'Cool (Lark)', matrix: [
+    FilterItem(name: 'Cool', matrix: [ // Lark
       0.9, 0.0, 0.0, 0.0, 0.0,
       0.0, 1.0, 0.0, 0.0, 0.0,
       0.0, 0.0, 1.3, 0.0, 20.0,
@@ -152,7 +153,7 @@ class _FoodCameraScreenState extends ConsumerState<FoodCameraScreen> with Widget
       if (!cameraStatus.isGranted) {
         if (mounted) {
            ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('カメラの権限が必要です')),
+            SnackBar(content: Text(AppLocalizations.of(context)!.cameraPermissionRequired)), // カメラの権限が必要です
           );
           Navigator.of(context).pop();
         }
@@ -175,7 +176,7 @@ class _FoodCameraScreenState extends ConsumerState<FoodCameraScreen> with Widget
       } else {
         if(mounted) {
            ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('カメラが見つかりません')),
+            SnackBar(content: Text(AppLocalizations.of(context)!.cameraNotFound)), // カメラが見つかりません
           );
         }
       }
@@ -605,7 +606,7 @@ class _FoodCameraScreenState extends ConsumerState<FoodCameraScreen> with Widget
       debugPrint('Error saving photo: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('保存に失敗しました: $e')),
+          SnackBar(content: Text('${AppLocalizations.of(context)!.errorSaveFailed}: $e')), // 保存に失敗しました
         );
       }
     }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../l10n/generated/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../config/app_colors.dart';
 import '../../domain/models/ingredient.dart';
@@ -112,13 +113,13 @@ class _IngredientAddModalState extends ConsumerState<IngredientAddModal> {
         
         if (mounted) {
            ScaffoldMessenger.of(context).showSnackBar(
-             SnackBar(content: Text('${ingredients.length}件をリストに追加しました')),
+             SnackBar(content: Text(AppLocalizations.of(context)!.addModalAiSuccess(ingredients.length))),
            );
         }
       } else {
         if (mounted) {
            ScaffoldMessenger.of(context).showSnackBar(
-             const SnackBar(content: Text('AIで解析できませんでした')),
+              SnackBar(content: Text(AppLocalizations.of(context)!.addModalAiError)),
            );
         }
       }
@@ -126,7 +127,7 @@ class _IngredientAddModalState extends ConsumerState<IngredientAddModal> {
       debugPrint("AI Add Error: $e");
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('エラー: $e')),
+          SnackBar(content: Text('${AppLocalizations.of(context)!.errorOccurred}: $e')), // エラー
         );
       }
     } finally {
@@ -159,8 +160,8 @@ class _IngredientAddModalState extends ConsumerState<IngredientAddModal> {
           id: id,
           name: item.name,
           standardName: item.name, // Use same for now
-          category: item.category.isNotEmpty ? item.category : 'その他',
-          unit: '個', // Default unit
+          category: item.category.isNotEmpty ? item.category : AppLocalizations.of(context)!.categoryOthers, // その他
+          unit: AppLocalizations.of(context)!.unitItem, // 個
           amount: item.quantity,
           status: widget.targetStatus, 
           storageType: StorageType.fridge, // Default to fridge
@@ -185,7 +186,7 @@ class _IngredientAddModalState extends ConsumerState<IngredientAddModal> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('保存に失敗しました: $e')),
+          SnackBar(content: Text(AppLocalizations.of(context)!.addModalSaveError(e.toString()))),
         );
       }
     }
@@ -238,13 +239,13 @@ class _IngredientAddModalState extends ConsumerState<IngredientAddModal> {
                   color: Colors.black.withOpacity(0.3),
                   borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
                 ),
-                child: const Center(
+                child: Center(
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       CircularProgressIndicator(color: Colors.white),
                       SizedBox(height: 16),
-                      Text('AIが解析中...', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                      Text(AppLocalizations.of(context)!.voiceAnalyzing, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                     ],
                   ),
                 ),
@@ -304,8 +305,8 @@ class _IngredientAddModalState extends ConsumerState<IngredientAddModal> {
                 color: AppColors.stoxPrimary,
                 borderRadius: BorderRadius.circular(20),
               ),
-              child: const Text(
-                '確定',
+              child: Text(
+                AppLocalizations.of(context)!.addModalConfirmButton,
                 style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white),
               ),
             ),
@@ -319,8 +320,8 @@ class _IngredientAddModalState extends ConsumerState<IngredientAddModal> {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 40),
       alignment: Alignment.center,
-      child: const Text(
-        '追加した材料がここに表示されます',
+      child: Text(
+        AppLocalizations.of(context)!.addModalEmptyList,
         style: TextStyle(
           fontSize: 11,
           fontWeight: FontWeight.w500,
@@ -339,10 +340,10 @@ class _IngredientAddModalState extends ConsumerState<IngredientAddModal> {
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
           color: AppColors.stoxBackground, // Sticky header look
           child: Row(
-            children: const [
-              Expanded(child: Text('材料名', style: _tableHeaderStyle)),
-              SizedBox(width: 80, child: Text('数量', style: _tableHeaderStyle)),
-              SizedBox(width: 80, child: Text('カテゴリ', textAlign: TextAlign.right, style: _tableHeaderStyle)),
+            children: [
+              Expanded(child: Text(AppLocalizations.of(context)!.addModalHeaderName, style: _tableHeaderStyle)),
+              SizedBox(width: 80, child: Text(AppLocalizations.of(context)!.addModalHeaderQuantity, style: _tableHeaderStyle)),
+              SizedBox(width: 80, child: Text(AppLocalizations.of(context)!.addModalHeaderCategory, textAlign: TextAlign.right, style: _tableHeaderStyle)),
             ],
           ),
         ),
@@ -367,7 +368,7 @@ class _IngredientAddModalState extends ConsumerState<IngredientAddModal> {
                     ),
                     SizedBox(
                       width: 80,
-                      child: Text('${item.quantity.toInt()}個', style: const TextStyle(fontSize: 12, color: Color(0xFF475569))), 
+                      child: Text('${item.quantity.toInt()}${AppLocalizations.of(context)!.unitItems}', style: const TextStyle(fontSize: 12, color: Color(0xFF475569))), 
                     ),
                     SizedBox(
                       width: 80,
@@ -435,9 +436,9 @@ class _IngredientAddModalState extends ConsumerState<IngredientAddModal> {
                   ),
                   child: TextField(
                     controller: _categoryController,
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
                       border: InputBorder.none,
-                      hintText: 'カテゴリ (任意)',
+                      hintText: AppLocalizations.of(context)!.addModalCategoryHint,
                       hintStyle: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0x66948B7E)), // warmGray/40
                     ),
                     style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.stoxText),
@@ -501,9 +502,9 @@ class _IngredientAddModalState extends ConsumerState<IngredientAddModal> {
                         _nameFocusNode.requestFocus();
                       }
                     },
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
                       border: InputBorder.none,
-                      hintText: '材料名 (例: にんじん)',
+                      hintText: AppLocalizations.of(context)!.addModalNameHint,
                       hintStyle: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0x66948B7E)),
                     ),
                     style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.stoxText),
@@ -525,12 +526,12 @@ class _IngredientAddModalState extends ConsumerState<IngredientAddModal> {
                   ),
                   alignment: Alignment.center,
                   child: Row(
-                    children: const [
-                      Icon(Icons.auto_awesome, color: AppColors.stoxAccent, size: 16),
-                      SizedBox(width: 4),
+                    children: [
+                      const Icon(Icons.auto_awesome, color: AppColors.stoxAccent, size: 16),
+                      const SizedBox(width: 4),
                       Text(
-                        'AI',
-                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.stoxAccent),
+                        AppLocalizations.of(context)!.actionAi, // AI
+                        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.stoxAccent),
                       ),
                     ],
                   ),
@@ -552,8 +553,8 @@ class _IngredientAddModalState extends ConsumerState<IngredientAddModal> {
                     ],
                   ),
                   alignment: Alignment.center,
-                  child: const Text(
-                    '追加',
+                  child: Text(
+                    AppLocalizations.of(context)!.addModalAddButton,
                     style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white),
                   ),
                 ),

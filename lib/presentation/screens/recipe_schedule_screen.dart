@@ -1,6 +1,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../l10n/generated/app_localizations.dart';
 import 'package:intl/intl.dart';
 import '../../config/app_colors.dart';
 import '../../domain/models/meal_plan.dart';
@@ -42,14 +43,17 @@ class _RecipeScheduleScreenState extends ConsumerState<RecipeScheduleScreen> {
   String? _selectedTimeSlot; // 'morning', 'noon', 'night', 'snack', 'prep', 'appetizer'
   late final TextEditingController _memoController;
 
-  final List<Map<String, String>> _timeSlots = [
-    {'id': 'morning', 'label': '朝', 'icon': 'wb_twilight'},
-    {'id': 'noon', 'label': '昼', 'icon': 'wb_sunny'},
-    {'id': 'night', 'label': '夜', 'icon': 'dark_mode'},
-    {'id': 'snack', 'label': 'おやつ', 'icon': 'cookie'},
-    {'id': 'prep', 'label': '下ごしらえ', 'icon': 'skillet'},
-    {'id': 'appetizer', 'label': 'おつまみ', 'icon': 'sports_bar'}, // material symbols mapping might differ
-  ];
+  List<Map<String, String>> get _timeSlots {
+    final l10n = AppLocalizations.of(context)!;
+    return [
+      {'id': 'morning', 'label': l10n.mealMorning, 'icon': 'wb_twilight'}, // 朝
+      {'id': 'noon', 'label': l10n.mealNoon, 'icon': 'wb_sunny'}, // 昼
+      {'id': 'night', 'label': l10n.mealNight, 'icon': 'dark_mode'}, // 夜
+      {'id': 'snack', 'label': l10n.mealSnack, 'icon': 'cookie'}, // おやつ
+      {'id': 'prep', 'label': l10n.mealPrep, 'icon': 'skillet'}, // 下ごしらえ
+      {'id': 'appetizer', 'label': l10n.mealAppetizer, 'icon': 'sports_bar'}, // おつまみ
+    ];
+  }
 
   @override
   void initState() {
@@ -162,13 +166,13 @@ class _RecipeScheduleScreenState extends ConsumerState<RecipeScheduleScreen> {
           'date': _selectedDate,
         }); // Close Schedule Screen
         ScaffoldMessenger.of(context).showSnackBar(
-           const SnackBar(content: Text('マイレシピ帳に登録しました')),
+           SnackBar(content: Text(AppLocalizations.of(context)!.recipeSavedToBook)), // マイレシピ帳に登録しました
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('登録に失敗しました')),
+          SnackBar(content: Text(AppLocalizations.of(context)!.recipeSaveError)), // 登録に失敗しました
         );
       }
     }
@@ -197,9 +201,9 @@ class _RecipeScheduleScreenState extends ConsumerState<RecipeScheduleScreen> {
           icon: const Icon(Icons.close, color: AppColors.stoxText),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
-          'いつ作りますか？',
-          style: TextStyle(color: AppColors.stoxText, fontSize: 18, fontWeight: FontWeight.bold),
+        title: Text(
+          AppLocalizations.of(context)!.titleWhenToMake, // いつ作りますか？
+          style: const TextStyle(color: AppColors.stoxText, fontSize: 18, fontWeight: FontWeight.bold),
         ),
         actions: [
           IconButton(
@@ -254,7 +258,7 @@ class _RecipeScheduleScreenState extends ConsumerState<RecipeScheduleScreen> {
                                 ),
                                 const SizedBox(width: 8),
                                 Text(
-                                  '日程を未定にする',
+                                  AppLocalizations.of(context)!.actionSetDateUndecided, // 日程を未定にする
                                   style: TextStyle(
                                     color: _selectedDate == null ? AppColors.stoxPrimary : Colors.grey[700],
                                     fontWeight: FontWeight.bold,
@@ -312,7 +316,7 @@ class _RecipeScheduleScreenState extends ConsumerState<RecipeScheduleScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text('時間帯を選択', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey)),
+                        Text(AppLocalizations.of(context)!.labelSelectTimeSlot, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.grey)), // 時間帯を選択
                         const SizedBox(height: 16),
                         GridView.count(
                           shrinkWrap: true,
@@ -369,7 +373,7 @@ class _RecipeScheduleScreenState extends ConsumerState<RecipeScheduleScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text('メモ（任意）', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey)),
+                        Text(AppLocalizations.of(context)!.labelMemoOptional, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.grey)), // メモ（任意）
                         const SizedBox(height: 8),
                         Stack(
                           alignment: Alignment.centerRight,
@@ -380,7 +384,7 @@ class _RecipeScheduleScreenState extends ConsumerState<RecipeScheduleScreen> {
                               decoration: InputDecoration(
                                 filled: true,
                                 fillColor: Colors.grey[100],
-                                hintText: 'その他（例：旦那さんの分、作り置き）',
+                                hintText: AppLocalizations.of(context)!.memoHint, // その他（例：旦那さんの分、作り置き）
                                 hintStyle: const TextStyle(fontSize: 14, color: Colors.grey),
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(16),
@@ -425,11 +429,11 @@ class _RecipeScheduleScreenState extends ConsumerState<RecipeScheduleScreen> {
                       shadowColor: AppColors.stoxPrimary.withOpacity(0.5),
                       elevation: 4,
                     ),
-                    child: const Row(
+                    child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
-                          '確定する',
+                          AppLocalizations.of(context)!.saveAction, // 確定する
                           style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
                         ),
                         SizedBox(width: 8),

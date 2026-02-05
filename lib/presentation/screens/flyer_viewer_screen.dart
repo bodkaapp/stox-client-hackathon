@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../../l10n/generated/app_localizations.dart';
 import '../../config/app_colors.dart';
 
 class FlyerViewerScreen extends StatelessWidget {
@@ -44,9 +45,9 @@ class FlyerViewerScreen extends StatelessWidget {
                       padding: const EdgeInsets.all(8),
                     ),
                   ),
-                  const Text(
-                    'チラシ',
-                    style: TextStyle(
+                  Text(
+                    AppLocalizations.of(context)!.titleFlyer, // チラシ
+                    style: const TextStyle(
                       color: textColor,
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -116,9 +117,9 @@ class FlyerViewerScreen extends StatelessWidget {
                           border: Border.all(color: AppColors.stoxPrimary),
                           borderRadius: BorderRadius.circular(20),
                         ),
-                        child: const Text(
-                          'フォロー中',
-                          style: TextStyle(
+                        child: Text(
+                          AppLocalizations.of(context)!.statusFollowing, // フォロー中
+                          style: const TextStyle(
                             color: AppColors.stoxPrimary,
                             fontSize: 12,
                             fontWeight: FontWeight.bold,
@@ -173,13 +174,13 @@ class FlyerViewerScreen extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: const [
-                        Text(
-                          '第48週 1/23号',
+                        const Text(
+                          '第48週 1/23号', // Dates and numbers generally stay as is unless they have specific words
                           style: TextStyle(color: Color(0xFFA1A1AA), fontSize: 12), // zinc-400
                         ),
-                        SizedBox(height: 2),
-                        Text(
-                          'イオンのガチ推し',
+                        const SizedBox(height: 2),
+                        const Text(
+                          'イオンのガチ推し', // Store specific catchphrase, might not need strict localization if it's dynamic
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 14,
@@ -196,9 +197,9 @@ class FlyerViewerScreen extends StatelessWidget {
                     style: TextButton.styleFrom(foregroundColor: Colors.white),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
-                      children: const [
-                        Text('店舗詳細', style: TextStyle(fontSize: 12)),
-                        Icon(Icons.chevron_right, size: 16),
+                      children: [
+                        Text(AppLocalizations.of(context)!.shopDetails, style: const TextStyle(fontSize: 12)), // 店舗詳細
+                        const Icon(Icons.chevron_right, size: 16),
                       ],
                     ),
                   ),

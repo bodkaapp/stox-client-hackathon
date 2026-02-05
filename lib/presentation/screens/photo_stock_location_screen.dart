@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 import 'dart:async';
 import 'package:flutter/material.dart';
+import '../../l10n/generated/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../config/app_colors.dart';
@@ -29,9 +30,12 @@ class _PhotoStockLocationScreenState extends ConsumerState<PhotoStockLocationScr
 
   Uint8List? _imageBytes;
   
-  final List<String> _presets = [
-    '冷蔵庫', '冷凍庫', '野菜室', 'シンク下', 'パントリー', '納戸', '常温保存'
-  ];
+  List<String> get _presets {
+    final l10n = AppLocalizations.of(context)!;
+    return [
+      l10n.locationFridge, l10n.locationFreezer, l10n.locationVegetable, l10n.locationUnderSink, l10n.locationPantry, l10n.locationStorageRoom, l10n.locationRoomTemp
+    ];
+  }
 
   @override
   void initState() {
@@ -59,10 +63,10 @@ class _PhotoStockLocationScreenState extends ConsumerState<PhotoStockLocationScr
 
     final success = await showAdAndExecute(
       context: context,
-      preAdTitle: 'AI解析を開始',
-      preAdContent: 'AIがあなたの冷蔵庫を分析します。\n広告を再生することで、この機能を無料でご利用いただけます。',
-      confirmButtonText: '広告を見て解析する',
-      postAdMessage: 'AIの解析がおわりました。\n広告の視聴ありがとうございました。',
+      preAdTitle: AppLocalizations.of(context)!.titlePhotoStockLocation, // AI解析を開始
+      preAdContent: AppLocalizations.of(context)!.photoStockLocationMessage, // AIがあなたの冷蔵庫を分析します。\n広告を再生することで、この機能を無料でご利用いただけます。
+      confirmButtonText: AppLocalizations.of(context)!.receiptScanAction, // 広告を見て解析する (既存キー流用)
+      postAdMessage: AppLocalizations.of(context)!.aiAnalysisCompleteMessage, // AIの解析がおわりました。\n広告の視聴ありがとうございました。
       onConsent: () {
         setState(() {
           _isAnalyzing = true;
@@ -125,10 +129,10 @@ class _PhotoStockLocationScreenState extends ConsumerState<PhotoStockLocationScr
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('エラーが発生しました: $e'),
+            content: Text('${AppLocalizations.of(context)!.titleError}: $e'), // エラーが発生しました
             duration: const Duration(seconds: 10),
             action: SnackBarAction(
-              label: '閉じる',
+              label: AppLocalizations.of(context)!.actionClose, // 閉じる
               onPressed: () {
                 ScaffoldMessenger.of(context).hideCurrentSnackBar();
               },
@@ -147,7 +151,7 @@ class _PhotoStockLocationScreenState extends ConsumerState<PhotoStockLocationScr
         leading: TextButton.icon(
           onPressed: () => Navigator.pop(context),
           icon: const Icon(Icons.arrow_back_ios, size: 16, color: AppColors.stoxPrimary),
-          label: const Text('やり直す', style: TextStyle(color: AppColors.stoxPrimary, fontWeight: FontWeight.bold)),
+          label: Text(AppLocalizations.of(context)!.retake, style: const TextStyle(color: AppColors.stoxPrimary, fontWeight: FontWeight.bold)), // やり直す
           style: TextButton.styleFrom(padding: EdgeInsets.zero),
         ),
         leadingWidth: 100,
@@ -178,12 +182,12 @@ class _PhotoStockLocationScreenState extends ConsumerState<PhotoStockLocationScr
                   const SizedBox(height: 24),
 
                   // Location Input
-                  const Text('撮影した保管場所を入力', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                  Text(AppLocalizations.of(context)!.enterStorageLocation, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)), // 撮影した保管場所を入力 // 撮影した保管場所を入力
                   const SizedBox(height: 12),
                   TextField(
                     controller: _locationController,
                     decoration: InputDecoration(
-                      hintText: '例: 食品庫',
+                      hintText: AppLocalizations.of(context)!.storageLocationHint, // 例: 食品庫 // 例: 食品庫
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                     ),
@@ -192,7 +196,7 @@ class _PhotoStockLocationScreenState extends ConsumerState<PhotoStockLocationScr
                   const SizedBox(height: 24),
 
                   // Presets
-                  const Text('候補から選択', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppColors.stoxSubText)),
+                  Text(AppLocalizations.of(context)!.selectFromCandidates, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppColors.stoxSubText)), // 候補から選択 // 候補から選択
                   const SizedBox(height: 12),
                   Wrap(
                     spacing: 8,
@@ -225,7 +229,7 @@ class _PhotoStockLocationScreenState extends ConsumerState<PhotoStockLocationScr
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     ),
-                    child: const Text('決定', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+                    child: Text(AppLocalizations.of(context)!.actionDecide, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)), // 決定 // 決定
                   ),
                 ],
               ),
@@ -240,7 +244,7 @@ class _PhotoStockLocationScreenState extends ConsumerState<PhotoStockLocationScr
                      const CircularProgressIndicator(color: AppColors.stoxPrimary),
                      const SizedBox(height: 24),
                      Text(
-                       'AIがあなたの${_locationController.text}を分析しています。\n解析が終わるまで広告をご覧ください。',
+                       AppLocalizations.of(context)!.photoStockLocationAiAnalyzing(_locationController.text),
                        textAlign: TextAlign.center,
                        style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
                      ),

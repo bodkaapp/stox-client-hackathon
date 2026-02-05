@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart'; // [NEW]
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../l10n/generated/app_localizations.dart';
 import '../../config/app_colors.dart';
 
 import '../../domain/models/ingredient.dart';
@@ -16,19 +17,19 @@ class AccountSettingsScreen extends ConsumerWidget { // Changed to ConsumerWidge
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('確認'),
-        content: const Text('本当にチュートリアルからやり直しますか？\n現在の状態は一部リセットされる可能性があります。'),
+        title: Text(AppLocalizations.of(context)!.titleConfirmation), // 確認
+        content: Text(AppLocalizations.of(context)!.messageRestartFromTutorialConfirm), // 本当にチュートリアルからやり直しますか？\n現在の状態は一部リセットされる可能性があります。
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('キャンセル'),
+            child: Text(AppLocalizations.of(context)!.actionCancel), // キャンセル
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
             style: TextButton.styleFrom(
               foregroundColor: Colors.red,
             ),
-            child: const Text('やり直す'),
+            child: Text(AppLocalizations.of(context)!.actionRestart), // やり直す
           ),
         ],
       ),
@@ -48,19 +49,19 @@ class AccountSettingsScreen extends ConsumerWidget { // Changed to ConsumerWidge
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('確認'),
-        content: const Text('チャレンジスタンプの獲得状況をすべてリセットしますか？\nこの操作は取り消せません。'),
+        title: Text(AppLocalizations.of(context)!.titleConfirmation), // 確認
+        content: Text(AppLocalizations.of(context)!.messageResetChallengeStampsConfirm), // チャレンジスタンプの獲得状況をすべてリセットしますか？\nこの操作は取り消せません。
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('キャンセル'),
+            child: Text(AppLocalizations.of(context)!.actionCancel), // キャンセル
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
             style: TextButton.styleFrom(
               foregroundColor: Colors.red,
             ),
-            child: const Text('リセット'),
+            child: Text(AppLocalizations.of(context)!.actionReset), // リセット
           ),
         ],
       ),
@@ -70,7 +71,7 @@ class AccountSettingsScreen extends ConsumerWidget { // Changed to ConsumerWidge
       await ref.read(challengeStampViewModelProvider.notifier).reset();
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('チャレンジスタンプをリセットしました')),
+          SnackBar(content: Text(AppLocalizations.of(context)!.messageChallengeStampsResetComplete)), // チャレンジスタンプをリセットしました
         );
       }
     }
@@ -139,9 +140,9 @@ class AccountSettingsScreen extends ConsumerWidget { // Changed to ConsumerWidge
           icon: const Icon(Icons.close, color: AppColors.stoxText),
           onPressed: () => context.pop(),
         ),
-        title: const Text(
-          'アカウント設定',
-          style: TextStyle(
+        title: Text(
+          AppLocalizations.of(context)!.titleAccountSettings, // アカウント設定
+          style: const TextStyle(
             color: AppColors.stoxText,
             fontWeight: FontWeight.bold,
           ),
@@ -151,29 +152,29 @@ class AccountSettingsScreen extends ConsumerWidget { // Changed to ConsumerWidge
       body: ListView(
         children: [
           const SizedBox(height: 16),
-          _buildSettingsSection(
-            title: 'デバッグ・開発者オプション',
+          ExpansionTile(
+            title: Text(AppLocalizations.of(context)!.labelDebugDeveloperOptions), // デバッグ・開発者オプション
             children: [
               _buildSettingsTile(
                 icon: Icons.restart_alt,
-                title: 'チュートリアルからやり直す',
+                title: AppLocalizations.of(context)!.actionRestartFromTutorial, // チュートリアルからやり直す
                 onTap: () => _resetTutorial(context),
                 isDestructive: true,
               ),
               _buildSettingsTile(
                 icon: Icons.refresh, // New icon
-                title: 'チャレンジスタンプをリセット',
+                title: AppLocalizations.of(context)!.actionResetChallengeStamps, // チャレンジスタンプをリセット
                 onTap: () => _resetChallengeStamps(context, ref),
                 isDestructive: true,
               ),
                _buildSettingsTile(
                 icon: Icons.bug_report,
-                title: 'AI解析結果画面確認 (Debug)',
+                title: AppLocalizations.of(context)!.labelCheckAiResultDebug, // AI解析結果画面確認 (Debug)
                 onTap: () => _openDebugAiResult(context),
               ),
               _buildSettingsTile(
                 icon: Icons.preview,
-                title: 'スプラッシュスクリーン確認',
+                title: AppLocalizations.of(context)!.labelCheckSplashScreen, // スプラッシュスクリーン確認
                 onTap: () => context.push('/splash_view'),
               ),
             ],

@@ -1,15 +1,16 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import '../../config/app_colors.dart';
+import '../../l10n/generated/app_localizations.dart';
 
 class AiSuggestionButton extends StatefulWidget {
   final VoidCallback onTap;
-  final String label;
+  final String? label;
 
   const AiSuggestionButton({
     super.key,
     required this.onTap,
-    this.label = 'AIに提案してもらう',
+    this.label, // AIに提案してもらう
   });
 
   @override
@@ -156,7 +157,7 @@ class _AiSuggestionButtonState extends State<AiSuggestionButton> with TickerProv
                                     colors: [AppColors.stoxAccent, Color(0xFFFF5252)],
                                   ).createShader(bounds),
                                   child: Text(
-                                    widget.label,
+                                    widget.label ?? AppLocalizations.of(context)!.aiSuggestion,
                                     style: const TextStyle(
                                       color: Colors.white,
                                       fontSize: 14,

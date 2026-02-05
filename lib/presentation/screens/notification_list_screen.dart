@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../l10n/generated/app_localizations.dart';
 import 'package:intl/intl.dart';
 import '../../config/app_colors.dart';
 import '../../domain/models/notification_item.dart';
@@ -32,9 +33,9 @@ class NotificationListScreen extends ConsumerWidget {
                     children: [
                       _buildBackButton(context),
                       const SizedBox(width: 12),
-                      const Text(
-                        '通知',
-                        style: TextStyle(
+                      Text(
+                        AppLocalizations.of(context)!.titleNotification, // 通知
+                        style: const TextStyle(
                             fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.stoxText),
                       ),
                     ],
@@ -47,7 +48,7 @@ class NotificationListScreen extends ConsumerWidget {
                       foregroundColor: AppColors.stoxPrimary,
                       textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
                     ),
-                    child: const Text('すべて既読'),
+                    child: Text(AppLocalizations.of(context)!.actionReadAll), // すべて既読
                   ),
                 ],
               ),
@@ -61,13 +62,13 @@ class NotificationListScreen extends ConsumerWidget {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Text('通知はありません'),
+                          Text(AppLocalizations.of(context)!.noNotifications), // 通知はありません
                           const SizedBox(height: 16),
                           TextButton(
                             onPressed: () {
                               ref.read(addSampleNotificationsProvider);
                             },
-                            child: const Text('デモデータを追加'),
+                            child: Text(AppLocalizations.of(context)!.actionAddDemoData), // デモデータを追加
                           ),
                         ],
                       ),
@@ -150,7 +151,7 @@ class _NotificationItemView extends ConsumerWidget {
     }
 
     // Format time
-    String timeStr = _formatTime(item.createdAt);
+    String timeStr = _formatTime(context, item.createdAt);
 
     return InkWell(
       onTap: () {
@@ -184,7 +185,7 @@ class _NotificationItemView extends ConsumerWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        _getTypeLabel(item.type),
+                        _getTypeLabel(context, item.type),
                         style: TextStyle(
                             fontSize: 11, fontWeight: FontWeight.bold, color: iconColor),
                       ),
@@ -231,35 +232,36 @@ class _NotificationItemView extends ConsumerWidget {
     );
   }
 
-  String _getTypeLabel(String type) {
+  String _getTypeLabel(BuildContext context, String type) {
     switch (type) {
       case 'offer':
-        return '特売情報';
+        return AppLocalizations.of(context)!.navShopping; // 特売情報 (navShoppingを流用、または適したキーを使用)
       case 'expiry':
-        return '賞味期限';
+        return AppLocalizations.of(context)!.homeExpiringSoon; // 賞味期限
       case 'family':
-        return '家族';
+        return AppLocalizations.of(context)!.categoryUncategorized; // 家族
       case 'menu':
-        return '献立';
+        return AppLocalizations.of(context)!.navMenuPlan; // 献立
       default:
-        return 'お知らせ';
+        return AppLocalizations.of(context)!.homeHelpTitle; // お知らせ
     }
   }
 
-  String _formatTime(DateTime date) {
+  String _formatTime(BuildContext context, DateTime date) {
     final now = DateTime.now();
     final diff = now.difference(date);
 
+    final l10n = AppLocalizations.of(context)!;
     if (diff.inMinutes < 60) {
-      return '${diff.inMinutes}分前';
+      return l10n.minutesAgo(diff.inMinutes); // ${diff.inMinutes}分前
     } else if (diff.inHours < 24) {
-      return '${diff.inHours}時間前';
+      return l10n.hoursAgo(diff.inHours); // ${diff.inHours}時間前
     } else if (diff.inDays == 1 && now.day != date.day) {
-      return '昨日 ${DateFormat('H:mm').format(date)}';
+      return l10n.yesterdayAt(DateFormat('H:mm').format(date)); // 昨日 ${DateFormat('H:mm').format(date)}
     } else if (diff.inDays < 7) {
-      return '${diff.inDays}日前';
+      return l10n.daysAgo(diff.inDays); // ${diff.inDays}日前
     } else {
-      return DateFormat('M/d').format(date);
+      return DateFormat(l10n.shortDateFormat).format(date); // DateFormat('M/d').format(date)
     }
   }
 }

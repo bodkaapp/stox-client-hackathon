@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../l10n/generated/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../config/app_colors.dart';
 import '../widgets/home_widgets.dart';
@@ -70,14 +71,14 @@ class HomeScreen extends ConsumerWidget {
                       border: Border.all(color: AppColors.stoxBorder),
                     ),
                     clipBehavior: Clip.antiAlias,
-                    child: const Column(
+                    child: Column(
                       children: [
                         Padding(
                           padding: EdgeInsets.all(16.0),
                           child: Align(
                             alignment: Alignment.centerLeft,
                             child: Text(
-                              '賞味期限が近いもの',
+                              AppLocalizations.of(context)!.homeExpiringSoon,
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,

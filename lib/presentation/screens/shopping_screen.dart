@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../l10n/generated/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import '../../config/app_colors.dart';
@@ -12,8 +13,8 @@ import 'shopping_receipt_result_screen.dart';
 import '../widgets/voice_shopping_modal.dart';
 import '../mixins/receipt_scanner_mixin.dart';
 import '../widgets/help_icon.dart';
-import '../../domain/models/challenge_stamp.dart'; // [NEW]
-import '../viewmodels/challenge_stamp_viewmodel.dart'; // [NEW]
+import '../../domain/models/challenge_stamp.dart';
+import '../viewmodels/challenge_stamp_viewmodel.dart';
 
 class ShoppingScreen extends ConsumerStatefulWidget {
   final bool openAddModal;
@@ -57,7 +58,7 @@ class _ShoppingScreenState extends ConsumerState<ShoppingScreen> with AdManagerM
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => IngredientAddModal(
-        title: '買い物リストに追加',
+        title: AppLocalizations.of(context)!.shoppingAddToShoppingList,
         targetStatus: IngredientStatus.toBuy,
         onSaved: () {
           ref.invalidate(shoppingViewModelProvider);
@@ -100,7 +101,7 @@ class _ShoppingScreenState extends ConsumerState<ShoppingScreen> with AdManagerM
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('エラーが発生しました: $e')),
+          SnackBar(content: Text('${AppLocalizations.of(context)!.titleError}: $e')),
         );
       }
     }
@@ -160,14 +161,15 @@ class _ShoppingScreenState extends ConsumerState<ShoppingScreen> with AdManagerM
                       child: const Icon(Icons.shopping_cart, color: AppColors.stoxPrimary, size: 22),
                     ),
                     const SizedBox(width: 8),
-                    const Text(
-                      'お買い物',
-                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.stoxText),
+                    const SizedBox(width: 8),
+                    Text(
+                      AppLocalizations.of(context)!.shoppingTitle,
+                      style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.stoxText),
                     ),
                     const SizedBox(width: 8),
-                    const HelpIcon(
-                      title: '買い物画面',
-                      description: '買いたいものを管理する画面です。\n「＋」ボタンをタップして、買うものを登録できます。\n「お買い物モード」ボタンを押すと、お買い物を便利にするモードに切り替わります。\nお買い物が終わった後はレシートを撮影して、買ったものを在庫に移動することもできます。',
+                    HelpIcon(
+                      title: AppLocalizations.of(context)!.shoppingHelpTitle,
+                      description: AppLocalizations.of(context)!.shoppingHelpDescription,
                     ),
                   ],
                 ),
@@ -180,12 +182,12 @@ class _ShoppingScreenState extends ConsumerState<ShoppingScreen> with AdManagerM
                 child: ListView(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   children: [
-                    const Text('アクション', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.stoxSubText)),
+                    Text(AppLocalizations.of(context)!.shoppingAction, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.stoxSubText)),
                     const SizedBox(height: 8),
                     
                     ListTile(
                       leading: const Icon(Icons.edit, color: AppColors.stoxText),
-                      title: const Text('買うものを入力', style: TextStyle(fontSize: 14)),
+                      title: Text(AppLocalizations.of(context)!.shoppingEnterItem, style: const TextStyle(fontSize: 14)),
                       enabled: !isShoppingMode,
                       onTap: () {
                          _showAddIngredientModal();
@@ -193,7 +195,7 @@ class _ShoppingScreenState extends ConsumerState<ShoppingScreen> with AdManagerM
                     ),
                     ListTile(
                       leading: const Icon(Icons.mic, color: AppColors.stoxText),
-                      title: const Text('音声で入力', style: TextStyle(fontSize: 14)),
+                      title: Text(AppLocalizations.of(context)!.shoppingVoiceInput, style: const TextStyle(fontSize: 14)),
                       enabled: !isShoppingMode,
                       onTap: () async {
                          await showModalBottomSheet(
@@ -207,7 +209,7 @@ class _ShoppingScreenState extends ConsumerState<ShoppingScreen> with AdManagerM
                     ),
                     ListTile(
                       leading: const Icon(Icons.camera_alt, color: AppColors.stoxText),
-                      title: const Text('レシート撮影', style: TextStyle(fontSize: 14)),
+                      title: Text(AppLocalizations.of(context)!.shoppingReceiptScan, style: const TextStyle(fontSize: 14)),
                       enabled: !isShoppingMode,
                       onTap: _onReceiptBtnTap,
                     ),
@@ -237,7 +239,7 @@ class _ShoppingScreenState extends ConsumerState<ShoppingScreen> with AdManagerM
                                  color: isShoppingMode ? AppColors.stoxPrimary : AppColors.stoxText),
                             const SizedBox(width: 12),
                             Expanded(child: Text(
-                              isShoppingMode ? 'お買い物モード中' : 'お買い物モードを開始',
+                              isShoppingMode ? AppLocalizations.of(context)!.shoppingModeOn : AppLocalizations.of(context)!.shoppingModeStart,
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
                                 color: isShoppingMode ? AppColors.stoxPrimary : AppColors.stoxText,
@@ -266,11 +268,11 @@ class _ShoppingScreenState extends ConsumerState<ShoppingScreen> with AdManagerM
                           onPressed: () async {
                             await ref.read(shoppingViewModelProvider.notifier).completeShoppingFlow();
                             if (context.mounted) {
-                               ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('お買い物を完了しました')));
+                               ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.shoppingCompleteButton))); // Simplified message reuse or add new key
                             }
                           },
                           icon: const Icon(Icons.check),
-                          label: const Text('買い物を完了する'),
+                          label: Text(AppLocalizations.of(context)!.shoppingCompleteAction),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.stoxPrimary,
                             foregroundColor: Colors.white,
@@ -364,9 +366,9 @@ class _ShoppingScreenState extends ConsumerState<ShoppingScreen> with AdManagerM
                             )
                           ],
                         ),
-                        child: const Text(
-                          'ここをタップして材料を追加します',
-                          style: TextStyle(
+                        child: Text(
+                          AppLocalizations.of(context)!.shoppingAddGuide,
+                          style: const TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
                             fontSize: 12,
@@ -401,7 +403,7 @@ class _ShoppingScreenState extends ConsumerState<ShoppingScreen> with AdManagerM
                       children: [
                         _buildMenuButton(
                           Icons.edit, 
-                          '買うものを入力する', 
+                          AppLocalizations.of(context)!.shoppingEnterItemAction, 
                           onTap: () {
                             _toggleMenu();
                             _showAddIngredientModal();
@@ -410,7 +412,7 @@ class _ShoppingScreenState extends ConsumerState<ShoppingScreen> with AdManagerM
                         const SizedBox(height: 12),
                         _buildMenuButton(
                           Icons.mic, 
-                          '声で操作する', 
+                          AppLocalizations.of(context)!.shoppingVoiceInputAction, 
                           onTap: () async {
                              _toggleMenu();
                              await showModalBottomSheet(
@@ -426,7 +428,7 @@ class _ShoppingScreenState extends ConsumerState<ShoppingScreen> with AdManagerM
                         const SizedBox(height: 12),
                         _buildMenuButton(
                           Icons.camera_alt, 
-                          'レシートを撮影する（お買い物モードを終わる）', 
+                          AppLocalizations.of(context)!.shoppingReceiptScanAction, 
                           onTap: () {
                              _onReceiptBtnTap(); // Starts camera -> ad -> analysis
                           }
@@ -453,7 +455,7 @@ class _ShoppingScreenState extends ConsumerState<ShoppingScreen> with AdManagerM
                             ref.read(challengeStampViewModelProvider.notifier).complete(ChallengeType.shoppingComplete.id);
                          }
                       },
-                      label: const Text('買い物を完了'),
+                      label: Text(AppLocalizations.of(context)!.shoppingCompleteButton),
                       icon: const Icon(Icons.check),
                       backgroundColor: AppColors.stoxPrimary,
                     )
@@ -498,7 +500,7 @@ class _ShoppingScreenState extends ConsumerState<ShoppingScreen> with AdManagerM
               child: currentItems.isEmpty 
                 ? Center(
                     child: Text(
-                      '買い物リストを登録する場所です。\n買うものを忘れないように\nメモしておきましょう。',
+                      AppLocalizations.of(context)!.shoppingEmptyListMessage,
                       textAlign: TextAlign.center,
                       style: const TextStyle(
                         color: AppColors.stoxText,
@@ -577,11 +579,11 @@ class _ShoppingScreenState extends ConsumerState<ShoppingScreen> with AdManagerM
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('TOTAL ITEMS', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.stoxSubText, letterSpacing: 1.2)),
+          Text(AppLocalizations.of(context)!.shoppingTotalItemsLabel, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.stoxSubText, letterSpacing: 1.2)),
           RichText(
             text: TextSpan(
               children: [
-                TextSpan(text: '全 $total 品目', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.stoxText)),
+                TextSpan(text: AppLocalizations.of(context)!.shoppingTotalItemsCount(total), style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.stoxText)),
               ],
             ),
           ),
@@ -609,10 +611,10 @@ class _ShoppingScreenState extends ConsumerState<ShoppingScreen> with AdManagerM
               const SizedBox(width: 8),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: const [
+                children: [
                   Text(
-                    'お買い物',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.stoxText, height: 1.0),
+                    AppLocalizations.of(context)!.shoppingTitle,
+                    style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.stoxText, height: 1.0),
                   ),
                   Text(
                     'SHOPPING LIST',
@@ -621,9 +623,9 @@ class _ShoppingScreenState extends ConsumerState<ShoppingScreen> with AdManagerM
                 ],
               ),
               const SizedBox(width: 8),
-              const HelpIcon(
-                title: '買い物画面',
-                description: '買いたいものを管理する画面です。\n「＋」ボタンをタップして、買うものを登録できます。\n「お買い物モード」ボタンを押すと、お買い物を便利にするモードに切り替わります。\nお買い物が終わった後はレシートを撮影して、買ったものを在庫に移動することもできます。',
+              HelpIcon(
+                title: AppLocalizations.of(context)!.shoppingHelpTitle,
+                description: AppLocalizations.of(context)!.shoppingHelpDescription,
               ),
             ],
           ),
@@ -658,7 +660,7 @@ class _ShoppingScreenState extends ConsumerState<ShoppingScreen> with AdManagerM
                   ),
                   const SizedBox(width: 4),
                   Text(
-                    isShoppingMode ? 'お買い物モード ON' : 'お買い物モード OFF',
+                    isShoppingMode ? AppLocalizations.of(context)!.shoppingModeToggleOn : AppLocalizations.of(context)!.shoppingModeToggleOff,
                     style: TextStyle(
                       color: isShoppingMode ? AppColors.stoxPrimary : AppColors.stoxSubText,
                       fontSize: 10,
@@ -689,8 +691,8 @@ class _ShoppingScreenState extends ConsumerState<ShoppingScreen> with AdManagerM
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              const Text(
-                'カゴの進捗',
+              Text(
+                AppLocalizations.of(context)!.shoppingCartProgress,
                 style: TextStyle(
                   color: AppColors.stoxText,
                   fontSize: 14,
@@ -709,7 +711,7 @@ class _ShoppingScreenState extends ConsumerState<ShoppingScreen> with AdManagerM
                       ),
                     ),
                     TextSpan(
-                      text: ' / $totalCount 点',
+                      text: AppLocalizations.of(context)!.shoppingCartCount(inBasketCount, totalCount),
                       style: const TextStyle(
                         color: AppColors.stoxText,
                         fontSize: 12,
@@ -742,7 +744,7 @@ class _ShoppingScreenState extends ConsumerState<ShoppingScreen> with AdManagerM
           ),
           const SizedBox(height: 4),
           Text(
-            'あと$remaining点でお買い物完了です',
+            AppLocalizations.of(context)!.shoppingRemainingItems(remaining),
             style: const TextStyle(
               color: AppColors.stoxSubText,
               fontSize: 10,
@@ -807,7 +809,7 @@ class _ShoppingScreenState extends ConsumerState<ShoppingScreen> with AdManagerM
               ),
               const SizedBox(width: 8),
               Text(
-                title,
+                _getLocalizedCategory(context, title),
                 style: const TextStyle(
                   color: AppColors.stoxText,
                   fontSize: 14,
@@ -911,6 +913,21 @@ class _ShoppingScreenState extends ConsumerState<ShoppingScreen> with AdManagerM
         ),
       ),
     );
+  }
+  String _getLocalizedCategory(BuildContext context, String category) {
+    switch (category) {
+      case '野菜・果物':
+      case '野菜・フルーツ':
+        return AppLocalizations.of(context)!.categoryVegetablesFruits;
+      case '肉・魚':
+        return AppLocalizations.of(context)!.categoryMeatFish;
+      case '調味料':
+        return AppLocalizations.of(context)!.categorySeasoning;
+      case '未分類':
+        return AppLocalizations.of(context)!.categoryUncategorized;
+      default:
+        return category;
+    }
   }
 }
 

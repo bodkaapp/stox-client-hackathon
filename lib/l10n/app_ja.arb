@@ -1,0 +1,732 @@
+{
+  "@@locale": "ja",
+  "helloWorld": "こんにちは世界",
+  "@helloWorld": {
+    "description": "The conventional newborn programmer greeting"
+  },
+  
+  "navHome": "ホーム",
+  "navStock": "在庫",
+  "navShopping": "買い物",
+  "navMenuPlan": "献立計画表",
+  "navRecipe": "レシピ",
+  
+  "homeHelpTitle": "ホーム画面",
+  "homeHelpDescription": "アプリのメインの画面です。この「？」アイコンをタップすると、画面の使い方が表示されます。",
+  "homeTodaysMenu": "今日の献立",
+  "homeRegisterMenu": "登録する",
+  "homeChangeMenu": "変更",
+  "homeNoMenuPlan": "今日の献立はまだありません",
+  "homeViewRecipe": "レシピを見る",
+  "homeShoppingList": "買うもの",
+  "homeShoppingAd": "近所のスーパーで特売中！",
+  "homeViewFlyer": "チラシを見る",
+  "unitItems": "件",
+  "homeExpiringSoon": "賞味期限が近いもの",
+  "homeViewAll": "すべて見る",
+  "homeNoExpiringItems": "賞味期限切れはありません",
+  
+  "actionCheckStock": "在庫チェック",
+  "actionScanReceipt": "レシート登録",
+  "actionShoppingMode": "買い物モード",
+  "actionRecipeBook": "マイレシピ帳",
+  "actionFoodCamera": "料理を撮影",
+  "actionPhotoGallery": "写真を見る",
+  
+  "daysRemaining": "あと{days}日",
+  "@daysRemaining": {
+    "placeholders": {
+      "days": {
+        "type": "Object"
+      }
+    }
+  },
+  "statusCheck": "確認",
+  "statusUrgent": "緊急",
+  "statusWarning": "注意",
+
+  "shoppingAddToShoppingList": "買い物リストに追加",
+  "shoppingTitle": "お買い物",
+  "shoppingHelpTitle": "買い物画面",
+  "shoppingHelpDescription": "買いたいものを管理する画面です。\n「＋」ボタンをタップして、買うものを登録できます。\n「お買い物モード」ボタンを押すと、お買い物を便利にするモードに切り替わります。\nお買い物が終わった後はレシートを撮影して、買ったものを在庫に移動することもできます。",
+  "shoppingAction": "アクション",
+  "shoppingEnterItem": "買うものを入力",
+  "shoppingVoiceInput": "音声で入力",
+  "shoppingReceiptScan": "レシート撮影",
+  "shoppingModeOn": "お買い物モード中",
+  "shoppingModeStart": "お買い物モードを開始",
+  "shoppingCompleteAction": "買い物を完了する",
+  "shoppingAddGuide": "ここをタップして材料を追加します",
+  "shoppingEnterItemAction": "買うものを入力する",
+  "shoppingVoiceInputAction": "声で操作する",
+  "shoppingReceiptScanAction": "レシートを撮影する（お買い物モードを終わる）",
+  "shoppingCompleteButton": "買い物を完了",
+  "shoppingEmptyListMessage": "買い物リストを登録する場所です。\n買うものを忘れないように\nメモしておきましょう。",
+  "shoppingTotalItemsLabel": "TOTAL ITEMS",
+  "shoppingTotalItemsCount": "全 {count} 品目",
+  "@shoppingTotalItemsCount": {
+    "placeholders": {
+        "count": {
+            "type": "Object"
+        }
+    }
+  },
+  "shoppingModeToggleOn": "お買い物モード ON",
+  "shoppingModeToggleOff": "お買い物モード OFF",
+  "shoppingCartProgress": "カゴの進捗",
+  "shoppingCartCount": "{count} / {total} 点",
+  "@shoppingCartCount": {
+    "placeholders": {
+        "count": {
+            "type": "Object"
+        },
+        "total": {
+            "type": "Object"
+        }
+    }
+  },
+  "shoppingRemainingItems": "あと{remaining}点でお買い物完了です",
+  "@shoppingRemainingItems": {
+    "placeholders": {
+        "remaining": {
+            "type": "Object"
+        }
+    }
+  },
+  
+  "categoryUncategorized": "未分類",
+  "categoryVegetablesFruits": "野菜・果物",
+  "categoryMeatFish": "肉・魚",
+  "categorySeasoning": "調味料",
+  "voicePermissionError": "マイクの権限が必要です",
+  "voiceAnalyzing": "AIが解析中...",
+  "voiceListening": "聞いています...",
+  "voiceTapToStart": "タップして開始",
+  "voiceHint": "商品名を話しかけてください\\n例：「長ネギ」「豚肉とキャベツ」",
+  "voiceHistoryPlaceholder": "追加履歴がここに表示されます",
+  "voiceAdded": "追加済",
+  "voiceClose": "閉じる",
+  "voiceAiError": "AIで解析できませんでした",
+  "voiceCompleteMessage": "{count}件の操作を完了しました",
+  "@voiceCompleteMessage": {
+    "placeholders": {
+        "count": {
+            "type": "Object"
+        }
+    }
+  },
+  "addModalCategoryHint": "カテゴリ (任意)",
+  "addModalNameHint": "材料名 (例: にんじん)",
+  "addModalAddButton": "追加",
+  "addModalConfirmButton": "確定",
+  "addModalEmptyList": "追加した材料がここに表示されます",
+  "addModalHeaderName": "材料名",
+  "addModalHeaderQuantity": "数量",
+  "addModalHeaderCategory": "カテゴリ",
+  "addModalAiSuccess": "{count}件をリストに追加しました",
+  "@addModalAiSuccess": {
+    "placeholders": {
+        "count": {
+            "type": "Object"
+        }
+    }
+  },
+  "addModalAiError": "AIで解析できませんでした",
+  "addModalSaveError": "保存に失敗しました: {error}",
+  "@addModalSaveError": {
+    "placeholders": {
+        "error": {
+            "type": "Object"
+        }
+    }
+  },
+  "stockTitle": "在庫一覧",
+  "stockHelpTitle": "在庫一覧画面",
+  "stockHelpDescription": "家にある食材や日用品の在庫を確認する画面です。個数や賞味期限の確認ができます",
+  "menuPlanTitle": "献立計画表",
+  "menuPlanHelpTitle": "献立計画表画面",
+  "menuPlanHelpDescription": "これから作る料理の献立を計画したり、前に作った料理のレシピを振り返ったりする画面です。",
+  "recipeBookTitle": "マイレシピ帳",
+  "recipeBookHelpTitle": "マイレシピ帳画面",
+  "recipeBookHelpDescription": "レシピを検索したり、献立を計画したり、作った料理のレシピを記録したりする画面です。",
+  "searchPlaceholder": "在庫を検索...",
+  "categoryAll": "すべて",
+  "categoryDairy": "乳製品",
+  "stockHeaderType": "類",
+  "stockHeaderName": "品名",
+  "stockHeaderDate": "期限",
+  "stockHeaderAmount": "残量",
+  "stockNoSearchResults": "検索結果がありません",
+  "stockEmptyDescription": "家の中にある\n「買ったもの」「もらったもの」\nを登録して見る場所です。",
+  "stockEmptyAddInstruction": "ここをタップして在庫を追加します",
+  "actionCancel": "キャンセル",
+  "labelDraftDesign": "仮デザイン",
+  "myAreaSetting": "マイエリア設定",
+  "labelRecommended": "おすすめ",
+  "labelNewItem": "NEW ITEM",
+  "tutorialTitle": "冷蔵庫の中を\n撮影しましょう",
+  "tutorialDescription": "AIが写真を解析して、最適なレシピを提案します",
+  "actionStartCamera": "カメラを起動する",
+  "actionRegisterManually": "手動で登録する",
+  "titleAccountSettings": "アカウント設定",
+  "labelDebugDeveloperOptions": "デバッグ・開発者オプション",
+  "actionRestartFromTutorial": "チュートリアルからやり直す",
+  "actionRestart": "やり直す",
+  "actionReset": "リセット",
+  "actionResetChallengeStamps": "チャレンジスタンプをリセット",
+  "labelCheckAiResultDebug": "AI解析結果画面確認 (Debug)",
+  "labelCheckSplashScreen": "スプラッシュ画面確認 (Debug)",
+  "titleConfirmation": "確認",
+  "messageRestartFromTutorialConfirm": "本当にチュートリアルからやり直しますか？\n現在の状態は一部リセットされる可能性があります。",
+  "messageResetChallengeStampsConfirm": "チャレンジスタンプの獲得状況をすべてリセットしますか？\nこの操作は取り消せません。",
+  "messageChallengeStampsResetComplete": "チャレンジスタンプをリセットしました",
+  "saveFailed": "保存に失敗しました",
+  "receiptAnalysisResultTitle": "レシート解析結果",
+  "actionSetToStock": "在庫にする",
+  "receiptSectionMatchedDescription": "レシートと買物リストの両方にありました。\n在庫に登録します。",
+  "actionAddNew": "新規に追加",
+  "receiptSectionNewDescription": "買い物リストにありませんでした。\n在庫に追加しますか？",
+  "statusUnpurchased": "未購入",
+  "receiptSectionUnpurchasedDescription": "レシートにありませんでした。\n買い忘れていませんか？",
+  "actionKeepInList": "リストに残す",
+  "locationFridge": "冷蔵庫",
+  "locationFreezer": "冷凍庫",
+  "locationVegetable": "野菜室",
+  "locationUnderSink": "シンク下",
+  "locationPantry": "食品庫",
+  "locationStorageRoom": "物置",
+  "locationRoomTemp": "常温",
+  "actionShareRecipe": "レシピをシェア",
+  "aiAnalysisRecipeIngredientsDescription": "AIがレシピの材料を分析しています。\n解析が終わるまで広告をご覧ください。",
+  "actionCookThisRecipe": "このレシピを作る！",
+  "recipeSavedToBook": "マイレシピ帳に登録しました",
+  "recipeSaveError": "登録に失敗しました",
+  "recipeSaveTitle": "レシピの保存",
+  "recipeSaveQuestion": "このレシピをどうしますか？",
+  "actionRegisterToMyRecipeBook": "マイレシピ帳に登録する",
+  "aiAnalysisRecipeIngredientsDescriptionLong": "AIがレシピの材料を分析しています。\n広告を再生している間に解析を行います。",
+  "actionWatchAdAndAnalyze": "広告を見て解析する",
+  "analysisFailedTryAgain": "解析に失敗しました。もう一度お試しください。",
+  "tabRecentlyViewed": "最近見たレシピ",
+  "tabRecentlyAdded": "最近登録したレシピ",
+  "noRecentlyAddedRecipes": "登録されたレシピはありません",
+  "dateYMD": "{year}年{month}月{day}日",
+  "@dateYMD": {
+    "placeholders": {
+      "year": { "type": "Object" },
+      "month": { "type": "Object" },
+      "day": { "type": "Object" }
+    }
+  },
+  "searchFailedMessage": "検索に失敗しました",
+  "errorNetwork": "通信エラーが発生しました",
+  "recipeSearchResults": "「{query}」の検索結果",
+  "@recipeSearchResults": {
+    "placeholders": {
+      "query": { "type": "String" }
+    }
+  },
+  "labelFromRecipeSites": "レシピサイトから",
+  "noRecipeSearchResults": "レシピサイトに結果が見つかりませんでした",
+  "titleChangeMyArea": "マイエリアの変更",
+  "statusFollowing": "フォロー中",
+  "fileNotFound": "ファイルが見つかりません",
+  "analysisFailed": "解析に失敗しました",
+  "foodPhotoAnalysisComplete": "料理の写真の解析が終わりました。",
+  "sharedWithStox": "STOXで撮影しました",
+  "actionAnalyzeNutritionWithAi": "AIで栄養価を解析する",
+  "mealMorning": "朝",
+  "mealNoon": "昼",
+  "mealNight": "夜",
+  "mealSnack": "おやつ",
+  "mealPrep": "下ごしらえ",
+  "mealAppetizer": "おつまみ",
+  "titleWhenToMake": "いつ作りますか？",
+  "actionSetDateUndecided": "日程を未定にする",
+  "labelSelectTimeSlot": "時間帯を選択",
+  "labelMemoOptional": "メモ（任意）",
+  "saveAction": "確定する",
+  "categoryOthers": "その他",
+  "actionAi": "AI",
+  "actionSearch": "検索",
+  "actionGetAiSuggestions": "AIの提案を受ける",
+  "labelSearchHistory": "検索履歴",
+  "actionManualRecipeEntryInstead": "検索せずに、レシピを手入力する",
+  "labelManualRecipeEntry": "レシピを手入力",
+  "actionNext": "次へ",
+  "actionDelete": "削除します",
+  "stockDeleteConfirmMessage": "本当に削除してもいいですか？",
+  "stockDeletedMessage": "{count}件を削除しました",
+  "@stockDeletedMessage": {
+    "placeholders": {
+        "count": {
+            "type": "Object"
+        }
+    }
+  },
+  "actionUndo": "やっぱり元に戻す",
+  "stockRestoreConfirmMessage": "削除した商品を元に戻しますか？",
+  "actionRestore": "元に戻す",
+  "stockRestoredMessage": "商品を元に戻しました",
+  "stockSelectedCount": "{count}件選択中",
+  "@stockSelectedCount": {
+    "placeholders": {
+        "count": {
+            "type": "Object"
+        }
+    }
+  },
+  "stockCategoryLabel": "カテゴリ",
+  "stockOperationLabel": "操作",
+  "stockDeleteButtonLabel": "削除する ({count})",
+  "@stockDeleteButtonLabel": {
+    "placeholders": {
+        "count": {
+            "type": "Object"
+        }
+    }
+  },
+  "stockCancelSelection": "選択をキャンセル",
+  "stockAddToShoppingList": "買い物リストへ追加する",
+  "stockAddByTextInput": "文字入力で追加",
+  "stockAddByVoice": "音声入力で追加",
+  "stockAddByPhoto": "写真撮影で追加",
+  "stockDeleteItems": "商品を選んで削除する",
+  "dateToday": "今日",
+  "dateTomorrow": "明日",
+  "stockTotalItems": "全 {count} 品目",
+  "@stockTotalItems": {
+    "placeholders": {
+        "count": {
+            "type": "Object"
+        }
+    }
+  },
+  "stockExpiredCount": "  ● {count}品期限間近",
+  "@stockExpiredCount": {
+    "placeholders": {
+        "count": {
+            "type": "Object"
+        }
+    }
+  },
+  "errorOccurred": "エラーが発生しました: {error}",
+  "@errorOccurred": {
+    "placeholders": {
+      "error": {
+        "type": "Object"
+      }
+    }
+  },
+  "stockDeleteActionGuide": "ここをタップして削除します",
+  "stockAddTitle": "在庫を追加",
+  "menuBreakfast": "朝食",
+  "menuBreakfastLabel": "朝",
+  "menuLunch": "昼食",
+  "menuLunchLabel": "昼",
+  "menuDinner": "夕食",
+  "menuDinnerLabel": "夜",
+  "menuUndecided": "時間未定",
+  "menuUndecidedLabel": "未定",
+  "menuMealPrep": "作り置き",
+  "menuMealPrepLabel": "準備",
+  "menuNoMenu": "献立はありません",
+  "menuNoPlan": "予定はありません",
+  "menuAskAi": "AIに献立を提案してもらう",
+  "aiSuggestion": "AIに提案してもらう",
+  "menuMade": "作った",
+  "menuCook": "料理する",
+  "menuAddDish": "料理を追加する",
+  "menuAdd": "追加",
+  "menuMealPrepGuide": "週末の作り置きレシピを\n登録してみましょう",
+  "menuCookedAt": "{time}に作りました",
+  "@menuCookedAt": {
+    "placeholders": {
+      "time": {
+        "type": "Object"
+      }
+    }
+  },
+  "menuAiProposalTitle": "AI献立提案",
+  "menuAiProposalMessage": "広告を視聴して、AIに献立を提案してもらいますか？\n（今の冷蔵庫の中身や前後の食事バランスを考慮します）",
+  "menuAiProposalAction": "広告を見て提案してもらう",
+  "adExecuteAction": "広告を見て実行する",
+  "adLoadError": "広告の読み込みに失敗しました。通信環境を確認して再度お試しください。",
+  "menuCookingDoneTitle": "お料理お疲れ様でした！",
+  "menuCookingDoneMessage": "もし作った料理を撮影した写真があったら、写真を貼っておくことで、後で見返すのが楽になります✨",
+  "menuAttachPhoto": "撮った写真を貼る",
+  "menuTakePhoto": "撮影する",
+  "menuCompleteWithoutPhoto": "写真を貼らずに完了する",
+  "menuSaveFailed": "保存に失敗しました: {error}",
+  "@menuSaveFailed": {
+    "placeholders": {
+      "error": {
+        "type": "Object"
+      }
+    }
+  },
+  "menuImagesSkipped": "{count} 枚の画像はすでに存在するためスキップされました",
+  "@menuImagesSkipped": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
+  "menuImageSaveFailed": "画像の保存に失敗しました: {error}",
+  "@menuImageSaveFailed": {
+    "placeholders": {
+      "error": {
+        "type": "Object"
+      }
+    }
+  },
+  "menuNoRecipe": "レシピがありません",
+  "menuLoading": "読み込み中",
+  "recipePastMenus": "過去の献立",
+  "recipeViewAll": "すべて見る",
+  "recipeNoPastMenus": "過去の献立はありません",
+  "recipeSearchPlaceholder": "レシピを検索またはURLを入力",
+  "recipeTodaysMenu": "今日の献立",
+  "recipeEdit": "編集する",
+  "recipeCookNow": "今すぐ作る",
+  "recipeNoTodaysMenu": "まだ今日の献立がありません",
+  "recipeAdd": "追加する",
+  "recipeCategoryMain": "主菜",
+  "recipeCategorySide": "副菜",
+  "recipeCategoryQuick": "時短",
+  "recipeCategorySnack": "おつまみ",
+  "recipeCategoryFavorite": "お気に入り",
+  "recipeCategoryOther": "その他",
+  "recipeRecentlyViewed": "最近見たレシピ",
+  "recipeAddedDate": "{date} 追加",
+  "@recipeAddedDate": {
+    "placeholders": {
+      "date": {
+        "type": "Object"
+      }
+    }
+  },
+  "recipeItemsCount": "{count}品",
+  "@recipeItemsCount": {
+    "placeholders": {
+        "count": {
+            "type": "Object"
+        }
+    }
+  },
+  "receiptScanTitle": "レシート解析を開始",
+  "receiptScanMessage": "AIがレシートを読み取ります。\n広告を再生することで、この機能を無料でご利用いただけます。",
+  "receiptScanAction": "広告を見て解析する",
+  "receiptAnalysisFailed": "解析に失敗しました: {error}",
+  "@receiptAnalysisFailed": {
+    "placeholders": {
+      "error": {
+        "type": "Object"
+      }
+    }
+  },
+  "receiptScanCanceled": "スキャンがキャンセルされました",
+  "stockAddedMessage": "{count}件の在庫を追加しました！",
+  "@stockAddedMessage": {
+    "placeholders": {
+        "count": {
+            "type": "Object"
+        }
+    }
+  },
+  "stockSaveFailed": "保存に失敗しました。",
+  "aiAnalysisResult": "解析結果",
+  "aiAnalysisNoItems": "商品が見つかりませんでした",
+  "aiAnalysisLocation": "撮影場所: {location}",
+  "@aiAnalysisLocation": {
+    "placeholders": {
+        "location": {
+            "type": "Object"
+        }
+    }
+  },
+  "aiAnalysisFoundItems": "以下の商品が見つかりました",
+  "aiAnalysisExclude": "除外する",
+  "aiAnalysisAddToStock": "在庫に追加する ({count}件)",
+  "@aiAnalysisAddToStock": {
+    "placeholders": {
+        "count": {
+            "type": "Object"
+        }
+    }
+  },
+  "aiAnalysisQuit": "やっぱり辞めた",
+  "aiIngredientAnalysisFailed": "解析に失敗しました。もう一度お試しください。",
+  "unitItem": "個",
+  "categoryOther": "その他",
+  "dialogConfirm": "確認",
+  "dialogRegisterRecipeConfirm": "材料の登録が終わりました！\nマイレシピ帳に登録しますか？",
+  "actionNo": "いいえ",
+  "actionYes": "はい",
+  "dialogIngredientDestinations": "「ある」材料は在庫へ、\n「買う」材料は買い物リストへ追加します。\n「いらない」材料は登録されません。\nよろしいですか？",
+  "dialogDontShowAgain": "今後このダイアログを非表示にする",
+  "actionRegister": "登録する",
+  "stockCountMessage": "在庫に{count}件",
+  "@stockCountMessage": {
+    "placeholders": {
+        "count": {
+            "type": "Object"
+        }
+    }
+  },
+  "shoppingListCountMessage": "買い物リストに{count}件",
+  "@shoppingListCountMessage": {
+    "placeholders": {
+        "count": {
+            "type": "Object"
+        }
+    }
+  },
+  "addedMessage": "{items}追加しました！",
+  "@addedMessage": {
+    "placeholders": {
+        "items": {
+            "type": "Object"
+        }
+    }
+  },
+  "dialogRegistrationCancelConfirm": "解析した材料は、在庫や買い物リストに追加されませんが、よろしいですか？",
+  "actionBackToRecipe": "レシピに戻る",
+  "aiIngredientRunAnalysis": "材料抽出結果",
+  "recipeExtractedFrom": "レシピから抽出",
+  "labelHave": "ある",
+  "labelBuy": "買う",
+  "labelDontNeed": "いらない",
+  "actionDoNothingAnd": "何もしないで",
+  "actionRegisterIngredients": "材料を登録する",
+  "aiIngredientNoItems": "材料が見つかりませんでした",
+  "dateYesterday": "昨日",
+  "aiMenuThinking": "献立を考えています...",
+  "aiMenuCheckingStock": "冷蔵庫の中身を確認しています...",
+  "aiMenuGenerating": "AIがメニューを生成しています...",
+  "aiMenuGenerationFailed": "提案を作成できませんでした",
+  "errorOccurredTryAgain": "エラーが発生しました。\nもう一度お試しください。",
+  "menuSnack": "間食",
+  "actionBack": "戻る",
+  "aiMenuSurroundingMeal": "{day}の{type}: {title}",
+  "@aiMenuSurroundingMeal": {
+    "placeholders": {
+        "day": {
+            "type": "Object"
+        },
+        "type": {
+            "type": "Object"
+        },
+        "title": {
+            "type": "Object"
+        }
+    }
+  },
+  "shortDateFormat": "M/d",
+  "aiRecipeAnalyzingPhoto": "AIが写真を解析しています…",
+  "aiRecipeThinkingWithIngredient": "AIがレシピを考えています…\n{ingredient}があります",
+  "@aiRecipeThinkingWithIngredient": {
+    "description": "AI thinking message with current ingredient",
+    "placeholders": {
+      "ingredient": {
+        "type": "Object"
+      }
+    }
+  },
+  "aiRecipeNoItemsFound": "商品が見つかりませんでした",
+  "aiRecipeNoIdentification": "写真から食材を特定できませんでした。\nもう一度撮影するか、レシピを検索してください。",
+  "actionRetakePhoto": "もう一度撮影する",
+  "actionSearchRecipe": "レシピを検索する",
+  "actionSkip": "スキップする",
+  "aiRecipeProposalTitle": "こんなレシピはいかがですか？",
+  "cookingModeExitConfirm": "調理モードを終了しますか？",
+  "cookingModeExitDescription": "調理モードを終了して前の画面に戻ります。",
+  "actionFinish": "終了する",
+  "titleCookingMode": "調理モード",
+  "myAreaSetting": "マイエリア設定",
+  "nearbyFlyers": "近くのお店のチラシ",
+  "newArrivals": "新着あり",
+  "newFlyers": "新着のチラシ",
+  "todaysRecommended": "今日のおすすめ商品",
+  "titleFlyer": "チラシ",
+  "shopDetails": "店舗詳細",
+  "cameraPermissionRequired": "カメラの権限が必要です",
+  "cameraNotFound": "カメラが見つかりません",
+  "errorSaveFailed": "保存に失敗しました",
+  "errorEnterRecipeName": "レシピ名を入力してください",
+  "manualRecipeEntry": "レシピを手入力",
+  "recipeNameLabel": "レシピ名",
+  "recipeNameHint": "例：豚肉の生姜焼き",
+  "ingredientsAmount": "材料・分量",
+  "ingredientNameHint": "例: 豚肉",
+  "amountHint": "例: 200g",
+  "actionAddIngredient": "材料を追加する",
+  "actionRegisterManualRecipe": "手入力したレシピを登録する",
+  "titleChangeMyArea": "マイエリアの変更",
+  "searchByZipCode": "郵便番号で探す",
+  "setMyAreaHere": "マイエリアをここにする",
+  "titleNotification": "通知",
+  "actionReadAll": "すべて既読",
+  "noNotifications": "通知はありません",
+  "actionAddDemoData": "デモデータを追加",
+  "minutesAgo": "{count}分前",
+  "@minutesAgo": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
+  "hoursAgo": "{count}時間前",
+  "@hoursAgo": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
+  "daysAgo": "{count}日前",
+  "@daysAgo": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
+  "yesterdayAt": "昨日 {time}",
+  "titlePhotoGallery": "写真一覧",
+  "noPhotos": "写真がありません",
+  "titlePhotoStockLocation": "AI解析を開始",
+  "photoStockLocationMessage": "AIがあなたの冷蔵庫を分析します。\n広告を再生することで、この機能を無料でご利用いただけます。",
+  "photoStockLocationAiAnalyzing": "AIがあなたの{location}を分析しています。\n解析が終わるまで広告をご覧ください。",
+  "@photoStockLocationAiAnalyzing": {
+    "placeholders": {
+      "location": { "type": "Object" }
+    }
+  },
+  "aiAnalysisCompleteMessage": "AIの解析がおわりました。\n広告の視聴ありがとうございました。",
+  "retake": "やり直す",
+  "enterStorageLocation": "撮影した保管場所を入力",
+  "storageLocationHint": "例: 食品庫",
+  "selectFromCandidates": "候補から選択",
+  "actionDecide": "決定",
+  "errorFileNotFound": "ファイルが見つかりません",
+  "analysisComplete": "解析が完了しました",
+  "foodAnalysisDoneMessage": "料理の写真の解析が終わりました。",
+  "capturedWithStox": "STOXで撮影しました",
+  "analyzing": "解析中...",
+  "noAnalysisData": "解析データがありません",
+  "analyzeNutritionWithAi": "AIで栄養価を解析する",
+  "noAnalysisText": "解析結果のテキストがありません",
+  "titleHistory": "履歴",
+  "recentlyAddedRecipes": "最近登録したレシピ",
+  "noRecentlyViewedRecipes": "最近見たレシピはありません",
+  "noRegisteredRecipes": "登録されたレシピはありません",
+  "yearMonthDay": "{year}年{month}月{day}日",
+  "@yearMonthDay": {
+    "placeholders": {
+        "year": {
+            "type": "Object"
+        },
+        "month": {
+            "type": "Object"
+        },
+        "day": {
+            "type": "Object"
+        }
+    }
+  },
+  "recipeScheduleBreakfast": "朝",
+  "recipeScheduleLunch": "昼",
+  "recipeScheduleDinner": "夜",
+  "recipeScheduleSnack": "おやつ",
+  "recipeSchedulePrep": "下ごしらえ",
+  "recipeScheduleAppetizer": "おつまみ",
+  "recipeRegisteredMessage": "マイレシピ帳に登録しました",
+  "recipeRegisterFailed": "登録に失敗しました",
+  "whenToCook": "いつ作りますか？",
+  "undecidedDate": "日程を未定にする",
+  "canSetFromCalendarLater": "あとでカレンダーから設定できます",
+  "selectTimeSlot": "時間帯を選択",
+  "memoOptional": "メモ（任意）",
+  "memoHint": "その他（例：旦那さんの分、作り置き）",
+  "actionConfirm": "確定する",
+  "searchFailed": "検索に失敗しました",
+  "communicationError": "通信エラーが発生しました",
+  "searchResultsFor": "「{query}」の検索結果",
+  "@searchResultsFor": {
+    "placeholders": {
+      "query": {
+        "type": "Object"
+      }
+    }
+  },
+  "fromRecipeSite": "レシピサイトから",
+  "actionRetry": "再試行",
+  "noResultsInRecipeSite": "レシピサイトに結果が見つかりませんでした",
+  "actionShareRecipe": "レシピをシェア",
+  "actionOpenInBrowser": "ブラウザで開く",
+  "actionCopyUrl": "URLをコピー",
+  "recipeAiAnalyzingMessage": "AIがレシピの材料を分析しています。\n解析が終わるまで広告をご覧ください。",
+  "cookThisRecipe": "このレシピを作る！",
+  "urlCopied": "URLをコピーしました",
+  "saveRecipe": "レシピの保存",
+  "whatToDoWithRecipe": "このレシピをどうしますか？",
+  "actionDoNothing": "何もしない",
+  "actionRegisterToRecipeBook": "マイレシピ帳に登録する",
+  "stockUpdated": "在庫を更新しました",
+  "receiptAnalysisResult": "レシート解析結果",
+  "receiptNoItemsFound": "商品が見つかりませんでした。",
+  "actionRetake": "もう一回撮影する",
+  "actionToStock": "在庫にする",
+  "receiptStockConfirmMessage": "レシートと買物リストの両方にありました。\n在庫に登録します。",
+  "sectionNewItem": "新規に追加",
+  "receiptNewItemDescription": "買い物リストにありませんでした。\n在庫に追加しますか？",
+  "sectionNotPurchased": "未購入",
+  "receiptNotPurchasedDescription": "レシートにありませんでした。\n買い物忘れはありませんか？",
+  "actionComplete": "完了",
+  "actionViewMenuPlan": "献立計画表を見る",
+  "fullDateFormat": "yyyy/MM/dd (E)",
+  "actionExtractIngredients": "材料を抽出する",
+  "titleExtractIngredients": "材料の解析",
+  "titleError": "エラー",
+  "titleSearchHistory": "検索履歴",
+  "actionDeleteAll": "すべて削除",
+  "actionManualRecipeEntryNoSearch": "検索せずに、レシピを手入力する",
+  "manualRecipeIngredientLabel": "材料名",
+  "manualRecipeAmountLabel": "分量",
+  "tutorialSkip": "スキップ",
+  "tutorialStep1Title": "冷蔵庫の中を\n撮影しましょう",
+  "tutorialStep1Description": "AIが写真を解析して、最適なレシピを提案します",
+  "actionLaunchCamera": "カメラを起動する",
+  "actionManualRegister": "手動で登録する",
+  "calendarYearMonth": "{year}年{month}月",
+  "@calendarYearMonth": {
+    "placeholders": {
+      "year": { "type": "Object" },
+      "month": { "type": "Object" }
+    }
+  },
+  "clearSteps": "クリア手順",
+  "titleChallengeStamp": "チャレンジスタンプ",
+  "challengeStampDescription": "全クリアでマスターを目指そう！",
+  "actionClose": "とじる",
+  "congratsTitle": "ぱんぱかぱーん🎉",
+  "congratsMessage": "おめでとうございます！",
+  "congratsFirstChallenge": "１つめのチャレンジクリアです！",
+  "congratsChallengeClear": "チャレンジ「{name}」\nクリアです！",
+  "@congratsChallengeClear": {
+    "placeholders": {
+      "name": { "type": "Object" }
+    }
+  },
+  "actionHooray": "やったー！",
+  "challengeRefrigeratorPhoto": "冷蔵庫撮影",
+  "challengeMenuRegistration": "献立登録",
+  "challengeRecipeSearch": "レシピ検索",
+  "challengeIngredientExtraction": "材料抽出",
+  "challengeShopping": "お買い物",
+  "challengeReceiptRegistration": "レシート登録",
+  "challengeCookingPhoto": "料理撮影"
+}

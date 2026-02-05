@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../l10n/generated/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:typed_data';
 import '../../config/app_colors.dart';
@@ -73,7 +74,7 @@ class _AiAnalyzedStockScreenState extends ConsumerState<AiAnalyzedStockScreen> {
       if (mounted) {
         Navigator.pop(context, true); // Return true to indicate success
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('${ingredientsToSave.length}件の在庫を追加しました！')),
+          SnackBar(content: Text(AppLocalizations.of(context)!.stockAddedMessage(ingredientsToSave.length))), // ${ingredientsToSave.length}件の在庫を追加しました！
         );
       }
     } catch (e) {
@@ -82,7 +83,7 @@ class _AiAnalyzedStockScreenState extends ConsumerState<AiAnalyzedStockScreen> {
       });
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('保存に失敗しました。')),
+          SnackBar(content: Text(AppLocalizations.of(context)!.stockSaveFailed)), // 保存に失敗しました。
         );
       }
     }
@@ -99,7 +100,7 @@ class _AiAnalyzedStockScreenState extends ConsumerState<AiAnalyzedStockScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.stoxBackground,
-      appBar: AppBar(title: const Text('解析結果'), centerTitle: true),
+      appBar: AppBar(title: Text(AppLocalizations.of(context)!.aiAnalysisResult), centerTitle: true), // 解析結果
       body: SafeArea(
         child: Stack(
           children: [
@@ -108,7 +109,7 @@ class _AiAnalyzedStockScreenState extends ConsumerState<AiAnalyzedStockScreen> {
                 _buildHeader(),
                 Expanded(
                   child: _ingredients.isEmpty
-                      ? const Center(child: Text('商品が見つかりませんでした'))
+                      ? Center(child: Text(AppLocalizations.of(context)!.aiAnalysisNoItems)) // 商品が見つかりませんでした
                       : ListView.separated(
                           itemCount: _ingredients.length,
                           separatorBuilder: (context, index) => const Divider(height: 1, color: Color(0xFFF0E7DE)),
@@ -159,13 +160,13 @@ class _AiAnalyzedStockScreenState extends ConsumerState<AiAnalyzedStockScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  '撮影場所: ${widget.location}',
+                  AppLocalizations.of(context)!.aiAnalysisLocation(widget.location), // 撮影場所: ${widget.location}
                   style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.stoxText),
                 ),
                 const SizedBox(height: 4),
-                const Text(
-                  '以下の商品が見つかりました',
-                  style: TextStyle(fontSize: 12, color: AppColors.stoxSubText),
+                Text(
+                  AppLocalizations.of(context)!.aiAnalysisFoundItems, // 以下の商品が見つかりました
+                  style: const TextStyle(fontSize: 12, color: AppColors.stoxSubText),
                 ),
               ],
             ),
@@ -215,7 +216,7 @@ class _AiAnalyzedStockScreenState extends ConsumerState<AiAnalyzedStockScreen> {
               isExcluded ? Icons.restore_from_trash : Icons.delete_outline,
               color: isExcluded ? Colors.green : Colors.grey,
             ),
-            tooltip: isExcluded ? '元に戻す' : '除外する',
+            tooltip: isExcluded ? AppLocalizations.of(context)!.actionRestore : AppLocalizations.of(context)!.aiAnalysisExclude, // 元に戻す / 除外する
             onPressed: () => _toggleExclusion(index),
           ),
         ],
@@ -244,7 +245,7 @@ class _AiAnalyzedStockScreenState extends ConsumerState<AiAnalyzedStockScreen> {
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
               child: Text(
-                '在庫に追加する ($activeCount件)',
+                AppLocalizations.of(context)!.aiAnalysisAddToStock(activeCount), // 在庫に追加する ($activeCount件)
                 style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
               ),
             ),
@@ -254,7 +255,7 @@ class _AiAnalyzedStockScreenState extends ConsumerState<AiAnalyzedStockScreen> {
             width: double.infinity,
             child: TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('やっぱり辞めた', style: TextStyle(color: AppColors.stoxSubText)),
+              child: Text(AppLocalizations.of(context)!.aiAnalysisQuit, style: const TextStyle(color: AppColors.stoxSubText)), // やっぱり辞めた
             ),
           ),
         ],

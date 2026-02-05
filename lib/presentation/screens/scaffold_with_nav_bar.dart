@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../l10n/generated/app_localizations.dart';
 import '../providers/shopping_mode_provider.dart';
 
 class ScaffoldWithNavBar extends ConsumerWidget {
@@ -20,26 +21,26 @@ class ScaffoldWithNavBar extends ConsumerWidget {
       bottomNavigationBar: isShoppingMode ? null : BottomNavigationBar(
         currentIndex: _calculateSelectedIndex(context),
         onTap: (int idx) => _onItemTapped(idx, context),
-        items: const [
+        items: [
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
-            label: 'ホーム',
+            label: AppLocalizations.of(context)!.navHome,
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.inventory_2),
-            label: '在庫',
+            label: AppLocalizations.of(context)!.navStock,
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.shopping_cart),
-            label: '買い物',
+            label: AppLocalizations.of(context)!.navShopping,
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.calendar_month),
-            label: '献立計画表',
+            label: AppLocalizations.of(context)!.navMenuPlan,
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.menu_book),
-            label: 'レシピ',
+            label: AppLocalizations.of(context)!.navRecipe,
           ),
         ],
       ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../../l10n/generated/app_localizations.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -63,9 +64,9 @@ class TutorialScreen extends StatelessWidget {
                 child: TextButton.icon(
                   onPressed: () => _onSkip(context),
                   label: const Icon(Icons.arrow_forward_ios, size: 16, color: Color(0xFF8A8A8A)),
-                  icon: const Text(
-                    'スキップ',
-                    style: TextStyle(
+                  icon: Text(
+                    AppLocalizations.of(context)!.actionSkip, // スキップ
+                    style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       color: Color(0xFF8A8A8A),
                     ),
@@ -100,7 +101,7 @@ class TutorialScreen extends StatelessWidget {
                    
                    // Title
                    Text(
-                     '冷蔵庫の中を\n撮影しましょう',
+                     AppLocalizations.of(context)!.tutorialTitle, // 冷蔵庫の中を\n撮影しましょう
                      textAlign: TextAlign.center,
                      style: GoogleFonts.outfit(
                        fontSize: 24,
@@ -112,10 +113,10 @@ class TutorialScreen extends StatelessWidget {
                    const SizedBox(height: 16),
                    
                    // Description
-                   const Text(
-                     'AIが写真を解析して、最適なレシピを提案します',
+                   Text(
+                     AppLocalizations.of(context)!.tutorialDescription, // AIが写真を解析して、最適なレシピを提案します
                      textAlign: TextAlign.center,
-                     style: TextStyle(
+                     style: const TextStyle(
                        fontSize: 14,
                        color: Color(0xFF8A8A8A),
                        height: 1.6,
@@ -134,9 +135,9 @@ class TutorialScreen extends StatelessWidget {
                   ElevatedButton.icon(
                     onPressed: () => _onStartCamera(context),
                     icon: const Icon(Icons.camera_alt, color: Colors.white),
-                    label: const Text(
-                      'カメラを起動する',
-                      style: TextStyle(
+                    label: Text(
+                      AppLocalizations.of(context)!.actionStartCamera, // カメラを起動する
+                      style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
@@ -154,9 +155,9 @@ class TutorialScreen extends StatelessWidget {
                   const SizedBox(height: 16),
                   TextButton(
                     onPressed: () => _onRegisterManually(context),
-                    child: const Text(
-                      '手動で登録する',
-                      style: TextStyle(
+                    child: Text(
+                      AppLocalizations.of(context)!.actionRegisterManually, // 手動で登録する
+                      style: const TextStyle(
                          fontSize: 14,
                          fontWeight: FontWeight.bold,
                          color: Color(0xFF8D6E63),

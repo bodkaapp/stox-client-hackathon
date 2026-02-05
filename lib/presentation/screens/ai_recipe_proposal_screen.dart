@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../infrastructure/repositories/ai_recipe_repository.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'recipe_search_results_screen.dart';
+import '../../l10n/generated/app_localizations.dart';
 
 class AiRecipeProposalScreen extends StatelessWidget {
   final List<dynamic> suggestions; // Using dynamic to avoid import circles, or move DTO to domain
@@ -23,7 +24,7 @@ class AiRecipeProposalScreen extends StatelessWidget {
           onPressed: () => Navigator.of(context).pop(),
         ),
         title: Text(
-          'こんなレシピはいかがですか？',
+          AppLocalizations.of(context)!.aiRecipeProposalTitle, // こんなレシピはいかがですか？
           style: GoogleFonts.outfit(
             color: const Color(0xFF333333),
             fontWeight: FontWeight.bold,

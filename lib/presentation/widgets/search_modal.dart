@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../l10n/generated/app_localizations.dart';
 import '../../config/app_colors.dart';
 import '../viewmodels/search_history_viewmodel.dart';
-import '../viewmodels/recipe_book_viewmodel.dart';
-import '../screens/recipe_webview_screen.dart';
-import '../screens/recipe_search_results_screen.dart';
 import '../screens/manual_recipe_entry_screen.dart';
 
 import '../../domain/models/meal_plan.dart'; // Added import
@@ -117,9 +115,9 @@ class _SearchModalState extends ConsumerState<SearchModal> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                   const Text(
-                     'レシピを検索する',
-                     style: TextStyle(
+                   Text(
+                     AppLocalizations.of(context)!.actionSearchRecipe, // レシピを検索する
+                     style: const TextStyle(
                        fontSize: 18,
                        fontWeight: FontWeight.bold,
                        color: Color(0xFF292524), // stone-800
@@ -189,7 +187,7 @@ class _SearchModalState extends ConsumerState<SearchModal> {
                       minimumSize: Size.zero,
                       tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                     ),
-                    child: const Text('検索', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                    child: Text(AppLocalizations.of(context)!.actionSearch, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)), // 検索
                   ),
                 ],
               ),
@@ -210,7 +208,7 @@ class _SearchModalState extends ConsumerState<SearchModal> {
                        onTap: () {
                          // Empty function as requested
                        },
-                       label: 'AIに提案してもらう',
+                       label: AppLocalizations.of(context)!.actionGetAiSuggestions, // AIに提案してもらう
                      ),
                    ),
 
@@ -218,13 +216,13 @@ class _SearchModalState extends ConsumerState<SearchModal> {
                    Row(
                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                      children: [
-                       const Row(
+                       Row(
                          children: [
-                           Icon(Icons.history, color: Color(0xFFA8A29E), size: 20), // stone-400
-                           SizedBox(width: 6),
+                           const Icon(Icons.history, color: Color(0xFFA8A29E), size: 20), // stone-400
+                           const SizedBox(width: 6),
                            Text(
-                             '検索履歴',
-                             style: TextStyle(
+                             AppLocalizations.of(context)!.labelSearchHistory, // 検索履歴
+                             style: const TextStyle(
                                fontSize: 14,
                                fontWeight: FontWeight.bold,
                                color: Color(0xFF78716C), // stone-500
@@ -243,7 +241,7 @@ class _SearchModalState extends ConsumerState<SearchModal> {
                             minimumSize: Size.zero,
                             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                          ),
-                         child: const Text('すべて削除'),
+                         child: Text(AppLocalizations.of(context)!.actionDeleteAll), // すべて削除
                        ),
                      ],
                    ),
@@ -330,9 +328,9 @@ class _SearchModalState extends ConsumerState<SearchModal> {
                       borderRadius: BorderRadius.circular(16),
                     ),
                   ),
-                  child: const Text(
-                    '検索せずに、レシピを手入力する',
-                    style: TextStyle(fontWeight: FontWeight.bold),
+                  child: Text(
+                    AppLocalizations.of(context)!.actionManualRecipeEntryInstead, // 検索せずに、レシピを手入力する
+                    style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                 ),
               ),

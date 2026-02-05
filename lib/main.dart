@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'l10n/generated/app_localizations.dart';
 import 'package:quick_actions/quick_actions.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -70,15 +71,13 @@ class _MyAppState extends ConsumerState<MyApp> {
       title: 'Stox',
       theme: AppTheme.light,
       routerConfig: router,
-      locale: const Locale('ja'),
       localizationsDelegates: const [
+        AppLocalizations.delegate,
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
-      supportedLocales: const [
-        Locale('ja'),
-      ],
+      supportedLocales: AppLocalizations.supportedLocales,
     );
   }
 }

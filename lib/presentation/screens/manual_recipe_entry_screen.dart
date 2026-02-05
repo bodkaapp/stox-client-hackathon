@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../config/app_colors.dart';
+import '../../l10n/generated/app_localizations.dart';
 import '../../domain/models/recipe.dart';
 import '../../domain/models/recipe_ingredient.dart';
 import '../../domain/models/meal_plan.dart';
@@ -70,7 +71,7 @@ class _ManualRecipeEntryScreenState extends ConsumerState<ManualRecipeEntryScree
     final title = _titleController.text.trim();
     if (title.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('レシピ名を入力してください')),
+        SnackBar(content: Text(AppLocalizations.of(context)!.errorEnterRecipeName)), // レシピ名を入力してください
       );
       return;
     }
@@ -119,7 +120,7 @@ class _ManualRecipeEntryScreenState extends ConsumerState<ManualRecipeEntryScree
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('保存に失敗しました: $e')),
+          SnackBar(content: Text('${AppLocalizations.of(context)!.errorSaveFailed}: $e')), // 保存に失敗しました
         );
       }
     }
@@ -136,9 +137,9 @@ class _ManualRecipeEntryScreenState extends ConsumerState<ManualRecipeEntryScree
           icon: const Icon(Icons.arrow_back, color: AppColors.stoxText),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
-          'レシピを手入力',
-          style: TextStyle(color: AppColors.stoxText, fontSize: 18, fontWeight: FontWeight.bold),
+        title: Text(
+          AppLocalizations.of(context)!.manualRecipeEntry, // レシピを手入力
+          style: const TextStyle(color: AppColors.stoxText, fontSize: 18, fontWeight: FontWeight.bold),
         ),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1.0),
@@ -155,12 +156,12 @@ class _ManualRecipeEntryScreenState extends ConsumerState<ManualRecipeEntryScree
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('レシピ名', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppColors.stoxText)),
+                    Text(AppLocalizations.of(context)!.recipeNameLabel, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppColors.stoxText)), // レシピ名 // レシピ名
                     const SizedBox(height: 8),
                     TextField(
                       controller: _titleController,
                       decoration: InputDecoration(
-                        hintText: '例：豚肉の生姜焼き',
+                        hintText: AppLocalizations.of(context)!.recipeNameHint, // 例：豚肉の生姜焼き
                         filled: true,
                         fillColor: Colors.white,
                         border: OutlineInputBorder(
@@ -174,7 +175,7 @@ class _ManualRecipeEntryScreenState extends ConsumerState<ManualRecipeEntryScree
                       ),
                     ),
                     const SizedBox(height: 24),
-                    const Text('材料・分量', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppColors.stoxText)),
+                    Text(AppLocalizations.of(context)!.ingredientsAmount, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppColors.stoxText)), // 材料・分量 // 材料・分量
                     const SizedBox(height: 8),
                     ListView.builder(
                       shrinkWrap: true,
@@ -190,8 +191,8 @@ class _ManualRecipeEntryScreenState extends ConsumerState<ManualRecipeEntryScree
                                 child: TextField(
                                   controller: _ingredientControllers[index]['name'],
                                   decoration: InputDecoration(
-                                    hintText: index == 0 ? '材料名 (例: 豚肉)' 
-                                            : '材料名',
+                                    hintText: index == 0 ? AppLocalizations.of(context)!.ingredientNameHint 
+                                            : AppLocalizations.of(context)!.manualRecipeIngredientLabel, // 材料名 (例: 豚肉) : 材料名 // 材料名 (例: 豚肉) : 材料名
                                     filled: true,
                                     fillColor: Colors.white,
                                     contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
@@ -212,8 +213,8 @@ class _ManualRecipeEntryScreenState extends ConsumerState<ManualRecipeEntryScree
                                 child: TextField(
                                   controller: _ingredientControllers[index]['amount'],
                                   decoration: InputDecoration(
-                                    hintText: index == 0 ? '分量 (例: 200g)' 
-                                            : '分量',
+                                    hintText: index == 0 ? AppLocalizations.of(context)!.amountHint 
+                                            : AppLocalizations.of(context)!.manualRecipeAmountLabel, // 分量 (例: 200g) : 分量 // 分量 (例: 200g) : 分量
                                     filled: true,
                                     fillColor: Colors.white,
                                     contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
@@ -236,7 +237,7 @@ class _ManualRecipeEntryScreenState extends ConsumerState<ManualRecipeEntryScree
                     TextButton.icon(
                       onPressed: _addIngredientRow,
                       icon: const Icon(Icons.add_circle_outline, color: AppColors.stoxPrimary),
-                      label: const Text('材料を追加する', style: TextStyle(color: AppColors.stoxPrimary, fontWeight: FontWeight.bold)),
+                      label: Text(AppLocalizations.of(context)!.actionAddIngredient, style: const TextStyle(color: AppColors.stoxPrimary, fontWeight: FontWeight.bold)), // 材料を追加する
                       style: TextButton.styleFrom(padding: EdgeInsets.zero),
                     ),
                     const SizedBox(height: 40),
@@ -269,9 +270,9 @@ class _ManualRecipeEntryScreenState extends ConsumerState<ManualRecipeEntryScree
                     ),
                     elevation: 0,
                   ),
-                  child: const Text(
-                    '手入力したレシピを登録する',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+                  child: Text(
+                    AppLocalizations.of(context)!.actionRegisterManualRecipe, // 手入力したレシピを登録する
+                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
                   ),
                 ),
               ),

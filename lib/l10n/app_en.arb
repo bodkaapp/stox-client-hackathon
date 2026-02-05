@@ -1,0 +1,724 @@
+{
+  "@@locale": "en",
+  "helloWorld": "Hello World",
+  "@helloWorld": {
+    "description": "The conventional newborn programmer greeting"
+  },
+
+  "navHome": "Home",
+  "navStock": "Stock",
+  "navShopping": "Shopping",
+  "navMenuPlan": "Menu Plan",
+  "navRecipe": "Recipes",
+
+  "homeHelpTitle": "Home Screen",
+  "homeHelpDescription": "This is the main screen of the application. Tap this \"?\" icon to see how to use the screen.",
+  "homeTodaysMenu": "Today's Menu",
+  "homeRegisterMenu": "Register",
+  "homeChangeMenu": "Change",
+  "homeNoMenuPlan": "No menu planned for today",
+  "homeViewRecipe": "View Recipe",
+  "homeShoppingList": "Shopping List",
+  "homeShoppingAd": "Sale at nearby supermarkets!",
+  "homeViewFlyer": "View Flyers",
+  "unitItems": "items",
+  "homeExpiringSoon": "Expiring Soon",
+  "homeViewAll": "View All",
+  "homeNoExpiringItems": "No expiring items",
+
+  "actionCheckStock": "Check Stock",
+  "actionScanReceipt": "Scan Receipt",
+  "actionShoppingMode": "Shopping Mode",
+  "actionRecipeBook": "Recipe Book",
+  "actionFoodCamera": "Food Camera",
+  "actionPhotoGallery": "Photo Gallery",
+
+  "daysRemaining": "{days} days left",
+  "@daysRemaining": {
+    "placeholders": {
+      "days": {
+        "type": "Object"
+      }
+    }
+  },
+  "statusCheck": "Check",
+  "statusUrgent": "Urgent",
+  "statusWarning": "Warning",
+
+  "shoppingAddToShoppingList": "Add to Shopping List",
+  "shoppingTitle": "Shopping",
+  "shoppingHelpTitle": "Shopping Screen",
+  "shoppingHelpDescription": "Currently managing items to buy.\nTap the \"+\" button to add items to buy.\nPress the \"Shopping Mode\" button to switch to a mode that makes shopping more convenient.\nAfter shopping, you can scan the receipt to move bought items to stock.",
+  "shoppingAction": "Actions",
+  "shoppingEnterItem": "Enter Item",
+  "shoppingVoiceInput": "Voice Input",
+  "shoppingReceiptScan": "Scan Receipt",
+  "shoppingModeOn": "Shopping Mode ON",
+  "shoppingModeStart": "Start Shopping Mode",
+  "shoppingCompleteAction": "Complete Shopping",
+  "shoppingAddGuide": "Tap here to add items",
+  "shoppingEnterItemAction": "Enter item manually",
+  "shoppingVoiceInputAction": "Use voice commands",
+  "shoppingReceiptScanAction": "Scan receipt (End Shopping Mode)",
+  "shoppingCompleteButton": "Complete",
+  "shoppingEmptyListMessage": "This is where you register your shopping list.\nMake a note so you don't forget what to buy.",
+  "shoppingTotalItemsLabel": "TOTAL ITEMS",
+  "shoppingTotalItemsCount": "Total {count} items",
+  "@shoppingTotalItemsCount": {
+    "placeholders": {
+        "count": {
+            "type": "Object"
+        }
+    }
+  },
+  "shoppingModeToggleOn": "Shopping Mode ON",
+  "shoppingModeToggleOff": "Shopping Mode OFF",
+  "shoppingCartProgress": "Cart Progress",
+  "shoppingCartCount": "{count} / {total} items",
+  "@shoppingCartCount": {
+    "placeholders": {
+        "count": {
+            "type": "Object"
+        },
+        "total": {
+            "type": "Object"
+        }
+    }
+  },
+  "shoppingRemainingItems": "{remaining} items left to complete",
+  "@shoppingRemainingItems": {
+    "placeholders": {
+        "remaining": {
+            "type": "Object"
+        }
+    }
+  },
+
+  "categoryUncategorized": "Uncategorized",
+  "categoryVegetablesFruits": "Vegetables & Fruits",
+  "categoryMeatFish": "Meat & Fish",
+  "categorySeasoning": "Seasonings",
+  "voicePermissionError": "Microphone permission required",
+  "voiceAnalyzing": "Analyzing...",
+  "voiceListening": "Listening...",
+  "voiceTapToStart": "Tap to start",
+  "voiceHint": "Speak item names\\ne.g. \"Onions\", \"Pork and Cabbage\"",
+  "voiceHistoryPlaceholder": "History will appear here",
+  "voiceAdded": "Added",
+  "voiceClose": "Close",
+  "voiceAiError": "AI could not analyze audio",
+  "voiceCompleteMessage": "Completed {count} operations",
+  "@voiceCompleteMessage": {
+    "placeholders": {
+        "count": {
+            "type": "Object"
+        }
+    }
+  },
+  "addModalCategoryHint": "Category (optional)",
+  "addModalNameHint": "Item name (e.g. Carrot)",
+  "addModalAddButton": "Add",
+  "addModalConfirmButton": "Confirm",
+  "addModalEmptyList": "Added items will appear here",
+  "addModalHeaderName": "Name",
+  "addModalHeaderQuantity": "Qty",
+  "addModalHeaderCategory": "Category",
+  "addModalAiSuccess": "Added {count} items to list",
+  "@addModalAiSuccess": {
+    "placeholders": {
+        "count": {
+            "type": "Object"
+        }
+    }
+  },
+  "addModalAiError": "AI could not parse text",
+  "addModalSaveError": "Failed to save: {error}",
+  "@addModalSaveError": {
+    "placeholders": {
+        "error": {
+            "type": "Object"
+        }
+    }
+  },
+  "stockTitle": "Inventory List",
+  "stockHelpTitle": "Inventory Screen",
+  "stockHelpDescription": "Screen to check inventory of food and daily necessities. You can check quantity and expiration dates.",
+  "menuPlanTitle": "Menu Plan",
+  "menuPlanHelpTitle": "Menu Plan Screen",
+  "menuPlanHelpDescription": "Screen to plan upcoming meals or review past recipes.",
+  "recipeBookTitle": "My Recipe Book",
+  "recipeBookHelpTitle": "Recipe Book Screen",
+  "recipeBookHelpDescription": "Screen to search recipes, plan meals, or record cooked dishes.",
+  "searchPlaceholder": "Search stock...",
+  "categoryAll": "All",
+  "categoryDairy": "Dairy",
+  "stockHeaderType": "Type",
+  "stockHeaderName": "Name",
+  "stockHeaderDate": "Exp",
+  "stockHeaderAmount": "Rem",
+  "stockNoSearchResults": "No results found",
+  "stockEmptyDescription": "This is where you register and view items\nyou bought or received.",
+  "stockEmptyAddInstruction": "Tap here to add stock",
+  "actionCancel": "Cancel",
+  "labelDraftDesign": "Draft Design",
+  "myAreaSetting": "My Area Setting",
+  "labelRecommended": "Recommended",
+  "labelNewItem": "NEW ITEM",
+  "tutorialTitle": "Take a photo of\nyour fridge",
+  "tutorialDescription": "AI analyzes photos and suggests the best recipes.",
+  "actionStartCamera": "Start Camera",
+  "actionRegisterManually": "Register Manually",
+  "titleAccountSettings": "Account Settings",
+  "labelDebugDeveloperOptions": "Debug & Developer Options",
+  "actionRestartFromTutorial": "Restart from Tutorial",
+  "actionRestart": "Restart",
+  "actionReset": "Reset",
+  "actionResetChallengeStamps": "Reset Challenge Stamps",
+  "labelCheckAiResultDebug": "Check AI Result (Debug)",
+  "labelCheckSplashScreen": "Check Splash Screen (Debug)",
+  "titleConfirmation": "Confirmation",
+  "messageRestartFromTutorialConfirm": "Are you sure you want to restart from the tutorial?\nCurrent state might be partially reset.",
+  "messageResetChallengeStampsConfirm": "Are you sure you want to reset all challenge stamps?\nThis action cannot be undone.",
+  "messageChallengeStampsResetComplete": "Challenge stamps have been reset",
+  "saveFailed": "Save failed",
+  "receiptAnalysisResultTitle": "Receipt Analysis Result",
+  "actionSetToStock": "Add to Stock",
+  "receiptSectionMatchedDescription": "Found in both receipt and shopping list.\nRegistering to stock.",
+  "actionAddNew": "Add New",
+  "receiptSectionNewDescription": "Not found in shopping list.\nAdd to stock?",
+  "statusUnpurchased": "Unpurchased",
+  "receiptSectionUnpurchasedDescription": "Not found in receipt.\nDid you forget to buy it?",
+  "actionKeepInList": "Keep in List",
+  "locationFridge": "Fridge",
+  "locationFreezer": "Freezer",
+  "locationVegetable": "Vegetable Drawer",
+  "locationUnderSink": "Under Sink",
+  "locationPantry": "Pantry",
+  "locationStorageRoom": "Storage Room",
+  "locationRoomTemp": "Room Temp",
+  "actionShareRecipe": "Share Recipe",
+  "aiAnalysisRecipeIngredientsDescription": "AI is analyzing recipe ingredients.\nPlease watch the ad while it finishes.",
+  "actionCookThisRecipe": "Cook This Recipe!",
+  "recipeSavedToBook": "Recipe saved to My Recipe Book",
+  "recipeSaveError": "Failed to register recipe",
+  "recipeSaveTitle": "Save Recipe",
+  "recipeSaveQuestion": "What would you like to do with this recipe?",
+  "actionRegisterToMyRecipeBook": "Register to My Recipe Book",
+  "aiAnalysisRecipeIngredientsDescriptionLong": "AI is analyzing recipe ingredients.\nAnalysis will be performed while you watch the ad.",
+  "actionWatchAdAndAnalyze": "Watch Ad & Analyze",
+  "analysisFailedTryAgain": "Analysis failed. Please try again.",
+  "tabRecentlyViewed": "Recently Viewed",
+  "tabRecentlyAdded": "Recently Added",
+  "noRecentlyAddedRecipes": "No recipes registered yet",
+  "dateYMD": "{year}/{month}/{day}",
+  "@dateYMD": {
+    "placeholders": {
+      "year": { "type": "Object" },
+      "month": { "type": "Object" },
+      "day": { "type": "Object" }
+    }
+  },
+  "searchFailedMessage": "Search failed",
+  "errorNetwork": "Network error occurred",
+  "recipeSearchResults": "Search results for \"{query}\"",
+  "@recipeSearchResults": {
+    "placeholders": {
+      "query": { "type": "String" }
+    }
+  },
+  "labelFromRecipeSites": "From Recipe Sites",
+  "noRecipeSearchResults": "No results found on recipe sites",
+  "titleChangeMyArea": "Change My Area",
+  "statusFollowing": "Following",
+  "fileNotFound": "File not found",
+  "analysisFailed": "Analysis failed",
+  "foodPhotoAnalysisComplete": "Food photo analysis complete.",
+  "sharedWithStox": "Captured with STOX",
+  "actionAnalyzeNutritionWithAi": "Analyze Nutrition with AI",
+  "mealMorning": "Morning",
+  "mealNoon": "Noon",
+  "mealNight": "Night",
+  "mealSnack": "Snack",
+  "mealPrep": "Prep",
+  "mealAppetizer": "Appetizer",
+  "titleWhenToMake": "When will you make it?",
+  "actionSetDateUndecided": "Set Date Undecided",
+  "labelSelectTimeSlot": "Select Time Slot",
+  "labelMemoOptional": "Memo (Optional)",
+  "saveAction": "Save",
+  "categoryOthers": "Others",
+  "actionAi": "AI",
+  "actionSearch": "Search",
+  "actionGetAiSuggestions": "Get AI Suggestions",
+  "labelSearchHistory": "Search History",
+  "actionManualRecipeEntryInstead": "Enter recipe manually without searching",
+  "labelManualRecipeEntry": "Enter recipe manually",
+  "actionNext": "Next",
+  "actionDelete": "Delete",
+  "stockDeleteConfirmMessage": "Are you sure you want to delete?",
+  "stockDeletedMessage": "Deleted {count} items",
+  "@stockDeletedMessage": {
+    "placeholders": {
+        "count": {
+            "type": "Object"
+        }
+    }
+  },
+  "actionUndo": "Undo",
+  "stockRestoreConfirmMessage": "Restore deleted items?",
+  "actionRestore": "Restore",
+  "stockRestoredMessage": "Restored items",
+  "stockSelectedCount": "{count} items selected",
+  "@stockSelectedCount": {
+    "placeholders": {
+        "count": {
+            "type": "Object"
+        }
+    }
+  },
+  "stockCategoryLabel": "Category",
+  "stockOperationLabel": "Action",
+  "stockDeleteButtonLabel": "Delete ({count})",
+  "@stockDeleteButtonLabel": {
+    "placeholders": {
+        "count": {
+            "type": "Object"
+        }
+    }
+  },
+  "stockCancelSelection": "Cancel Selection",
+  "stockAddToShoppingList": "Add to Shopping List",
+  "stockAddByTextInput": "Add by text input",
+  "stockAddByVoice": "Add by voice input",
+  "stockAddByPhoto": "Add by photo",
+  "stockDeleteItems": "Select items to delete",
+  "dateToday": "Today",
+  "dateTomorrow": "Tomorrow",
+  "stockTotalItems": "Total {count} items",
+  "@stockTotalItems": {
+    "placeholders": {
+        "count": {
+            "type": "Object"
+        }
+    }
+  },
+  "stockExpiredCount": "  ● {count} expiring soon",
+  "@stockExpiredCount": {
+    "placeholders": {
+        "count": {
+            "type": "Object"
+        }
+    }
+  },
+  "errorOccurred": "Error occurred: {error}",
+  "@errorOccurred": {
+    "placeholders": {
+      "error": {
+        "type": "Object"
+      }
+    }
+  },
+  "stockDeleteActionGuide": "Tap here to delete",
+  "stockAddTitle": "Add Stock",
+  "menuBreakfast": "Breakfast",
+  "menuBreakfastLabel": "Breakfast",
+  "menuLunch": "Lunch",
+  "menuLunchLabel": "Lunch",
+  "menuDinner": "Dinner",
+  "menuDinnerLabel": "Dinner",
+  "menuUndecided": "Undecided",
+  "menuUndecidedLabel": "TBD",
+  "menuMealPrep": "Meal Prep",
+  "menuMealPrepLabel": "Prep",
+  "menuNoMenu": "No menu planned",
+  "menuNoPlan": "No plans",
+  "menuAskAi": "Ask AI for menu suggestions",
+  "aiSuggestion": "Ask AI",
+  "menuMade": "Made",
+  "menuCook": "Cook",
+  "menuAddDish": "Add dish",
+  "menuAdd": "Add",
+  "menuMealPrepGuide": "Register weekend meal prep recipes",
+  "menuCookedAt": "Cooked at {time}",
+  "@menuCookedAt": {
+    "placeholders": {
+      "time": {
+        "type": "Object"
+      }
+    }
+  },
+  "menuAiProposalTitle": "AI Menu Proposal",
+  "menuAiProposalMessage": "Watch an ad to get a menu suggestion from AI?\n(Consider current fridge inventory and nutritional balance)",
+  "menuAiProposalAction": "Watch ad and get suggestion",
+  "adExecuteAction": "Watch Ad & Execute",
+  "adLoadError": "Failed to load ad. Please check your connection.",
+  "menuCookingDoneTitle": "Great job cooking!",
+  "menuCookingDoneMessage": "If you have a photo of the dish, attach it to make it easier to look back later!",
+  "menuAttachPhoto": "Attach taken photo",
+  "menuTakePhoto": "Take photo",
+  "menuCompleteWithoutPhoto": "Finish without photo",
+  "menuSaveFailed": "Failed to save: {error}",
+  "@menuSaveFailed": {
+    "placeholders": {
+      "error": {
+        "type": "Object"
+      }
+    }
+  },
+  "menuImagesSkipped": "{count} images skipped as they already exist",
+  "@menuImagesSkipped": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
+  "menuImageSaveFailed": "Failed to save image: {error}",
+  "@menuImageSaveFailed": {
+    "placeholders": {
+      "error": {
+        "type": "Object"
+      }
+    }
+  },
+  "menuNoRecipe": "No recipe",
+  "menuLoading": "Loading...",
+  "recipePastMenus": "Past Menus",
+  "recipeViewAll": "View All",
+  "recipeNoPastMenus": "No past menus",
+  "recipeSearchPlaceholder": "Search recipe or enter URL",
+  "recipeTodaysMenu": "Today's Menu",
+  "recipeEdit": "Edit",
+  "recipeCookNow": "Cook Now",
+  "recipeNoTodaysMenu": "No menu for today yet",
+  "recipeAdd": "Add",
+  "recipeCategoryMain": "Main Dish",
+  "recipeCategorySide": "Side Dish",
+  "recipeCategoryQuick": "Quick",
+  "recipeCategorySnack": "Snack",
+  "recipeCategoryFavorite": "Favorites",
+  "recipeCategoryOther": "Others",
+  "recipeRecentlyViewed": "Recently Viewed",
+  "recipeAddedDate": "Added on {date}",
+  "@recipeAddedDate": {
+    "placeholders": {
+      "date": {
+        "type": "Object"
+      }
+    }
+  },
+  "recipeItemsCount": "{count} items",
+  "@recipeItemsCount": {
+    "placeholders": {
+        "count": {
+            "type": "Object"
+        }
+    }
+  },
+  "receiptScanTitle": "Start Receipt Scan",
+  "receiptScanMessage": "AI will analyze your receipt.\nWatch an ad to use this feature for free.",
+  "receiptScanAction": "Watch Ad & Scan",
+  "receiptAnalysisFailed": "Analysis failed: {error}",
+  "@receiptAnalysisFailed": {
+    "placeholders": {
+      "error": {
+        "type": "Object"
+      }
+    }
+  },
+  "receiptScanCanceled": "Scan canceled",
+  "stockAddedMessage": "Added {count} items to stock!",
+  "@stockAddedMessage": {
+    "placeholders": {
+        "count": {
+            "type": "Object"
+        }
+    }
+  },
+  "stockSaveFailed": "Failed to save.",
+  "aiAnalysisResult": "Analysis Results",
+  "aiAnalysisNoItems": "No items found",
+  "aiAnalysisLocation": "Location: {location}",
+  "@aiAnalysisLocation": {
+    "placeholders": {
+        "location": {
+            "type": "Object"
+        }
+    }
+  },
+  "aiAnalysisFoundItems": "Found the following items",
+  "aiAnalysisExclude": "Exclude",
+  "aiAnalysisAddToStock": "Add to Stock ({count} items)",
+  "@aiAnalysisAddToStock": {
+    "placeholders": {
+        "count": {
+            "type": "Object"
+        }
+    }
+  },
+  "aiAnalysisQuit": "Cancel",
+  "aiIngredientAnalysisFailed": "Analysis failed. Please try again.",
+  "unitItem": "pcs",
+  "categoryOther": "Others",
+  "dialogConfirm": "Confirmation",
+  "dialogRegisterRecipeConfirm": "Finished registering ingredients! Do you want to add to My Recipe Book?",
+  "actionNo": "No",
+  "actionYes": "Yes",
+  "dialogIngredientDestinations": "'Have' items go to Stock,\n'Buy' items go to Shopping List.\n'Don't need' items are ignored.\nProceed?",
+  "dialogDontShowAgain": "Don't show this again",
+  "actionRegister": "Register",
+  "stockCountMessage": "{count} items to Stock",
+  "@stockCountMessage": {
+    "placeholders": {
+        "count": {
+            "type": "Object"
+        }
+    }
+  },
+  "shoppingListCountMessage": "{count} items to Shopping List",
+  "@shoppingListCountMessage": {
+    "placeholders": {
+        "count": {
+            "type": "Object"
+        }
+    }
+  },
+  "addedMessage": "Added {items}!",
+  "@addedMessage": {
+    "placeholders": {
+        "items": {
+            "type": "Object"
+        }
+    }
+  },
+  "dialogRegistrationCancelConfirm": "Analyzed ingredients will not be added to Stock or Shopping List. Are you sure?",
+  "actionBackToRecipe": "Back to Recipe",
+  "aiIngredientRunAnalysis": "Ingredient Analysis Result",
+  "recipeExtractedFrom": "Extracted from Recipe",
+  "labelHave": "Have",
+  "labelBuy": "Buy",
+  "labelDontNeed": "Don't Need",
+  "actionDoNothingAnd": "Do nothing and",
+  "actionRegisterIngredients": "Register Ingredients",
+  "aiIngredientNoItems": "No ingredients found",
+  "dateYesterday": "Yesterday",
+  "aiMenuThinking": "Thinking about the menu...",
+  "aiMenuCheckingStock": "Checking the refrigerator contents...",
+  "aiMenuGenerating": "AI is generating the menu...",
+  "aiMenuGenerationFailed": "Could not create a proposal",
+  "errorOccurredTryAgain": "An error occurred.\nPlease try again.",
+  "menuSnack": "Snack",
+  "actionBack": "Back",
+  "aiMenuSurroundingMeal": "{day} {type}: {title}",
+  "@aiMenuSurroundingMeal": {
+    "placeholders": {
+        "day": {
+            "type": "Object"
+        },
+        "type": {
+            "type": "Object"
+        },
+        "title": {
+            "type": "Object"
+        }
+    }
+  },
+  "shortDateFormat": "M/d",
+  "aiRecipeAnalyzingPhoto": "AI is analyzing the photo...",
+  "aiRecipeThinkingWithIngredient": "AI is thinking about recipes...\nFound: {ingredient}",
+  "@aiRecipeThinkingWithIngredient": {
+    "description": "AI thinking message with current ingredient",
+    "placeholders": {
+      "ingredient": {
+        "type": "Object"
+      }
+    }
+  },
+  "aiRecipeNoItemsFound": "No items found",
+  "aiRecipeNoIdentification": "Could not identify ingredients from the photo.\nPlease take a photo again or search for a recipe.",
+  "actionRetakePhoto": "Take photo again",
+  "actionSearchRecipe": "Search for recipes",
+  "actionSkip": "Skip",
+  "aiRecipeProposalTitle": "How about these recipes?",
+  "cookingModeExitConfirm": "Exit cooking mode?",
+  "cookingModeExitDescription": "Exit cooking mode and return to the previous screen.",
+  "actionFinish": "Finish",
+  "titleCookingMode": "Cooking Mode",
+  "myAreaSetting": "My Area Setting",
+  "nearbyFlyers": "Flyers for nearby shops",
+  "newArrivals": "New arrivals",
+  "newFlyers": "New flyers",
+  "todaysRecommended": "Today's recommended items",
+  "titleFlyer": "Flyer",
+  "shopDetails": "Shop Details",
+  "cameraPermissionRequired": "Camera permission is required",
+  "cameraNotFound": "Camera not found",
+  "errorSaveFailed": "Failed to save",
+  "errorEnterRecipeName": "Please enter a recipe name",
+  "manualRecipeEntry": "Manual Recipe Entry",
+  "recipeNameLabel": "Recipe Name",
+  "recipeNameHint": "e.g., Ginger Pork",
+  "ingredientsAmount": "Ingredients & Amounts",
+  "ingredientNameHint": "e.g., Pork",
+  "amountHint": "e.g., 200g",
+  "actionAddIngredient": "Add Ingredient",
+  "actionRegisterManualRecipe": "Register manually entered recipe",
+  "titleChangeMyArea": "Change My Area",
+  "searchByZipCode": "Search by zip code",
+  "setMyAreaHere": "Set my area here",
+  "titleNotification": "Notification",
+  "actionReadAll": "Read all",
+  "noNotifications": "No notifications",
+  "actionAddDemoData": "Add demo data",
+  "minutesAgo": "{count}m ago",
+  "@minutesAgo": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
+  "hoursAgo": "{count}h ago",
+  "@hoursAgo": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
+  "daysAgo": "{count}d ago",
+  "@daysAgo": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
+  "yesterdayAt": "Yesterday {time}",
+  "titlePhotoGallery": "Photo Gallery",
+  "noPhotos": "No photos",
+  "titlePhotoStockLocation": "Start AI Analysis",
+  "photoStockLocationMessage": "AI will analyze your refrigerator.\nYou can use this feature for free by playing an ad.",
+  "photoStockLocationAiAnalyzing": "AI is analyzing your {location}.\nPlease watch the ad until the analysis is finished.",
+  "@photoStockLocationAiAnalyzing": {
+    "placeholders": {
+      "location": { "type": "Object" }
+    }
+  },
+  "aiAnalysisCompleteMessage": "AI analysis is finished.\nThank you for watching the ad.",
+  "retake": "Retake",
+  "enterStorageLocation": "Enter the storage location",
+  "storageLocationHint": "e.g., Pantry",
+  "selectFromCandidates": "Select from candidates",
+  "actionDecide": "Decide",
+  "errorFileNotFound": "File not found",
+  "analysisComplete": "Analysis complete",
+  "foodAnalysisDoneMessage": "Food photo analysis is finished.",
+  "capturedWithStox": "Captured with STOX",
+  "analyzing": "Analyzing...",
+  "noAnalysisData": "No analysis data",
+  "analyzeNutritionWithAi": "Analyze nutrition with AI",
+  "noAnalysisText": "No analysis text available",
+  "titleHistory": "History",
+  "recentlyAddedRecipes": "Recently added recipes",
+  "noRecentlyViewedRecipes": "No recently viewed recipes",
+  "noRegisteredRecipes": "No registered recipes",
+  "yearMonthDay": "{month}/{day}/{year}",
+  "@yearMonthDay": {
+    "placeholders": {
+      "year": { "type": "Object" },
+      "month": { "type": "Object" },
+      "day": { "type": "Object" }
+    }
+  },
+  "recipeScheduleBreakfast": "Breakfast",
+  "recipeScheduleLunch": "Lunch",
+  "recipeScheduleDinner": "Dinner",
+  "recipeScheduleSnack": "Snack",
+  "recipeSchedulePrep": "Prep",
+  "recipeScheduleAppetizer": "Appetizer",
+  "recipeRegisteredMessage": "Registered to My Recipe Book",
+  "recipeRegisterFailed": "Failed to register",
+  "whenToCook": "When will you cook?",
+  "undecidedDate": "Undecided date",
+  "canSetFromCalendarLater": "You can set it from the calendar later",
+  "selectTimeSlot": "Select time slot",
+  "memoOptional": "Memo (optional)",
+  "memoHint": "Others (e.g., for husband, meal prep)",
+  "actionConfirm": "Confirm",
+  "searchFailed": "Search failed",
+  "communicationError": "Communication error occurred",
+  "searchResultsFor": "Search results for \"{query}\"",
+  "@searchResultsFor": {
+    "placeholders": {
+      "query": { "type": "Object" }
+    }
+  },
+  "fromRecipeSite": "From recipe sites",
+  "actionRetry": "Retry",
+  "noResultsInRecipeSite": "No results found in recipe sites",
+  "actionShareRecipe": "Share recipe",
+  "actionOpenInBrowser": "Open in browser",
+  "actionCopyUrl": "Copy URL",
+  "recipeAiAnalyzingMessage": "AI is analyzing recipe ingredients.\nPlease watch the ad until the analysis is finished.",
+  "cookThisRecipe": "Cook this recipe!",
+  "urlCopied": "URL copied",
+  "saveRecipe": "Save Recipe",
+  "whatToDoWithRecipe": "What do you want to do with this recipe?",
+  "actionDoNothing": "Do nothing",
+  "actionRegisterToRecipeBook": "Register to My Recipe Book",
+  "stockUpdated": "Stock updated",
+  "receiptAnalysisResult": "Receipt Analysis Result",
+  "receiptNoItemsFound": "No items found.",
+  "actionRetake": "Retake",
+  "actionToStock": "Add to stock",
+  "receiptStockConfirmMessage": "Found in both receipt and shopping list.\nRegistering to stock.",
+  "sectionNewItem": "Add New",
+  "receiptNewItemDescription": "Not in the shopping list.\nAdd to stock?",
+  "sectionNotPurchased": "Not Purchased",
+  "receiptNotPurchasedDescription": "Not in the receipt.\nDid you forget to buy something?",
+  "actionComplete": "Complete",
+  "actionViewMenuPlan": "View Menu Plan",
+  "fullDateFormat": "MM/dd/yyyy (E)",
+  "actionExtractIngredients": "Extract Ingredients",
+  "titleExtractIngredients": "Extract Ingredients",
+  "titleError": "Error",
+  "titleSearchHistory": "Search History",
+  "actionDeleteAll": "Delete All",
+  "actionManualRecipeEntryNoSearch": "Manual Recipe Entry (No Search)",
+  "manualRecipeIngredientLabel": "Ingredient",
+  "manualRecipeAmountLabel": "Amount",
+  "tutorialSkip": "Skip",
+  "tutorialStep1Title": "Take a photo of\nyour refrigerator",
+  "tutorialStep1Description": "AI analyzes the photo and suggests the best recipes",
+  "actionLaunchCamera": "Launch Camera",
+  "actionManualRegister": "Manual Register",
+  "calendarYearMonth": "{month} {year}",
+  "@calendarYearMonth": {
+    "placeholders": {
+      "year": { "type": "Object" },
+      "month": { "type": "Object" }
+    }
+  },
+  "clearSteps": "Clear steps",
+  "titleChallengeStamp": "Challenge Stamp",
+  "challengeStampDescription": "Aim to become a master by clearing all!",
+  "actionClose": "Close",
+  "congratsTitle": "Ta-da! 🎉",
+  "congratsMessage": "Congratulations!",
+  "congratsFirstChallenge": "You cleared your first challenge!",
+  "congratsChallengeClear": "Challenge \"{name}\" cleared!",
+  "@congratsChallengeClear": {
+    "placeholders": {
+      "name": { "type": "Object" }
+    }
+  },
+  "actionHooray": "Hooray!",
+  "challengeRefrigeratorPhoto": "Refrigerator Photo",
+  "challengeMenuRegistration": "Menu Registration",
+  "challengeRecipeSearch": "Recipe Search",
+  "challengeIngredientExtraction": "Ingredient Extraction",
+  "challengeShopping": "Shopping",
+  "challengeReceiptRegistration": "Receipt Registration",
+  "challengeCookingPhoto": "Cooking Photo"
+}

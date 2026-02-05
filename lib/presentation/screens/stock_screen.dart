@@ -10,6 +10,7 @@ import '../widgets/ingredient_add_modal.dart';
 import '../widgets/voice_shopping_modal.dart';
 import '../components/circle_action_button.dart';
 import '../widgets/help_icon.dart';
+import '../../l10n/generated/app_localizations.dart';
 
 class StockScreen extends ConsumerStatefulWidget {
   const StockScreen({super.key});
@@ -19,7 +20,7 @@ class StockScreen extends ConsumerStatefulWidget {
 }
 
 class _StockScreenState extends ConsumerState<StockScreen> {
-  String _selectedCategory = 'すべて';
+  int _selectedCategoryIndex = 0;
   bool _isMenuOpen = false;
   bool _isAnalyzing = false;
   
@@ -70,15 +71,15 @@ class _StockScreenState extends ConsumerState<StockScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('本当に削除してもいいですか？', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: Text(AppLocalizations.of(context)!.stockDeleteConfirmMessage, style: const TextStyle(fontWeight: FontWeight.bold)), // 本当に削除してもいいですか？
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('キャンセル', style: TextStyle(color: Colors.grey)),
+            child: Text(AppLocalizations.of(context)!.actionCancel, style: const TextStyle(color: Colors.grey)), // キャンセル
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('削除します', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+            child: Text(AppLocalizations.of(context)!.actionDelete, style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold)), // 削除します
           ),
         ],
       ),
@@ -103,23 +104,23 @@ class _StockScreenState extends ConsumerState<StockScreen> {
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
     final controller = ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('${idsToDelete.length}件を削除しました'),
+        content: Text(AppLocalizations.of(context)!.stockDeletedMessage(_selectedItemIds.length.toInt())), // {count}件を削除しました
         action: SnackBarAction(
-          label: 'やっぱり元に戻す',
+          label: AppLocalizations.of(context)!.actionUndo, // やっぱり元に戻す
           onPressed: () async {
             // Confirm restore
             final shouldRestore = await showDialog<bool>(
               context: context,
               builder: (context) => AlertDialog(
-                title: const Text('削除した商品を元に戻しますか？', style: TextStyle(fontWeight: FontWeight.bold)),
+                title: Text(AppLocalizations.of(context)!.stockRestoreConfirmMessage, style: const TextStyle(fontWeight: FontWeight.bold)), // 削除した商品を元に戻しますか？
                 actions: [
                   TextButton(
                     onPressed: () => Navigator.pop(context, false),
-                    child: const Text('キャンセル', style: TextStyle(color: Colors.grey)),
+                    child: Text(AppLocalizations.of(context)!.actionCancel, style: const TextStyle(color: Colors.grey)), // キャンセル
                   ),
                   TextButton(
                     onPressed: () => Navigator.pop(context, true),
-                    child: const Text('元に戻す', style: TextStyle(color: AppColors.stoxPrimary, fontWeight: FontWeight.bold)),
+                    child: Text(AppLocalizations.of(context)!.actionRestore, style: const TextStyle(color: AppColors.stoxPrimary, fontWeight: FontWeight.bold)), // 元に戻す
                   ),
                 ],
               ),
@@ -129,7 +130,7 @@ class _StockScreenState extends ConsumerState<StockScreen> {
               await ref.read(stockViewModelProvider.notifier).restoreItems(itemsToDelete);
               if (mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('商品を元に戻しました')),
+                  SnackBar(content: Text(AppLocalizations.of(context)!.stockRestoredMessage)), // 商品を元に戻しました
                 );
               }
             }
@@ -204,10 +205,10 @@ class _StockScreenState extends ConsumerState<StockScreen> {
                       Expanded(
                         child: filteredItems.isEmpty
                           ? Center(
-                              child: Text(
+                                child: Text(
                                 _isSearching
-                                  ? '検索結果がありません'
-                                  : '家の中にある\n「買ったもの」「もらったもの」\nを登録して見る場所です。',
+                                  ? AppLocalizations.of(context)!.stockNoSearchResults // 検索結果がありません
+                                  : AppLocalizations.of(context)!.stockEmptyDescription, // 家の中にある\n「買ったもの」「もらったもの」\nを登録して見る場所です。
                                 textAlign: TextAlign.center,
                                 style: const TextStyle(
                                   color: AppColors.stoxText,
@@ -290,9 +291,9 @@ class _StockScreenState extends ConsumerState<StockScreen> {
                             )
                           ],
                         ),
-                        child: const Text(
-                          'ここをタップして在庫を追加します',
-                          style: TextStyle(
+                        child: Text(
+                          AppLocalizations.of(context)!.stockEmptyAddInstruction, // ここをタップして在庫を追加します
+                          style: const TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
                             fontSize: 12,
@@ -328,9 +329,9 @@ class _StockScreenState extends ConsumerState<StockScreen> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    _buildMenuButton(
+                      _buildMenuButton(
                       Icons.shopping_cart, 
-                      '買い物リストへ追加する', 
+                      AppLocalizations.of(context)!.stockAddToShoppingList, // 買い物リストへ追加する
                       onTap: () {
                         _toggleMenu();
                       }
@@ -338,7 +339,7 @@ class _StockScreenState extends ConsumerState<StockScreen> {
                     const SizedBox(height: 12),
                     _buildMenuButton(
                       Icons.edit, 
-                      '文字を入力して在庫を追加', 
+                      AppLocalizations.of(context)!.stockAddByTextInput, // 文字入力で追加
                       onTap: () {
                         _toggleMenu();
                         showModalBottomSheet(
@@ -346,7 +347,7 @@ class _StockScreenState extends ConsumerState<StockScreen> {
                           isScrollControlled: true,
                           backgroundColor: Colors.transparent,
                           builder: (context) => IngredientAddModal(
-                            title: '在庫を追加',
+                            title: AppLocalizations.of(context)!.stockAddTitle, // 在庫を追加
                             targetStatus: IngredientStatus.stock,
                             onSaved: () {
                               ref.invalidate(stockViewModelProvider);
@@ -358,7 +359,7 @@ class _StockScreenState extends ConsumerState<StockScreen> {
                     const SizedBox(height: 12),
                     _buildMenuButton(
                       Icons.mic, 
-                      '声で操作する', 
+                      AppLocalizations.of(context)!.stockAddByVoice, // 音声入力で追加
                       onTap: () async {
                          _toggleMenu();
                          await showModalBottomSheet(
@@ -373,7 +374,7 @@ class _StockScreenState extends ConsumerState<StockScreen> {
                     const SizedBox(height: 12),
                     _buildMenuButton(
                       Icons.photo_camera, 
-                      '写真を撮影して在庫を追加', 
+                      AppLocalizations.of(context)!.stockAddByPhoto, // 写真撮影で追加
                       onTap: () {
                          _toggleMenu();
                          _onPhotoBtnTap();
@@ -382,7 +383,7 @@ class _StockScreenState extends ConsumerState<StockScreen> {
                     const SizedBox(height: 12),
                     _buildMenuButton(
                       Icons.delete_outline,
-                      '商品を選んで削除する',
+                      AppLocalizations.of(context)!.stockDeleteItems, // 商品を選んで削除する
                       onTap: _toggleSelectionMode,
                     ),
                   ],
@@ -414,9 +415,9 @@ class _StockScreenState extends ConsumerState<StockScreen> {
                         )
                       ],
                     ),
-                    child: const Text(
-                      'ここをタップして削除します',
-                      style: TextStyle(
+                    child: Text(
+                      AppLocalizations.of(context)!.stockDeleteActionGuide, // ここをタップして削除します
+                      style: const TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
                         fontSize: 12,
@@ -520,14 +521,15 @@ class _StockScreenState extends ConsumerState<StockScreen> {
                       child: const Icon(Icons.inventory_2, color: AppColors.stoxPrimary, size: 22),
                     ),
                     const SizedBox(width: 8),
-                    const Text(
-                      '在庫一覧',
-                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.stoxText),
+                    const SizedBox(width: 8),
+                    Text(
+                      AppLocalizations.of(context)!.stockTitle, // 在庫一覧
+                      style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.stoxText),
                     ),
                     const SizedBox(width: 8),
-                    const HelpIcon(
-                      title: '在庫一覧画面',
-                      description: '家にある食材や日用品の在庫を確認する画面です。個数や賞味期限の確認ができます',
+                    HelpIcon(
+                      title: AppLocalizations.of(context)!.stockHelpTitle, // 在庫一覧画面
+                      description: AppLocalizations.of(context)!.stockHelpDescription, // 家にある食材や日用品の在庫を確認する画面です。個数や賞味期限の確認ができます
                     ),
                   ],
                 ),
@@ -542,13 +544,21 @@ class _StockScreenState extends ConsumerState<StockScreen> {
                 child: ListView(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   children: [
-                    const Padding(
-                      padding: EdgeInsets.only(left: 8, bottom: 8),
-                      child: Text('カテゴリ', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.stoxSubText)),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 8, bottom: 8),
+                      child: Text(AppLocalizations.of(context)!.stockCategoryLabel, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.stoxSubText)), // カテゴリ
                     ),
                     // Vertical Categories
-                    ...['すべて', '野菜・果物', '肉・魚', '乳製品', '調味料'].map((cat) {
-                      final isSelected = _selectedCategory == cat;
+                    ...List.generate(5, (index) {
+                      final labels = [
+                          AppLocalizations.of(context)!.categoryAll, // すべて
+                          AppLocalizations.of(context)!.categoryVegetablesFruits, // 野菜・果物
+                          AppLocalizations.of(context)!.categoryMeatFish, // 肉・魚
+                          AppLocalizations.of(context)!.categoryDairy, // 乳製品
+                          AppLocalizations.of(context)!.categorySeasoning, // 調味料
+                      ];
+                      final cat = labels[index];
+                      final isSelected = _selectedCategoryIndex == index;
                       return ListTile(
                         title: Text(cat, style: TextStyle(
                             fontSize: 14, 
@@ -559,20 +569,20 @@ class _StockScreenState extends ConsumerState<StockScreen> {
                         selectedTileColor: AppColors.stoxPrimary.withOpacity(0.1),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                         dense: true,
-                        onTap: () => setState(() => _selectedCategory = cat),
+                        onTap: () => setState(() => _selectedCategoryIndex = index),
                       );
                     }).toList(),
                     
                     const Divider(height: 32),
                     
-                    const Padding(
-                      padding: EdgeInsets.only(left: 8, bottom: 8),
-                      child: Text('操作', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.stoxSubText)),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 8, bottom: 8),
+                      child: Text(AppLocalizations.of(context)!.stockOperationLabel, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.stoxSubText)), // 操作
                     ),
                     
                     ListTile(
                       leading: const Icon(Icons.edit, size: 20, color: AppColors.stoxText),
-                      title: const Text('文字入力で追加', style: TextStyle(fontSize: 14)),
+                      title: Text(AppLocalizations.of(context)!.stockAddByTextInput, style: const TextStyle(fontSize: 14)), // 文字入力で追加
                       dense: true,
                       onTap: () {
                         showModalBottomSheet(
@@ -580,7 +590,7 @@ class _StockScreenState extends ConsumerState<StockScreen> {
                           isScrollControlled: true,
                           backgroundColor: Colors.transparent,
                           builder: (context) => IngredientAddModal(
-                            title: '在庫を追加',
+                            title: AppLocalizations.of(context)!.stockAddTitle, // 在庫を追加
                             targetStatus: IngredientStatus.stock,
                             onSaved: () {
                               ref.invalidate(stockViewModelProvider);
@@ -591,7 +601,7 @@ class _StockScreenState extends ConsumerState<StockScreen> {
                     ),
                     ListTile(
                       leading: const Icon(Icons.mic, size: 20, color: AppColors.stoxText),
-                      title: const Text('音声入力で追加', style: TextStyle(fontSize: 14)),
+                      title: Text(AppLocalizations.of(context)!.stockAddByVoice, style: const TextStyle(fontSize: 14)), // 音声入力で追加
                       dense: true,
                       onTap: () async {
                          await showModalBottomSheet(
@@ -605,7 +615,7 @@ class _StockScreenState extends ConsumerState<StockScreen> {
                     ),
                     ListTile(
                       leading: const Icon(Icons.photo_camera, size: 20, color: AppColors.stoxText),
-                      title: const Text('写真撮影で追加', style: TextStyle(fontSize: 14)),
+                      title: Text(AppLocalizations.of(context)!.stockAddByPhoto, style: const TextStyle(fontSize: 14)), // 写真撮影で追加
                       dense: true,
                       onTap: _onPhotoBtnTap,
                     ),
@@ -616,7 +626,7 @@ class _StockScreenState extends ConsumerState<StockScreen> {
                     ListTile(
                       leading: Icon(_isSelectionMode ? Icons.close : Icons.delete_outline, 
                           size: 20, color: _isSelectionMode ? AppColors.stoxText : Colors.red),
-                      title: Text(_isSelectionMode ? '選択をキャンセル' : '商品を選択して削除', 
+                      title: Text(_isSelectionMode ? AppLocalizations.of(context)!.stockCancelSelection : AppLocalizations.of(context)!.stockDeleteItems, // 選択をキャンセル : 商品を選んで削除する
                           style: TextStyle(fontSize: 14, color: _isSelectionMode ? AppColors.stoxText : Colors.red)),
                       dense: true,
                       onTap: _toggleSelectionMode,
@@ -628,7 +638,7 @@ class _StockScreenState extends ConsumerState<StockScreen> {
                         child: ElevatedButton.icon(
                           onPressed: _selectedItemIds.isEmpty ? null : _deleteSelectedItems,
                           icon: const Icon(Icons.delete_outline, size: 18),
-                          label: Text('削除する (${_selectedItemIds.length})'),
+                          label: Text(AppLocalizations.of(context)!.stockDeleteButtonLabel(_selectedItemIds.length)), // 削除する ({count})
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.red,
                             foregroundColor: Colors.white,
@@ -657,8 +667,8 @@ class _StockScreenState extends ConsumerState<StockScreen> {
                       ? Center(
                           child: Text(
                             _isSearching
-                              ? '検索結果がありません'
-                              : '家の中にある\n「買ったもの」「もらったもの」\nを登録して見る場所です。',
+                              ? AppLocalizations.of(context)!.stockNoSearchResults // 検索結果がありません
+                              : AppLocalizations.of(context)!.stockEmptyDescription, // 家の中にある\n「買ったもの」「もらったもの」\nを登録して見る場所です。
                             textAlign: TextAlign.center,
                             style: const TextStyle(
                               color: AppColors.stoxText,
@@ -700,12 +710,12 @@ class _StockScreenState extends ConsumerState<StockScreen> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              '${_selectedItemIds.length}件選択中',
+              AppLocalizations.of(context)!.stockSelectedCount(_selectedItemIds.length), // {count}件選択中
               style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.stoxText),
             ),
             TextButton(
               onPressed: _toggleSelectionMode,
-              child: const Text('キャンセル', style: TextStyle(color: AppColors.stoxPrimary, fontWeight: FontWeight.bold)),
+              child: Text(AppLocalizations.of(context)!.actionCancel, style: const TextStyle(color: AppColors.stoxPrimary, fontWeight: FontWeight.bold)), // キャンセル
             )
           ],
         ),
@@ -731,21 +741,21 @@ class _StockScreenState extends ConsumerState<StockScreen> {
               const SizedBox(width: 8),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: const [
+                children: [
                   Text(
-                    '在庫一覧',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.stoxText, height: 1.0),
+                    AppLocalizations.of(context)!.stockTitle, // 在庫一覧
+                    style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.stoxText, height: 1.0),
                   ),
-                  Text(
+                  const Text(
                     'INVENTORY LIST',
                     style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.stoxAccent, letterSpacing: 1.0),
                   ),
                 ],
               ),
               const SizedBox(width: 8),
-              const HelpIcon(
-                title: '在庫一覧画面',
-                description: '家にある食材や日用品の在庫を確認する画面です。個数や賞味期限の確認ができます',
+              HelpIcon(
+                title: AppLocalizations.of(context)!.stockHelpTitle, // 在庫一覧画面
+                description: AppLocalizations.of(context)!.stockHelpDescription, // 家にある食材や日用品の在庫を確認する画面です。個数や賞味期限の確認ができます
               ),
             ],
           ),
@@ -803,9 +813,9 @@ class _StockScreenState extends ConsumerState<StockScreen> {
               controller: _searchController,
               autofocus: false, // Don't autofocus in tablet split view to avoid keyboard popup immediately
               style: const TextStyle(fontSize: 14, color: AppColors.stoxText),
-              decoration: const InputDecoration(
-                hintText: '在庫を検索...',
-                hintStyle: TextStyle(fontSize: 14, color: Colors.black38),
+              decoration: InputDecoration(
+                hintText: AppLocalizations.of(context)!.searchPlaceholder,
+                hintStyle: const TextStyle(fontSize: 14, color: Colors.black38),
                 border: InputBorder.none,
                 isDense: true,
                 contentPadding: EdgeInsets.zero,
@@ -833,7 +843,13 @@ class _StockScreenState extends ConsumerState<StockScreen> {
   }
 
   Widget _buildFilterBar() {
-    final categories = ['すべて', '野菜・果物', '肉・魚', '乳製品', '調味料'];
+    final categories = [
+      AppLocalizations.of(context)!.categoryAll,
+      AppLocalizations.of(context)!.categoryVegetablesFruits,
+      AppLocalizations.of(context)!.categoryMeatFish,
+      AppLocalizations.of(context)!.categoryDairy,
+      AppLocalizations.of(context)!.categorySeasoning,
+    ];
     return Padding(
       key: const ValueKey('filterBar'),
       padding: const EdgeInsets.symmetric(vertical: 8),
@@ -841,12 +857,13 @@ class _StockScreenState extends ConsumerState<StockScreen> {
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 16),
         child: Row(
-          children: categories.map((cat) {
-            final isSelected = _selectedCategory == cat;
+          children: List.generate(categories.length, (index) {
+            final cat = categories[index];
+            final isSelected = _selectedCategoryIndex == index;
             return Padding(
               padding: const EdgeInsets.only(right: 8.0),
               child: InkWell(
-                onTap: () => setState(() => _selectedCategory = cat),
+                onTap: () => setState(() => _selectedCategoryIndex = index),
                 borderRadius: BorderRadius.circular(20),
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
@@ -879,11 +896,11 @@ class _StockScreenState extends ConsumerState<StockScreen> {
       margin: const EdgeInsets.symmetric(horizontal: 16),
       color: AppColors.stoxBackground.withOpacity(0.9), // or stoxBannerBg
       child: Row(
-        children: const [
-          SizedBox(width: 24, child: Text('類', textAlign: TextAlign.center, style: _headerStyle)),
-          Expanded(child: Padding(padding: EdgeInsets.only(left: 8), child: Text('品名', style: _headerStyle))),
-          SizedBox(width: 50, child: Text('期限', textAlign: TextAlign.right, style: _headerStyle)),
-          SizedBox(width: 48, child: Text('残量', textAlign: TextAlign.right, style: _headerStyle)),
+        children: [
+          SizedBox(width: 24, child: Text(AppLocalizations.of(context)!.stockHeaderType, textAlign: TextAlign.center, style: _headerStyle)),
+          Expanded(child: Padding(padding: const EdgeInsets.only(left: 8), child: Text(AppLocalizations.of(context)!.stockHeaderName, style: _headerStyle))),
+          SizedBox(width: 50, child: Text(AppLocalizations.of(context)!.stockHeaderDate, textAlign: TextAlign.right, style: _headerStyle)),
+          SizedBox(width: 48, child: Text(AppLocalizations.of(context)!.stockHeaderAmount, textAlign: TextAlign.right, style: _headerStyle)),
         ],
       ),
     );
@@ -998,8 +1015,8 @@ class _StockScreenState extends ConsumerState<StockScreen> {
     final target = DateTime(date.year, date.month, date.day);
     
     final diff = target.difference(today).inDays;
-    if (diff == 0) return '今日';
-    if (diff == 1) return '明日';
+    if (diff == 0) return AppLocalizations.of(context)!.dateToday;
+    if (diff == 1) return AppLocalizations.of(context)!.dateTomorrow;
 
     return DateFormat('MM.dd').format(date);
   }
@@ -1026,13 +1043,13 @@ class _StockScreenState extends ConsumerState<StockScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('TOTAL ITEMS', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.stoxSubText, letterSpacing: 1.2)),
+          Text(AppLocalizations.of(context)!.shoppingTotalItemsLabel, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.stoxSubText, letterSpacing: 1.2)),
           RichText(
             text: TextSpan(
               children: [
-                TextSpan(text: '全 $total 品目', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.stoxText)),
+                TextSpan(text: AppLocalizations.of(context)!.stockTotalItems(total.toInt()), style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.stoxText)),
                 if (expiredCount > 0)
-                  TextSpan(text: '  ● ${expiredCount}品期限間近', style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.red)),
+                  TextSpan(text: AppLocalizations.of(context)!.stockExpiredCount(expiredCount), style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.red)),
               ],
             ),
           ),
@@ -1049,13 +1066,14 @@ class _StockScreenState extends ConsumerState<StockScreen> {
     }
 
     // Otherwise filter by category
-    if (_selectedCategory == 'すべて') return items;
+    // Otherwise filter by category
+    if (_selectedCategoryIndex == 0) return items;
     
     return items.where((item) {
-      if (_selectedCategory == '野菜・果物') return item.category.contains('野菜') || item.category.contains('果物');
-      if (_selectedCategory == '肉・魚') return item.category.contains('肉') || item.category.contains('魚');
-      if (_selectedCategory == '乳製品') return item.category.contains('乳') || item.category.contains('卵') || item.category.contains('ヨーグルト');
-      if (_selectedCategory == '調味料') return item.category.contains('調味料') || item.category.contains('香辛料');
+      if (_selectedCategoryIndex == 1) return item.category.contains('野菜') || item.category.contains('果物');
+      if (_selectedCategoryIndex == 2) return item.category.contains('肉') || item.category.contains('魚');
+      if (_selectedCategoryIndex == 3) return item.category.contains('乳') || item.category.contains('卵') || item.category.contains('ヨーグルト');
+      if (_selectedCategoryIndex == 4) return item.category.contains('調味料') || item.category.contains('香辛料');
       return false; 
     }).toList();
   }
@@ -1118,7 +1136,7 @@ class _StockScreenState extends ConsumerState<StockScreen> {
 
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('エラーが発生しました: $e')),
+        SnackBar(content: Text(AppLocalizations.of(context)!.errorOccurred(e))),
       );
     }
   }

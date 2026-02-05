@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../../l10n/generated/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:share_plus/share_plus.dart';
@@ -135,25 +136,25 @@ class _RecipeWebViewScreenState extends ConsumerState<RecipeWebViewScreen> with 
             icon: const Icon(Icons.more_vert, color: AppColors.stoxText),
             onSelected: (value) => _handleMenuAction(value),
             itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-              const PopupMenuItem<String>(
+              PopupMenuItem<String>(
                 value: 'share',
                 child: ListTile(
-                  leading: Icon(Icons.share, color: AppColors.stoxText),
-                  title: Text('レシピをシェア'),
+                  leading: const Icon(Icons.share, color: AppColors.stoxText),
+                  title: Text(AppLocalizations.of(context)!.actionShareRecipe), // レシピをシェア
                 ),
               ),
-              const PopupMenuItem<String>(
+              PopupMenuItem<String>(
                 value: 'browser',
                 child: ListTile(
-                  leading: Icon(Icons.open_in_browser, color: AppColors.stoxText),
-                  title: Text('ブラウザで開く'),
+                  leading: const Icon(Icons.open_in_browser, color: AppColors.stoxText),
+                  title: Text(AppLocalizations.of(context)!.actionOpenInBrowser), // ブラウザで開く
                 ),
               ),
-              const PopupMenuItem<String>(
+              PopupMenuItem<String>(
                 value: 'copy',
                 child: ListTile(
-                  leading: Icon(Icons.copy, color: AppColors.stoxText),
-                  title: Text('URLをコピー'),
+                  leading: const Icon(Icons.copy, color: AppColors.stoxText),
+                  title: Text(AppLocalizations.of(context)!.actionCopyUrl), // URLをコピー
                 ),
               ),
             ],
@@ -173,13 +174,13 @@ class _RecipeWebViewScreenState extends ConsumerState<RecipeWebViewScreen> with 
               padding: const EdgeInsets.symmetric(horizontal: 32),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
-                children: const [
+                children: [
                   CircularProgressIndicator(color: AppColors.stoxPrimary),
                   SizedBox(height: 24),
                   Text(
-                    'AIがレシピの材料を分析しています。\n解析が終わるまで広告をご覧ください。',
+                    AppLocalizations.of(context)!.aiAnalysisRecipeIngredientsDescription, // AIがレシピの材料を分析しています。\n解析が終わるまで広告をご覧ください。
                     textAlign: TextAlign.center,
-                    style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                    style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                 ],
               ),
@@ -193,9 +194,9 @@ class _RecipeWebViewScreenState extends ConsumerState<RecipeWebViewScreen> with 
                 _showSaveConfirmDialog();
               },
               backgroundColor: AppColors.stoxPrimary,
-              label: const Text(
-                'このレシピを作る！', 
-                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)
+              label: Text(
+                AppLocalizations.of(context)!.actionCookThisRecipe, // このレシピを作る！
+                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)
               ),
               icon: const Icon(Icons.restaurant, color: Colors.white),
             ),
@@ -219,7 +220,7 @@ class _RecipeWebViewScreenState extends ConsumerState<RecipeWebViewScreen> with 
         await Clipboard.setData(ClipboardData(text: url));
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('URLをコピーしました')),
+            SnackBar(content: Text(AppLocalizations.of(context)!.urlCopied)), // URLをコピーしました
           );
         }
         break;
@@ -243,13 +244,13 @@ class _RecipeWebViewScreenState extends ConsumerState<RecipeWebViewScreen> with 
       
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('マイレシピ帳に登録しました')),
+          SnackBar(content: Text(AppLocalizations.of(context)!.recipeSavedToBook)), // マイレシピ帳に登録しました
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('登録に失敗しました')),
+          SnackBar(content: Text(AppLocalizations.of(context)!.recipeSaveError)), // 登録に失敗しました (saveFailedを流用、または統一キー)
         );
       }
     }
@@ -267,12 +268,12 @@ class _RecipeWebViewScreenState extends ConsumerState<RecipeWebViewScreen> with 
     showDialog(
       context: screenContext,
       builder: (dialogContext) => AlertDialog(
-        title: const Text('レシピの保存'),
-        content: const Text('このレシピをどうしますか？'),
+        title: Text(AppLocalizations.of(context)!.recipeSaveTitle), // レシピの保存
+        content: Text(AppLocalizations.of(context)!.recipeSaveQuestion), // このレシピをどうしますか？
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
-            child: const Text('何もしない', style: TextStyle(color: Colors.grey)),
+            child: Text(AppLocalizations.of(context)!.actionDoNothing, style: const TextStyle(color: Colors.grey)), // 何もしない
           ),
           TextButton(
             onPressed: () async {
@@ -332,7 +333,7 @@ class _RecipeWebViewScreenState extends ConsumerState<RecipeWebViewScreen> with 
                    }
                 }
               },
-            child: const Text('マイレシピ帳に登録する', style: TextStyle(color: AppColors.stoxText)),
+            child: Text(AppLocalizations.of(context)!.actionRegisterToMyRecipeBook, style: const TextStyle(color: AppColors.stoxText)), // マイレシピ帳に登録する
           ),
           ElevatedButton(
             onPressed: () async {
@@ -346,9 +347,9 @@ class _RecipeWebViewScreenState extends ConsumerState<RecipeWebViewScreen> with 
 
                final success = await showAdAndExecute(
                 context: screenContext, 
-                preAdTitle: 'AI解析を開始',
-                preAdContent: 'AIがレシピの材料を分析します。\n広告を再生している間に解析を行います。',
-                confirmButtonText: '広告を見て解析する',
+                preAdTitle: AppLocalizations.of(context)!.titleExtractIngredients, // 材料の解析
+                preAdContent: AppLocalizations.of(context)!.aiAnalysisRecipeIngredientsDescriptionLong, // AIがレシピの材料を分析しています。\n広告を再生している間に解析を行います。 (既存キーまたは新規適正キー)
+                confirmButtonText: AppLocalizations.of(context)!.actionWatchAdAndAnalyze, // 広告を見て解析する
                 // postAdMessage will be shown ONLY if analysis is also complete? 
                 // Or we handle post-ad message manually to sync with analysis.
                 // Let's pass null and handle it manually.
@@ -381,7 +382,7 @@ class _RecipeWebViewScreenState extends ConsumerState<RecipeWebViewScreen> with 
                 if (mounted) {
                    setState(() { _isAnalyzing = false; });
                    ScaffoldMessenger.of(screenContext).showSnackBar(
-                     const SnackBar(content: Text('解析に失敗しました。もう一度お試しください。')),
+                     SnackBar(content: Text(AppLocalizations.of(context)!.analysisFailedTryAgain)), // 解析に失敗しました。もう一度お試しください。
                    );
                 }
                 return;
@@ -401,13 +402,13 @@ class _RecipeWebViewScreenState extends ConsumerState<RecipeWebViewScreen> with 
                     children: [
                        const Icon(Icons.check_circle, color: Colors.green, size: 48),
                        const SizedBox(height: 16),
-                       const Text('AIの解析が終わりました。\n広告の視聴ありがとうございました。', textAlign: TextAlign.center),
+                       Text(AppLocalizations.of(context)!.aiAnalysisCompleteMessage, textAlign: TextAlign.center), // AIの解析が終わりました。\n広告の視聴ありがとうございました。
                     ],
                   ),
                   actions: [
                     TextButton(
                       onPressed: () => Navigator.pop(context),
-                      child: const Text('次へ'),
+                      child: Text(AppLocalizations.of(context)!.actionNext), // 次へ
                     )
                   ],
                 ),
@@ -464,7 +465,7 @@ class _RecipeWebViewScreenState extends ConsumerState<RecipeWebViewScreen> with 
               }
             },
             style: ElevatedButton.styleFrom(backgroundColor: AppColors.stoxPrimary),
-            child: const Text('材料を抽出する', style: TextStyle(color: Colors.white)),
+            child: Text(AppLocalizations.of(context)!.actionExtractIngredients, style: const TextStyle(color: Colors.white)), // 材料を抽出する
           ),
         ],
       ),

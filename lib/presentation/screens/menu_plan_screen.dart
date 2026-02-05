@@ -28,6 +28,7 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 import '../mixins/ad_manager_mixin.dart';
 import 'ai_menu_proposal_loading_screen.dart';
 import '../components/ai_suggestion_button.dart';
+import '../../l10n/generated/app_localizations.dart';
 
 
 // -----------------------------------------------------------------------------
@@ -153,21 +154,21 @@ class _MenuPlanScreenState extends ConsumerState<MenuPlanScreen> with AdManagerM
             const SizedBox(width: 8),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: const [
+              children: [
                 Text(
-                  '献立計画表',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.stoxText, height: 1.0),
+                  AppLocalizations.of(context)!.menuPlanTitle, // 献立計画表
+                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.stoxText, height: 1.0),
                 ),
-                Text(
+                const Text(
                   'MENU PLAN',
                   style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.stoxAccent, letterSpacing: 1.0),
                 ),
               ],
             ),
             const SizedBox(width: 8),
-            const HelpIcon(
-              title: '献立計画表画面',
-              description: 'これから作る料理の献立を計画したり、前に作った料理のレシピを振り返ったりする画面です。',
+            HelpIcon(
+              title: AppLocalizations.of(context)!.menuPlanHelpTitle, // 献立計画表画面
+              description: AppLocalizations.of(context)!.menuPlanHelpDescription, // これから作る料理の献立を計画したり、前に作った料理のレシピを振り返ったりする画面です。
             ),
           ],
         ),
@@ -312,8 +313,8 @@ class _MenuPlanScreenState extends ConsumerState<MenuPlanScreen> with AdManagerM
       padding: const EdgeInsets.all(20),
       children: [
         _buildSection(
-          title: '朝食',
-          label: '朝',
+          title: AppLocalizations.of(context)!.menuBreakfast, // 朝食
+          label: AppLocalizations.of(context)!.menuBreakfastLabel, // 朝
           color: const Color(0xFFFBBF24),
           bgColor: const Color(0xFFFEF3C7),
           textColor: const Color(0xFFB45309),
@@ -324,8 +325,8 @@ class _MenuPlanScreenState extends ConsumerState<MenuPlanScreen> with AdManagerM
         ),
         const SizedBox(height: 24),
         _buildSection(
-          title: '昼食',
-          label: '昼',
+          title: AppLocalizations.of(context)!.menuLunch, // 昼食
+          label: AppLocalizations.of(context)!.menuLunchLabel, // 昼
           color: const Color(0xFFFB923C),
           bgColor: const Color(0xFFFFEDD5),
           textColor: const Color(0xFFC2410C),
@@ -336,8 +337,8 @@ class _MenuPlanScreenState extends ConsumerState<MenuPlanScreen> with AdManagerM
         ),
         const SizedBox(height: 24),
         _buildSection(
-          title: '夕食',
-          label: '夜',
+          title: AppLocalizations.of(context)!.menuDinner, // 夕食
+          label: AppLocalizations.of(context)!.menuDinnerLabel, // 夜
           color: const Color(0xFFFB7185),
           bgColor: const Color(0xFFFFE4E6),
           textColor: const Color(0xFFBE123C),
@@ -352,8 +353,8 @@ class _MenuPlanScreenState extends ConsumerState<MenuPlanScreen> with AdManagerM
         ),
         const SizedBox(height: 24),
         _buildSection(
-          title: '時間未定',
-          label: '未定',
+          title: AppLocalizations.of(context)!.menuUndecided, // 時間未定
+          label: AppLocalizations.of(context)!.menuUndecidedLabel, // 未定
           color: const Color(0xFF9CA3AF),
           bgColor: const Color(0xFFF3F4F6),
           textColor: const Color(0xFF4B5563),
@@ -385,7 +386,9 @@ class _MenuPlanScreenState extends ConsumerState<MenuPlanScreen> with AdManagerM
     final isToday = targetDate.isAtSameMomentAs(today);
 
     // Text Logic
-    final String emptyStateText = isPast ? '献立はありません' : '予定はありません';
+    final String emptyStateText = isPast 
+        ? AppLocalizations.of(context)!.menuNoMenu // 献立はありません
+        : AppLocalizations.of(context)!.menuNoPlan; // 予定はありません
 
     // Button Visibility Logic
     bool showAiButton = false;
@@ -455,11 +458,11 @@ class _MenuPlanScreenState extends ConsumerState<MenuPlanScreen> with AdManagerM
               ),
               Row(
                 children: [
-                   if (items.any((e) => e.recipe != null)) ...[
+                    if (items.any((e) => e.recipe != null)) ...[
                      TextButton.icon(
                       onPressed: () => _onMadeIt(items),
                       icon: const Icon(Icons.check_circle_outline, size: 16),
-                      label: const Text('作った', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                      label: Text(AppLocalizations.of(context)!.menuMade, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)), // 作った
                       style: TextButton.styleFrom(
                         foregroundColor: const Color(0xFF78716C),
                         padding: const EdgeInsets.symmetric(horizontal: 8),
@@ -472,7 +475,7 @@ class _MenuPlanScreenState extends ConsumerState<MenuPlanScreen> with AdManagerM
                        TextButton.icon(
                         onPressed: () => _onCook(items),
                         icon: const Icon(Icons.restaurant_menu, size: 16),
-                        label: const Text('料理する', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                        label: Text(AppLocalizations.of(context)!.menuCook, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)), // 料理する
                         style: TextButton.styleFrom(
                           foregroundColor: AppColors.stoxPrimary,
                           padding: const EdgeInsets.symmetric(horizontal: 8),
@@ -505,7 +508,7 @@ class _MenuPlanScreenState extends ConsumerState<MenuPlanScreen> with AdManagerM
                      width: double.infinity,
                      child: AiSuggestionButton(
                        onTap: () => _onAskAi(type),
-                       label: 'AIに献立を提案してもらう',
+                       label: AppLocalizations.of(context)!.menuAskAi, // AIに献立を提案してもらう
                      ),
                    ),
                  ],
@@ -594,7 +597,7 @@ class _MenuPlanScreenState extends ConsumerState<MenuPlanScreen> with AdManagerM
             child: TextButton.icon(
               onPressed: () => _onAddDish(type),
               icon: const Icon(Icons.add_circle_outline, size: 16),
-              label: const Text('料理を追加する', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+              label: Text(AppLocalizations.of(context)!.menuAddDish, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)), // 料理を追加する
               style: TextButton.styleFrom(
                 foregroundColor: AppColors.stoxPrimary,
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -628,9 +631,9 @@ class _MenuPlanScreenState extends ConsumerState<MenuPlanScreen> with AdManagerM
                      ),
                    ),
                    const SizedBox(width: 8),
-                   const Text(
-                     '作り置き',
-                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF292524)),
+                   Text(
+                     AppLocalizations.of(context)!.menuMealPrep, // 作り置き
+                     style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF292524)),
                    ),
                    const SizedBox(width: 8),
                    Container(
@@ -639,9 +642,9 @@ class _MenuPlanScreenState extends ConsumerState<MenuPlanScreen> with AdManagerM
                        color: const Color(0xFFCCFBF1),
                        borderRadius: BorderRadius.circular(4),
                      ),
-                     child: const Text(
-                       '準備',
-                       style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFF0F766E)),
+                     child: Text(
+                       AppLocalizations.of(context)!.menuMealPrepLabel, // 準備
+                       style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFF0F766E)),
                      ),
                    ),
                  ],
@@ -649,7 +652,7 @@ class _MenuPlanScreenState extends ConsumerState<MenuPlanScreen> with AdManagerM
                TextButton.icon(
                 onPressed: () {},
                 icon: const Icon(Icons.add_circle_outline, size: 16),
-                label: const Text('追加', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                label: Text(AppLocalizations.of(context)!.menuAdd, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)), // 追加
                 style: TextButton.styleFrom(
                   foregroundColor: AppColors.stoxPrimary,
                   padding: EdgeInsets.zero,
@@ -669,13 +672,13 @@ class _MenuPlanScreenState extends ConsumerState<MenuPlanScreen> with AdManagerM
               borderRadius: BorderRadius.circular(16),
               border: Border.all(color: const Color(0xFFE7E5E4), style: BorderStyle.none),
             ),
-            child: const Center(
+            child: Center(
               child: Column(
                 children: [
                   Icon(Icons.restaurant, size: 32, color: Color(0xFFD6D3D1)),
                   SizedBox(height: 8),
                   Text(
-                    '週末の作り置きレシピを\n登録してみましょう',
+                    AppLocalizations.of(context)!.menuMealPrepGuide, // 週末の作り置きレシピを\n登録してみましょう
                     textAlign: TextAlign.center,
                     style: TextStyle(fontSize: 12, color: Color(0xFFA8A29E)),
                   ),
@@ -760,7 +763,7 @@ class _MenuPlanScreenState extends ConsumerState<MenuPlanScreen> with AdManagerM
             Padding(
               padding: const EdgeInsets.only(left: 8.0, right: 8.0, bottom: 8.0),
               child: Text(
-                '${DateFormat('HH:mm').format(item.mealPlan.completedAt!)}に作りました',
+                AppLocalizations.of(context)!.menuCookedAt(DateFormat('HH:mm').format(item.mealPlan.completedAt!)), // {time}に作りました
                 style: const TextStyle(fontSize: 10, color: AppColors.stoxPrimary, fontWeight: FontWeight.bold),
               ),
             ),
@@ -834,7 +837,7 @@ class _MenuPlanScreenState extends ConsumerState<MenuPlanScreen> with AdManagerM
                 if (item.mealPlan.isDone && item.mealPlan.completedAt != null) ...[
                   const SizedBox(height: 4),
                   Text(
-                    '${DateFormat('HH:mm').format(item.mealPlan.completedAt!)}に作りました',
+                    AppLocalizations.of(context)!.menuCookedAt(DateFormat('HH:mm').format(item.mealPlan.completedAt!)), // {time}に作りました
                     style: const TextStyle(fontSize: 12, color: AppColors.stoxPrimary, fontWeight: FontWeight.bold),
                   ),
                 ],
@@ -857,9 +860,9 @@ class _MenuPlanScreenState extends ConsumerState<MenuPlanScreen> with AdManagerM
   Future<void> _onAskAi(MealType type) async {
     final result = await showAdAndExecute(
       context: context,
-      preAdTitle: 'AI献立提案',
-      preAdContent: '広告を視聴して、AIに献立を提案してもらいますか？\n（今の冷蔵庫の中身や前後の食事バランスを考慮します）',
-      confirmButtonText: '広告を見て提案してもらう',
+      preAdTitle: AppLocalizations.of(context)!.menuAiProposalTitle, // AI献立提案
+      preAdContent: AppLocalizations.of(context)!.menuAiProposalMessage, // 広告を視聴して、AIに献立を提案してもらいますか？\n（今の冷蔵庫の中身や前後の食事バランスを考慮します）
+      confirmButtonText: AppLocalizations.of(context)!.menuAiProposalAction, // 広告を見て提案してもらう
     );
 
     if (result && mounted) {
@@ -882,33 +885,33 @@ class _MenuPlanScreenState extends ConsumerState<MenuPlanScreen> with AdManagerM
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('お料理お疲れ様でした！'),
-          content: const Text('もし作った料理を撮影した写真があったら、写真を貼っておくことで、後で見返すのが楽になります✨'),
+          title: Text(AppLocalizations.of(context)!.menuCookingDoneTitle), // お料理お疲れ様でした！
+          content: Text(AppLocalizations.of(context)!.menuCookingDoneMessage), // もし作った料理を撮影した写真があったら、写真を貼っておくことで、後で見返すのが楽になります✨
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('キャンセル'),
+              child: Text(AppLocalizations.of(context)!.actionCancel), // キャンセル
             ),
             TextButton(
               onPressed: () async {
                  Navigator.pop(context);
                  _pickAndSaveImage(items, ImageSource.gallery);
               },
-              child: const Text('撮った写真を貼る'),
+              child: Text(AppLocalizations.of(context)!.menuAttachPhoto), // 撮った写真を貼る
             ),
             TextButton(
               onPressed: () async {
                 Navigator.pop(context);
                 _openFoodCameraAndSave(items);
               },
-              child: const Text('撮影する'),
+              child: Text(AppLocalizations.of(context)!.menuTakePhoto), // 撮影する
             ),
              TextButton(
               onPressed: () async {
                 Navigator.pop(context);
                 await _markAsDone(items);
               },
-              child: const Text('写真を貼らずに完了する'),
+              child: Text(AppLocalizations.of(context)!.menuCompleteWithoutPhoto), // 写真を貼らずに完了する
             ),
           ],
         );
@@ -928,7 +931,7 @@ class _MenuPlanScreenState extends ConsumerState<MenuPlanScreen> with AdManagerM
       await repo.save(updatedPlan);
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('保存に失敗しました: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.menuSaveFailed(e)))); // 保存に失敗しました: {error}
       }
     }
   }
@@ -1004,7 +1007,7 @@ class _MenuPlanScreenState extends ConsumerState<MenuPlanScreen> with AdManagerM
     if (duplicateCount > 0) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('$duplicateCount 枚の画像はすでに存在するためスキップされました')),
+          SnackBar(content: Text(AppLocalizations.of(context)!.menuImagesSkipped(duplicateCount))), // {count} 枚の画像はすでに存在するためスキップされました
         );
       }
     }
@@ -1043,7 +1046,7 @@ class _MenuPlanScreenState extends ConsumerState<MenuPlanScreen> with AdManagerM
 
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('画像の保存に失敗しました: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.menuImageSaveFailed(e)))); // 画像の保存に失敗しました: {error}
       }
     }
   }
@@ -1053,7 +1056,7 @@ class _MenuPlanScreenState extends ConsumerState<MenuPlanScreen> with AdManagerM
     final recipe = items.first.recipe;
     
     if (recipe == null) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('レシピがありません')));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.menuNoRecipe))); // レシピがありません
       return;
     }
 
@@ -1084,7 +1087,7 @@ class _MenuPlanScreenState extends ConsumerState<MenuPlanScreen> with AdManagerM
           MaterialPageRoute(
             builder: (context) => RecipeWebViewScreen(
               url: intent.url,
-              title: '読み込み中...',
+              title: AppLocalizations.of(context)!.menuLoading, // 読み込み中
               initialDate: date,
               initialMealType: type,
             ),

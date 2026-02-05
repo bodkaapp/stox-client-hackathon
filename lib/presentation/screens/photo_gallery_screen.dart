@@ -1,4 +1,5 @@
 import 'package:go_router/go_router.dart';
+import '../../l10n/generated/app_localizations.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -58,7 +59,7 @@ class PhotoGalleryScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('写真一覧', style: TextStyle(color: Colors.black)),
+        title: Text(AppLocalizations.of(context)!.titlePhotoGallery, style: const TextStyle(color: Colors.black)), // 写真一覧
         backgroundColor: Colors.white,
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.black),
@@ -67,7 +68,7 @@ class PhotoGalleryScreen extends ConsumerWidget {
         skipLoadingOnReload: true,
         data: (plans) {
           if (plans.isEmpty) {
-            return const Center(child: Text('写真がありません'));
+            return Center(child: Text(AppLocalizations.of(context)!.noPhotos)); // 写真がありません
           }
 
           // Group by Date
@@ -126,7 +127,7 @@ class PhotoGalleryScreen extends ConsumerWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                DateFormat('yyyy/MM/dd (E)', 'ja').format(date),
+                DateFormat(AppLocalizations.of(context)!.fullDateFormat, AppLocalizations.of(context)!.localeName).format(date), // DateFormat('yyyy/MM/dd (E)', 'ja').format(date)
                 style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -141,7 +142,7 @@ class PhotoGalleryScreen extends ConsumerWidget {
                    }).toString());
                 },
                 icon: const Icon(Icons.calendar_today, size: 16),
-                label: const Text('献立計画表を見る', style: TextStyle(fontSize: 12)),
+                label: Text(AppLocalizations.of(context)!.actionViewMenuPlan, style: const TextStyle(fontSize: 12)), // 献立計画表を見る
                 style: TextButton.styleFrom(
                   foregroundColor: Colors.pinkAccent,
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),

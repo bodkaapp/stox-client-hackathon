@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../l10n/generated/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 import '../../config/app_colors.dart';
 import '../../domain/models/recipe.dart';
@@ -56,9 +57,10 @@ class HomeHeader extends ConsumerWidget {
                 ),
               ),
               const SizedBox(width: 8),
-              const HelpIcon(
-                title: 'ホーム画面',
-                description: 'アプリのメインの画面です。この「？」アイコンをタップすると、画面の使い方が表示されます。',
+              const SizedBox(width: 8),
+              HelpIcon(
+                title: AppLocalizations.of(context)!.homeHelpTitle,
+                description: AppLocalizations.of(context)!.homeHelpDescription,
               ),
             ],
           ),
@@ -140,21 +142,21 @@ class TodaysMenuCard extends ConsumerWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Row(
+                    Row(
                       children: [
                         Icon(Icons.restaurant, color: AppColors.stoxPrimary, size: 20),
                         SizedBox(width: 4),
                         Text(
-                          '今日の献立',
-                          style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.stoxText),
+                          AppLocalizations.of(context)!.homeTodaysMenu,
+                          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.stoxText),
                         ),
                       ],
                     ),
                     TextButton(
                       onPressed: () => context.push('/recipe_book'),
-                      child: const Text(
-                        '登録する',
-                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.stoxPrimary),
+                      child: Text(
+                        AppLocalizations.of(context)!.homeRegisterMenu,
+                        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.stoxPrimary),
                       ),
                     ),
                   ],
@@ -172,9 +174,9 @@ class TodaysMenuCard extends ConsumerWidget {
                     children: [
                       const Icon(Icons.no_food, color: AppColors.stoxSubText, size: 32),
                       const SizedBox(height: 8),
-                      const Text(
-                        '今日の献立はまだありません',
-                        style: TextStyle(fontSize: 12, color: AppColors.stoxSubText),
+                      Text(
+                        AppLocalizations.of(context)!.homeNoMenuPlan,
+                        style: const TextStyle(fontSize: 12, color: AppColors.stoxSubText),
                       ),
                     ],
                   ),
@@ -189,21 +191,21 @@ class TodaysMenuCard extends ConsumerWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Row(
+                  Row(
                     children: [
                       Icon(Icons.restaurant, color: AppColors.stoxPrimary, size: 20),
                       SizedBox(width: 4),
                       Text(
-                        '今日の献立',
-                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.stoxText),
+                        AppLocalizations.of(context)!.homeTodaysMenu,
+                        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.stoxText),
                       ),
                     ],
                   ),
                   TextButton(
                     onPressed: () => context.push('/recipe_book'),
-                    child: const Text(
-                      '変更',
-                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.stoxPrimary),
+                    child: Text(
+                      AppLocalizations.of(context)!.homeChangeMenu,
+                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.stoxPrimary),
                     ),
                   ),
                 ],
@@ -270,7 +272,7 @@ class TodaysMenuCard extends ConsumerWidget {
                                   context.push('/recipe_book'); 
                                 },
                                 icon: const Icon(Icons.visibility, size: 14, color: Colors.white),
-                                label: const Text('レシピを見る', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.white)),
+                                label: Text(AppLocalizations.of(context)!.homeViewRecipe, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.white)),
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: AppColors.stoxPrimary,
                                   padding: EdgeInsets.zero,
@@ -335,13 +337,14 @@ class ShoppingBanner extends ConsumerWidget {
                       Row(
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
-                          const Text('買うもの', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.stoxText)),
+                          Text(AppLocalizations.of(context)!.homeShoppingList, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.stoxText)),
                           const SizedBox(width: 4),
                           Text('${state.shoppingList.length}', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.stoxPrimary, height: 1)),
-                          const Text('件', style: TextStyle(fontSize: 10, color: AppColors.stoxText)),
+                          Text(AppLocalizations.of(context)!.unitItems, style: const TextStyle(fontSize: 10, color: AppColors.stoxText)),
                         ],
                       ),
-                      const Text('近所のスーパーで特売中！', style: TextStyle(fontSize: 10, color: AppColors.stoxSubText)),
+                      const SizedBox(height: 2),
+                      Text(AppLocalizations.of(context)!.homeShoppingAd, style: const TextStyle(fontSize: 10, color: AppColors.stoxSubText)),
                     ],
                   ),
                 ],
@@ -357,7 +360,7 @@ class ShoppingBanner extends ConsumerWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
                   minimumSize: const Size(0, 32),
                 ),
-                child: const Text('チラシを見る', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                child: Text(AppLocalizations.of(context)!.homeViewFlyer, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
               ),
             ],
           ),
@@ -403,19 +406,19 @@ class _HomeActionGridState extends ConsumerState<HomeActionGrid> with AdManagerM
         crossAxisSpacing: 8,
         childAspectRatio: 2.5,
         children: [
-          _buildActionCard(Icons.inventory_2, '在庫チェック', Colors.green.shade50, Colors.green.shade600, () => context.push('/stock')),
-          _buildActionCard(Icons.receipt_long, 'レシート登録', Colors.blue.shade50, Colors.blue.shade600, () => _handleScan()),
-          _buildActionCard(Icons.shopping_basket, '買い物モード', Colors.orange.shade50, Colors.orange.shade600, () {
+          _buildActionCard(Icons.inventory_2, AppLocalizations.of(context)!.actionCheckStock, Colors.green.shade50, Colors.green.shade600, () => context.push('/stock')),
+          _buildActionCard(Icons.receipt_long, AppLocalizations.of(context)!.actionScanReceipt, Colors.blue.shade50, Colors.blue.shade600, () => _handleScan()),
+          _buildActionCard(Icons.shopping_basket, AppLocalizations.of(context)!.actionShoppingMode, Colors.orange.shade50, Colors.orange.shade600, () {
              ref.read(shoppingViewModelProvider.notifier).startShopping();
              context.push('/shopping');
           }),
-          _buildActionCard(Icons.menu_book, 'マイレシピ帳', Colors.purple.shade50, Colors.purple.shade600, () {
+          _buildActionCard(Icons.menu_book, AppLocalizations.of(context)!.actionRecipeBook, Colors.purple.shade50, Colors.purple.shade600, () {
              context.push('/recipe_book');
           }),
-          _buildActionCard(Icons.camera_alt, '料理を撮影', Colors.pink.shade50, Colors.pink.shade600, () {
+          _buildActionCard(Icons.camera_alt, AppLocalizations.of(context)!.actionFoodCamera, Colors.pink.shade50, Colors.pink.shade600, () {
              context.push('/food_camera');
           }),
-          _buildActionCard(Icons.photo_library, '写真を見る', Colors.cyan.shade50, Colors.cyan.shade600, () {
+          _buildActionCard(Icons.photo_library, AppLocalizations.of(context)!.actionPhotoGallery, Colors.cyan.shade50, Colors.cyan.shade600, () {
              context.push('/photo_gallery');
           }),
         ],
@@ -472,19 +475,19 @@ class ExpiringItemsList extends ConsumerWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Row(
+                Row(
                   children: [
                     Icon(Icons.notification_important, color: Colors.red, size: 20),
                     SizedBox(width: 4),
                     Text(
-                      '賞味期限が近いもの',
-                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.stoxText),
+                      AppLocalizations.of(context)!.homeExpiringSoon,
+                      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.stoxText),
                     ),
                   ],
                 ),
-                const Text(
-                  'すべて見る',
-                  style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.stoxPrimary),
+                Text(
+                  AppLocalizations.of(context)!.homeViewAll,
+                  style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.stoxPrimary),
                 ),
               ],
             ),
@@ -500,26 +503,26 @@ class ExpiringItemsList extends ConsumerWidget {
               ),
               clipBehavior: Clip.antiAlias,
               child: state.expiringIngredients.isEmpty 
-              ? const Padding(padding: EdgeInsets.all(16), child: Center(child: Text('賞味期限切れはありません')))
+              ? Padding(padding: const EdgeInsets.all(16), child: Center(child: Text(AppLocalizations.of(context)!.homeNoExpiringItems)))
               : Column(
                 children: state.expiringIngredients.map((item) {
                    final daysLeft = item.expiryDate?.difference(DateTime.now()).inDays ?? 0;
                    Color badgeBg = Colors.grey.shade100;
                    Color badgeText = Colors.grey;
-                   String badgeLabel = '確認';
+                   String badgeLabel = AppLocalizations.of(context)!.statusCheck;
                    IconData icon = Icons.info;
                    Color iconColor = Colors.grey;
 
                    if (daysLeft <= 0) {
                      badgeBg = Colors.red.shade100;
                      badgeText = Colors.red;
-                     badgeLabel = '緊急';
+                     badgeLabel = AppLocalizations.of(context)!.statusUrgent;
                      icon = Icons.priority_high;
                      iconColor = Colors.red;
                    } else if (daysLeft <= 3) {
                      badgeBg = Colors.orange.shade100;
                      badgeText = Colors.orange;
-                     badgeLabel = '注意';
+                     badgeLabel = AppLocalizations.of(context)!.statusWarning;
                      icon = Icons.warning;
                      iconColor = Colors.orange;
                    }
@@ -541,7 +544,7 @@ class ExpiringItemsList extends ConsumerWidget {
                                children: [
                                  Text(item.name, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.stoxText)),
                                  Text(
-                                   '${item.expiryDate?.month}/${item.expiryDate?.day} (あと${daysLeft}日)',
+                                   '${item.expiryDate?.month}/${item.expiryDate?.day} (${AppLocalizations.of(context)!.daysRemaining(daysLeft)})',
                                    style: const TextStyle(fontSize: 10, color: AppColors.stoxSubText),
                                  ),
                                ],

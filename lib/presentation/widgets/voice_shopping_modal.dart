@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../l10n/generated/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:speech_to_text/speech_to_text.dart';
@@ -55,7 +56,7 @@ class _VoiceShoppingModalState extends ConsumerState<VoiceShoppingModal> with Si
       if (!status.isGranted) {
         if (mounted) {
            ScaffoldMessenger.of(context).showSnackBar(
-             const SnackBar(content: Text('マイクの権限が必要です')),
+             SnackBar(content: Text(AppLocalizations.of(context)!.voicePermissionError)),
            );
            Navigator.pop(context);
         }
@@ -160,7 +161,7 @@ class _VoiceShoppingModalState extends ConsumerState<VoiceShoppingModal> with Si
       if (mounted) {
          Navigator.pop(context);
          ScaffoldMessenger.of(context).showSnackBar(
-           SnackBar(content: Text('${_recognizedItems.length}件の操作を完了しました')),
+           SnackBar(content: Text(AppLocalizations.of(context)!.voiceCompleteMessage(_recognizedItems.length))),
          );
       }
       return;
@@ -199,7 +200,7 @@ class _VoiceShoppingModalState extends ConsumerState<VoiceShoppingModal> with Si
          // Fallback or empty result
          if (mounted) {
              ScaffoldMessenger.of(context).showSnackBar(
-               const SnackBar(content: Text('商品を認識できませんでした')),
+                SnackBar(content: Text(AppLocalizations.of(context)!.voiceAiError)),
              );
          }
       }
@@ -292,9 +293,9 @@ class _VoiceShoppingModalState extends ConsumerState<VoiceShoppingModal> with Si
            const SizedBox(height: 16), // Reduced from 24
            
            Text(
-             _isAnalyzing 
-                 ? 'AIが解析中...' 
-                 : (_isListeningTarget ? '聞いています...' : 'タップして開始'),
+              _isAnalyzing 
+                  ? AppLocalizations.of(context)!.voiceAnalyzing 
+                  : (_isListeningTarget ? AppLocalizations.of(context)!.voiceListening : AppLocalizations.of(context)!.voiceTapToStart),
              style: TextStyle(
                fontSize: 18,
                fontWeight: FontWeight.bold,
@@ -305,7 +306,7 @@ class _VoiceShoppingModalState extends ConsumerState<VoiceShoppingModal> with Si
            const SizedBox(height: 8),
            
            Text(
-             _lastWords.isNotEmpty ? '「$_lastWords」' : '商品名を話しかけてください\n例：「長ネギ」「豚肉とキャベツ」',
+              _lastWords.isNotEmpty ? '「$_lastWords」' : AppLocalizations.of(context)!.voiceHint,
              textAlign: TextAlign.center,
              style: const TextStyle(
                fontSize: 14,
@@ -323,10 +324,10 @@ class _VoiceShoppingModalState extends ConsumerState<VoiceShoppingModal> with Si
                ? Center(
                    child: Column(
                      mainAxisAlignment: MainAxisAlignment.center,
-                     children: const [
-                       Icon(Icons.format_list_bulleted, size: 48, color: Colors.black12),
-                       SizedBox(height: 8),
-                       Text('追加履歴がここに表示されます', style: TextStyle(color: AppColors.stoxSubText, fontSize: 12)),
+                     children: [
+                       const Icon(Icons.format_list_bulleted, size: 48, color: Colors.black12),
+                       const SizedBox(height: 8),
+                        Text(AppLocalizations.of(context)!.voiceHistoryPlaceholder, style: const TextStyle(color: AppColors.stoxSubText, fontSize: 12)),
                      ],
                    ),
                  )
@@ -355,7 +356,7 @@ class _VoiceShoppingModalState extends ConsumerState<VoiceShoppingModal> with Si
                                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.stoxText),
                              ),
                            ),
-                           const Text('追加済', style: TextStyle(fontSize: 10, color: AppColors.stoxSubText)),
+                            Text(AppLocalizations.of(context)!.voiceAdded, style: const TextStyle(fontSize: 10, color: AppColors.stoxSubText)),
                          ],
                        ),
                      );
@@ -378,7 +379,7 @@ class _VoiceShoppingModalState extends ConsumerState<VoiceShoppingModal> with Si
                    padding: const EdgeInsets.symmetric(vertical: 16),
                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                  ),
-                 child: const Text('閉じる', style: TextStyle(fontWeight: FontWeight.bold)),
+                  child: Text(AppLocalizations.of(context)!.voiceClose, style: const TextStyle(fontWeight: FontWeight.bold)),
                ),
              ),
            ),

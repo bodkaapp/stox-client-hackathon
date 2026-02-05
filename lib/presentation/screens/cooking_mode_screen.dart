@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import '../../domain/models/recipe.dart';
+import '../../l10n/generated/app_localizations.dart';
 import '../../config/app_colors.dart';
 
 class CookingModeScreen extends StatefulWidget {
@@ -76,16 +77,16 @@ class _CookingModeScreenState extends State<CookingModeScreen> with TickerProvid
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('調理モードを終了しますか？'),
-          content: const Text('調理モードを終了して前の画面に戻ります。'),
+          title: Text(AppLocalizations.of(context)!.cookingModeExitConfirm), // 調理モードを終了しますか？
+          content: Text(AppLocalizations.of(context)!.cookingModeExitDescription), // 調理モードを終了して前の画面に戻ります。
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
-              child: const Text('キャンセル'),
+              child: Text(AppLocalizations.of(context)!.actionCancel), // キャンセル
             ),
             TextButton(
               onPressed: () => Navigator.of(context).pop(true),
-              child: const Text('終了する', style: TextStyle(color: Colors.red)),
+              child: Text(AppLocalizations.of(context)!.actionFinish, style: const TextStyle(color: Colors.red)), // 終了する
             ),
           ],
         );
@@ -110,9 +111,9 @@ class _CookingModeScreenState extends State<CookingModeScreen> with TickerProvid
       child: Scaffold(
         appBar: AppBar(
           automaticallyImplyLeading: false, // Hide default back button
-          title: const Text(
-            '調理モード',
-            style: TextStyle(color: AppColors.stoxText, fontWeight: FontWeight.bold),
+          title: Text(
+            AppLocalizations.of(context)!.titleCookingMode, // 調理モード
+            style: const TextStyle(color: AppColors.stoxText, fontWeight: FontWeight.bold),
           ),
           leading: IconButton(
             icon: const Icon(Icons.close),

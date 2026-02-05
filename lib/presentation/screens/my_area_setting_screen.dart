@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:go_router/go_router.dart';
+import '../../l10n/generated/app_localizations.dart';
 import '../../config/app_colors.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -104,10 +105,10 @@ class _MyAreaSettingScreenState extends ConsumerState<MyAreaSettingScreen> {
                             onPressed: () => context.pop(),
                             icon: const Icon(Icons.arrow_back_ios_new, size: 24),
                           ),
-                          const Expanded(
+                          Expanded(
                             child: Center(
                               child: Text(
-                                'マイエリアの変更',
+                                AppLocalizations.of(context)!.titleChangeMyArea, // マイエリアの変更
                                 style: TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold,
@@ -133,7 +134,7 @@ class _MyAreaSettingScreenState extends ConsumerState<MyAreaSettingScreen> {
                         child: TextField(
                           keyboardType: TextInputType.number,
                           decoration: InputDecoration(
-                            hintText: '郵便番号で探す',
+                            hintText: AppLocalizations.of(context)!.searchByZipCode, // 郵便番号で探す
                             hintStyle: const TextStyle(color: Colors.grey),
                             prefixIcon: const Icon(Icons.search, color: Colors.grey),
                             border: OutlineInputBorder(
@@ -197,9 +198,9 @@ class _MyAreaSettingScreenState extends ConsumerState<MyAreaSettingScreen> {
                       borderRadius: BorderRadius.circular(30),
                     ),
                   ),
-                  child: const Text(
-                    'マイエリアをここにする',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  child: Text(
+                    AppLocalizations.of(context)!.setMyAreaHere, // マイエリアをここにする
+                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                 ),
               ),

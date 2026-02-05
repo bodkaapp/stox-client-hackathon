@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_mlkit_document_scanner/google_mlkit_document_scanner.dart';
 import '../../config/app_colors.dart';
+import '../../l10n/generated/app_localizations.dart';
 import '../../domain/models/ingredient.dart';
 import '../../infrastructure/repositories/ai_recipe_repository.dart';
 import '../screens/shopping_receipt_result_screen.dart';
@@ -21,7 +22,7 @@ mixin ReceiptScannerMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> 
     required BuildContext context,
     required String preAdTitle,
     required String preAdContent,
-    String confirmButtonText = '広告を見て実行する',
+    String? confirmButtonText,
     String? postAdMessage,
     VoidCallback? onConsent,
   });
@@ -54,9 +55,9 @@ mixin ReceiptScannerMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> 
       // Show Ad
       final success = await showAdAndExecute(
         context: context,
-        preAdTitle: 'レシート解析を開始',
-        preAdContent: 'AIがレシートを読み取ります。\n広告を再生することで、この機能を無料でご利用いただけます。',
-        confirmButtonText: '広告を見て解析する',
+        preAdTitle: AppLocalizations.of(context)!.receiptScanTitle, // レシート解析を開始
+        preAdContent: AppLocalizations.of(context)!.receiptScanMessage, // AIがレシートを読み取ります。\n広告を再生することで、この機能を無料でご利用いただけます。
+        confirmButtonText: AppLocalizations.of(context)!.receiptScanAction, // 広告を見て解析する
         postAdMessage: null, 
       );
 
@@ -111,14 +112,14 @@ mixin ReceiptScannerMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> 
            if (isDialogShowing) {
              Navigator.of(context, rootNavigator: true).pop();
            }
-           ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('解析に失敗しました: $e')));
+           ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.receiptAnalysisFailed(e)))); // 解析に失敗しました
         }
       }
 
     } catch (e) {
        debugPrint('Scan Error: $e');
        if (mounted) {
-         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('スキャンがキャンセルされました')));
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.receiptScanCanceled))); // スキャンがキャンセルされました
        }
     }
   }

@@ -2,6 +2,7 @@
 // but AiIngredientListScreen needs to manipulate local state before saving.
 // Created a screen file for AiIngredientListScreen.
 import 'package:flutter/material.dart';
+import '../../l10n/generated/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../config/app_colors.dart';
 import '../../domain/models/ingredient.dart';
@@ -178,7 +179,7 @@ class _AiIngredientListScreenState extends ConsumerState<AiIngredientListScreen>
       });
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('解析に失敗しました。もう一度お試しください。')),
+          SnackBar(content: Text(AppLocalizations.of(context)!.aiIngredientAnalysisFailed)), // 解析に失敗しました。もう一度お試しください。
         );
       }
     }
@@ -194,7 +195,8 @@ class _AiIngredientListScreenState extends ConsumerState<AiIngredientListScreen>
     // Parse amount string if possible, else 0
     double amount = double.tryParse(amountStr.replaceAll(RegExp(r'[^0-9.]'), '')) ?? 1.0;
     String unit = amountStr.replaceAll(RegExp(r'[0-9.]'), '').trim();
-    if (unit.isEmpty) unit = '個';
+    if (unit.isEmpty) unit = AppLocalizations.of(context)!.unitItem; // 個
+
 
     setState(() {
       _ingredients.add(_AiIngredientItem(
@@ -205,7 +207,7 @@ class _AiIngredientListScreenState extends ConsumerState<AiIngredientListScreen>
           amount: amount,
           unit: unit,
           status: IngredientStatus.toBuy, // Default to "Not at home"
-          category: 'その他',
+          category: AppLocalizations.of(context)!.categoryOther, // その他
         ),
         selection: AiSelection.toBuy,
       ));
@@ -229,16 +231,16 @@ class _AiIngredientListScreenState extends ConsumerState<AiIngredientListScreen>
            final recipeResult = await showDialog<bool>(
             context: context,
             builder: (context) => AlertDialog(
-              title: const Text('確認'),
-              content: const Text('材料の登録が終わりました！\nマイレシピ帳に登録しますか？'),
+              title: Text(AppLocalizations.of(context)!.dialogConfirm), // 確認
+              content: Text(AppLocalizations.of(context)!.dialogRegisterRecipeConfirm), // 材料の登録が終わりました！\nマイレシピ帳に登録しますか？
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(context, false),
-                  child: const Text('いいえ'),
+                  child: Text(AppLocalizations.of(context)!.actionNo), // いいえ
                 ),
                 TextButton(
                   onPressed: () => Navigator.pop(context, true),
-                  child: const Text('はい'),
+                  child: Text(AppLocalizations.of(context)!.actionYes), // はい
                 ),
               ],
             ),
@@ -262,7 +264,7 @@ class _AiIngredientListScreenState extends ConsumerState<AiIngredientListScreen>
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('「ある」材料は在庫へ、\n「買う」材料は買い物リストへ追加します。\n「いらない」材料は登録されません。\nよろしいですか？'),
+                    Text(AppLocalizations.of(context)!.dialogIngredientDestinations), // 「ある」材料は在庫へ、\n「買う」材料は買い物リストへ追加します。\n「いらない」材料は登録されません。\nよろしいですか？
                     const SizedBox(height: 16),
                     Row(
                       children: [
@@ -274,10 +276,10 @@ class _AiIngredientListScreenState extends ConsumerState<AiIngredientListScreen>
                             });
                           },
                         ),
-                        const Expanded(
+                        Expanded(
                           child: Text(
-                            '今後このダイアログを非表示にする',
-                            style: TextStyle(fontSize: 12),
+                            AppLocalizations.of(context)!.dialogDontShowAgain, // 今後このダイアログを非表示にする
+                            style: const TextStyle(fontSize: 12),
                           ),
                         ),
                       ],
@@ -287,11 +289,11 @@ class _AiIngredientListScreenState extends ConsumerState<AiIngredientListScreen>
                 actions: [
                   TextButton(
                     onPressed: () => Navigator.pop(context, false),
-                    child: const Text('キャンセル'),
+                    child: Text(AppLocalizations.of(context)!.actionCancel), // キャンセル
                   ),
                   TextButton(
                     onPressed: () => Navigator.pop(context, true),
-                    child: const Text('登録する'),
+                    child: Text(AppLocalizations.of(context)!.actionRegister), // 登録する
                   ),
                 ],
               );
@@ -313,16 +315,16 @@ class _AiIngredientListScreenState extends ConsumerState<AiIngredientListScreen>
            final recipeResult = await showDialog<bool>(
             context: context,
             builder: (context) => AlertDialog(
-              title: const Text('確認'),
-              content: const Text('材料の登録が終わりました！\nマイレシピ帳に登録しますか？'),
+              title: Text(AppLocalizations.of(context)!.dialogConfirm), // 確認
+              content: Text(AppLocalizations.of(context)!.dialogRegisterRecipeConfirm), // 材料の登録が終わりました！\nマイレシピ帳に登録しますか？
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(context, false),
-                  child: const Text('いいえ'),
+                  child: Text(AppLocalizations.of(context)!.actionNo), // いいえ
                 ),
                 TextButton(
                   onPressed: () => Navigator.pop(context, true),
-                  child: const Text('はい'),
+                  child: Text(AppLocalizations.of(context)!.actionYes), // はい
                 ),
               ],
             ),
@@ -385,17 +387,17 @@ class _AiIngredientListScreenState extends ConsumerState<AiIngredientListScreen>
         
         final parts = <String>[];
         if (stockIngredients.isNotEmpty) {
-          parts.add('在庫に${stockIngredients.length}件');
+          parts.add(AppLocalizations.of(context)!.stockCountMessage(stockIngredients.length)); // 在庫に${stockIngredients.length}件
         }
         if (toBuyIngredients.isNotEmpty) {
-          parts.add('買い物リストに${toBuyIngredients.length}件');
+          parts.add(AppLocalizations.of(context)!.shoppingListCountMessage(toBuyIngredients.length)); // 買い物リストに${toBuyIngredients.length}件
         }
 
         if (parts.isNotEmpty) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(
-                '${parts.join('、')}追加しました！'
+                AppLocalizations.of(context)!.addedMessage(parts.join('、')), // ${parts.join('、')}追加しました！
               ),
             ),
           );
@@ -407,7 +409,7 @@ class _AiIngredientListScreenState extends ConsumerState<AiIngredientListScreen>
       });
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('保存に失敗しました。')),
+          SnackBar(content: Text(AppLocalizations.of(context)!.stockSaveFailed)), // 保存に失敗しました。
         );
       }
     }
@@ -417,16 +419,16 @@ class _AiIngredientListScreenState extends ConsumerState<AiIngredientListScreen>
     final result = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('確認'),
-        content: const Text('解析した材料は、在庫や買い物リストに追加されませんが、よろしいですか？'),
+        title: Text(AppLocalizations.of(context)!.dialogConfirm), // 確認
+        content: Text(AppLocalizations.of(context)!.dialogRegistrationCancelConfirm), // 解析した材料は、在庫や買い物リストに追加されませんが、よろしいですか？
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('キャンセル'),
+            child: Text(AppLocalizations.of(context)!.actionCancel), // キャンセル
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('レシピに戻る'),
+            child: Text(AppLocalizations.of(context)!.actionBackToRecipe), // レシピに戻る
           ),
         ],
       ),
@@ -446,7 +448,7 @@ class _AiIngredientListScreenState extends ConsumerState<AiIngredientListScreen>
 
     return Scaffold(
       backgroundColor: AppColors.stoxBackground,
-      appBar: AppBar(title: const Text('材料抽出結果'), centerTitle: true),
+      appBar: AppBar(title: Text(AppLocalizations.of(context)!.aiIngredientRunAnalysis), centerTitle: true), // 材料抽出結果
       body: SafeArea(
         child: Stack(
           children: [
@@ -506,7 +508,7 @@ class _AiIngredientListScreenState extends ConsumerState<AiIngredientListScreen>
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        _recipeTitle.isNotEmpty ? _recipeTitle : 'レシピから抽出',
+                        _recipeTitle.isNotEmpty ? _recipeTitle : AppLocalizations.of(context)!.recipeExtractedFrom, // レシピから抽出
                         style: const TextStyle(
                           color: AppColors.stoxText,
                           fontSize: 14,
@@ -584,21 +586,21 @@ class _AiIngredientListScreenState extends ConsumerState<AiIngredientListScreen>
           Row(
             children: [
               _buildToggleButton(
-                label: 'ある',
+                label: AppLocalizations.of(context)!.labelHave, // ある
                 isSelected: selection == AiSelection.stock,
                 activeColor: Colors.green,
                 onTap: () => _updateSelection(index, AiSelection.stock),
               ),
               const SizedBox(width: 8),
                _buildToggleButton(
-                label: '買う',
+                label: AppLocalizations.of(context)!.labelBuy, // 買う
                 isSelected: selection == AiSelection.toBuy,
                 activeColor: AppColors.stoxAccent,
                 onTap: () => _updateSelection(index, AiSelection.toBuy),
               ),
               const SizedBox(width: 8),
               _buildToggleButton(
-                label: 'いらない',
+                label: AppLocalizations.of(context)!.labelDontNeed, // いらない
                 isSelected: selection == AiSelection.ignored,
                 activeColor: Colors.grey,
                 onTap: () => _updateSelection(index, AiSelection.ignored),
@@ -629,10 +631,10 @@ class _AiIngredientListScreenState extends ConsumerState<AiIngredientListScreen>
           ),
         ),
         child: Center(
-          child: isSelected && (label == 'ある' || label == '買う' || label == 'いらない')
+          child: isSelected && (label == AppLocalizations.of(context)!.labelHave || label == AppLocalizations.of(context)!.labelBuy || label == AppLocalizations.of(context)!.labelDontNeed) // ある / 買う / いらない
               ? Icon(
-                  label == 'ある' ? Icons.check : 
-                  label == '買う' ? Icons.shopping_cart : 
+                  label == AppLocalizations.of(context)!.labelHave ? Icons.check :  // ある
+                  label == AppLocalizations.of(context)!.labelBuy ? Icons.shopping_cart :  // 買う
                   Icons.close, 
                   color: activeColor, size: 16
                 )
@@ -675,10 +677,10 @@ class _AiIngredientListScreenState extends ConsumerState<AiIngredientListScreen>
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
-                  children: const [
-                    Text('何もしないで', style: TextStyle(fontSize: 10)),
-                    SizedBox(width: 4),
-                    Text('レシピに戻る', style: TextStyle(fontWeight: FontWeight.bold)),
+                  children: [
+                    Text(AppLocalizations.of(context)!.actionDoNothingAnd, style: const TextStyle(fontSize: 10)), // 何もしないで
+                    const SizedBox(width: 4),
+                    Text(AppLocalizations.of(context)!.actionBackToRecipe, style: const TextStyle(fontWeight: FontWeight.bold)), // レシピに戻る
                   ],
                 ),
               ),
@@ -689,7 +691,7 @@ class _AiIngredientListScreenState extends ConsumerState<AiIngredientListScreen>
               child: ElevatedButton.icon(
                 onPressed: (_ingredients.isEmpty || _isAnalyzing) ? null : _handleRegister,
                 icon: const Icon(Icons.check),
-                label: const Text('材料を登録する'),
+                label: Text(AppLocalizations.of(context)!.actionRegisterIngredients), // 材料を登録する
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.stoxPrimary,
                   foregroundColor: Colors.white,
@@ -704,7 +706,7 @@ class _AiIngredientListScreenState extends ConsumerState<AiIngredientListScreen>
   }
 
   Widget _buildEmptyState() {
-    return const Center(child: Text('材料が見つかりませんでした'));
+    return Center(child: Text(AppLocalizations.of(context)!.aiIngredientNoItems)); // 材料が見つかりませんでした
   }
 
   Widget _buildLoadingOverlay() {
