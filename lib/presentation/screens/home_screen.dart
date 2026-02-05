@@ -3,6 +3,9 @@ import '../../l10n/generated/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../config/app_colors.dart';
 import '../widgets/home_widgets.dart';
+import '../widgets/date_header_widget.dart';
+import 'ai_menu_proposal_loading_screen.dart';
+import '../../domain/models/meal_plan.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -28,6 +31,13 @@ class HomeScreen extends ConsumerWidget {
     return CustomScrollView(
       slivers: [
         const SliverToBoxAdapter(child: HomeHeader()),
+        SliverToBoxAdapter(
+          child: DateHeaderWidget(
+            date: DateTime.now(),
+            showRelativeDate: false,
+            onAiButtonTap: (date) => _navigateToAiProposal(context, date),
+          ),
+        ),
         const SliverToBoxAdapter(child: TodaysMenuCard()),
         const SliverToBoxAdapter(child: ShoppingBanner()),
         const SliverToBoxAdapter(child: HomeActionGrid()),
@@ -41,6 +51,11 @@ class HomeScreen extends ConsumerWidget {
     return Column(
       children: [
         const HomeHeader(),
+        DateHeaderWidget(
+          date: DateTime.now(),
+          showRelativeDate: false,
+          onAiButtonTap: (date) => _navigateToAiProposal(context, date),
+        ),
         Expanded(
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -101,6 +116,19 @@ class HomeScreen extends ConsumerWidget {
           ),
         ),
       ],
+    );
+  }
+
+
+  void _navigateToAiProposal(BuildContext context, DateTime targetDate) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => AiMenuProposalLoadingScreen(
+          targetDate: targetDate,
+          mealType: MealType.dinner,
+        ),
+      ),
     );
   }
 }

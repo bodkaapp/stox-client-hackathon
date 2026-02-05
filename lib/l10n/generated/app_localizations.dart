@@ -2761,6 +2761,30 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'料理撮影'**
   String get challengeCookingPhoto;
+
+  /// No description provided for @tomorrowIs.
+  ///
+  /// In ja, this message translates to:
+  /// **'明日は{event}です'**
+  String tomorrowIs(Object event);
+
+  /// No description provided for @dayAfterTomorrowIs.
+  ///
+  /// In ja, this message translates to:
+  /// **'明後日は{event}です'**
+  String dayAfterTomorrowIs(Object event);
+
+  /// No description provided for @actionAiMenuTomorrow.
+  ///
+  /// In ja, this message translates to:
+  /// **'AI明日の献立'**
+  String get actionAiMenuTomorrow;
+
+  /// No description provided for @actionAiMenuDayAfterTomorrow.
+  ///
+  /// In ja, this message translates to:
+  /// **'AI明後日の献立'**
+  String get actionAiMenuDayAfterTomorrow;
 }
 
 class _AppLocalizationsDelegate

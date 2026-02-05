@@ -1436,4 +1436,20 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get challengeCookingPhoto => '料理撮影';
+
+  @override
+  String tomorrowIs(Object event) {
+    return '明日は$eventです';
+  }
+
+  @override
+  String dayAfterTomorrowIs(Object event) {
+    return '明後日は$eventです';
+  }
+
+  @override
+  String get actionAiMenuTomorrow => 'AI明日の献立';
+
+  @override
+  String get actionAiMenuDayAfterTomorrow => 'AI明後日の献立';
 }

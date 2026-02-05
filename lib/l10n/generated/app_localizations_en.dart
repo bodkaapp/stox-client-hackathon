@@ -1455,4 +1455,20 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get challengeCookingPhoto => 'Cooking Photo';
+
+  @override
+  String tomorrowIs(Object event) {
+    return 'Tomorrow is $event';
+  }
+
+  @override
+  String dayAfterTomorrowIs(Object event) {
+    return 'The day after tomorrow is $event';
+  }
+
+  @override
+  String get actionAiMenuTomorrow => 'AI Tomorrow\'s Menu';
+
+  @override
+  String get actionAiMenuDayAfterTomorrow => 'AI Day After Tomorrow\'s Menu';
 }

@@ -722,5 +722,23 @@
   "challengeIngredientExtraction": "Ingredient Extraction",
   "challengeShopping": "Shopping",
   "challengeReceiptRegistration": "Receipt Registration",
-  "challengeCookingPhoto": "Cooking Photo"
+  "challengeCookingPhoto": "Cooking Photo",
+  "tomorrowIs": "Tomorrow is {event}",
+  "@tomorrowIs": {
+    "placeholders": {
+      "event": {
+        "type": "Object"
+      }
+    }
+  },
+  "dayAfterTomorrowIs": "The day after tomorrow is {event}",
+  "@dayAfterTomorrowIs": {
+    "placeholders": {
+      "event": {
+        "type": "Object"
+      }
+    }
+  },
+  "actionAiMenuTomorrow": "AI Tomorrow's Menu",
+  "actionAiMenuDayAfterTomorrow": "AI Day After Tomorrow's Menu"
 }

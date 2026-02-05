@@ -730,5 +730,23 @@
   "challengeIngredientExtraction": "材料抽出",
   "challengeShopping": "お買い物",
   "challengeReceiptRegistration": "レシート登録",
-  "challengeCookingPhoto": "料理撮影"
+  "challengeCookingPhoto": "料理撮影",
+  "tomorrowIs": "明日は{event}です",
+  "@tomorrowIs": {
+    "placeholders": {
+      "event": {
+        "type": "Object"
+      }
+    }
+  },
+  "dayAfterTomorrowIs": "明後日は{event}です",
+  "@dayAfterTomorrowIs": {
+    "placeholders": {
+      "event": {
+        "type": "Object"
+      }
+    }
+  },
+  "actionAiMenuTomorrow": "AI明日の献立",
+  "actionAiMenuDayAfterTomorrow": "AI明後日の献立"
 }

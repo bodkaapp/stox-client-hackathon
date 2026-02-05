@@ -3,7 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
 import 'package:go_router/go_router.dart';
+import 'package:holiday_jp/holiday_jp.dart' as holiday_jp;
+import '../widgets/date_header_widget.dart';
 import '../../config/app_colors.dart';
+import '../../config/food_events.dart';
 import '../../domain/models/meal_plan.dart';
 import '../../domain/models/recipe.dart';
 import '../../infrastructure/repositories/drift_recipe_repository.dart';
@@ -406,6 +409,9 @@ class _MenuPlanScreenState extends ConsumerState<MenuPlanScreen> with AdManagerM
     );
   }
 
+  // _buildDateHeader removed
+
+
   Widget _buildMealSections(List<MealPlanWithRecipe> plans, DateTime selectedDate) {
     final breakfast = plans.where((p) => p.mealPlan.mealType == MealType.breakfast).toList();
     final lunch = plans.where((p) => p.mealPlan.mealType == MealType.lunch).toList();
@@ -414,8 +420,13 @@ class _MenuPlanScreenState extends ConsumerState<MenuPlanScreen> with AdManagerM
     final undecided = plans.where((p) => p.mealPlan.mealType == MealType.undecided).toList();
 
     return ListView(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.fromLTRB(16, 4, 16, 80),
       children: [
+        DateHeaderWidget(
+          date: selectedDate,
+          padding: EdgeInsets.zero,
+        ),
+        const SizedBox(height: 12),
         _buildSection(
           title: AppLocalizations.of(context)!.menuBreakfast, // 朝食
           label: AppLocalizations.of(context)!.menuBreakfastLabel, // 朝
