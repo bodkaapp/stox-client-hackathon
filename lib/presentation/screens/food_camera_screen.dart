@@ -588,9 +588,7 @@ class _FoodCameraScreenState extends ConsumerState<FoodCameraScreen> with Widget
         await _saveToMealPlan(file.path);
       }
 
-      // Trigger Analysis Logic
-      // Don't await this, let it run in background
-      _analyzeAndSave(file); 
+
 
       if (mounted) {
          Navigator.of(context).push(
@@ -612,37 +610,7 @@ class _FoodCameraScreenState extends ConsumerState<FoodCameraScreen> with Widget
     }
   }
 
-  Future<void> _analyzeAndSave(File imageFile) async {
-    try {
-      final bytes = await imageFile.readAsBytes();
-      final aiRepo = await ref.read(aiRecipeRepositoryProvider); // Not a future anymore? Check usage. It seems it is a provider returning object, so read(provider) is enough if not async provider.
-      // Wait, aiRecipeRepository is @Riverpod(keepAlive: true) AiRecipeRepository aiRecipeRepository(...)
-      // So it is AutoDisposeProvider or Provider (functional).
-      // Generated code: `aiRecipeRepositoryProvider` is `AutoDisposeProvider<AiRecipeRepository>`.
-      // So `ref.read(aiRecipeRepositoryProvider)` returns `AiRecipeRepository`. 
-      
-      final analysisResult = await aiRepo.analyzeFoodImage(bytes);
-      
-      final photoAnalysisRepo = await ref.read(photoAnalysisRepositoryProvider.future);
-      
-      final analysis = PhotoAnalysis(
-        photoPath: imageFile.path,
-        analyzedAt: DateTime.now(),
-        calories: analysisResult.totalCalories,
-        protein: analysisResult.protein,
-        fat: analysisResult.fat,
-        carbs: analysisResult.carbs,
-        foodName: analysisResult.foodName,
-        resultText: analysisResult.displayText,
-      );
 
-      await photoAnalysisRepo.save(analysis);
-      debugPrint('Analysis saved for ${imageFile.path}');
-      
-    } catch (e) {
-      debugPrint('Error analyzing and saving photo: $e');
-    }
-  }
 
   Future<void> _saveToMealPlan(String photoPath) async {
     try {

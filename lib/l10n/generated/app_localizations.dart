@@ -1070,6 +1070,18 @@ abstract class AppLocalizations {
   /// **'AIで栄養価を解析する'**
   String get actionAnalyzeNutritionWithAi;
 
+  /// No description provided for @cancelAnalysisLater.
+  ///
+  /// In ja, this message translates to:
+  /// **'今は解析しないのでキャンセル'**
+  String get cancelAnalysisLater;
+
+  /// No description provided for @analysisCancelled.
+  ///
+  /// In ja, this message translates to:
+  /// **'解析をキャンセルしました'**
+  String get analysisCancelled;
+
   /// No description provided for @mealMorning.
   ///
   /// In ja, this message translates to:

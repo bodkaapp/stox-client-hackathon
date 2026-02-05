@@ -235,6 +235,8 @@
   "foodPhotoAnalysisComplete": "Food photo analysis complete.",
   "sharedWithStox": "Captured with STOX",
   "actionAnalyzeNutritionWithAi": "Analyze Nutrition with AI",
+  "cancelAnalysisLater": "Cancel for now, will analyze later",
+  "analysisCancelled": "Analysis cancelled",
   "mealMorning": "Morning",
   "mealNoon": "Noon",
   "mealNight": "Night",

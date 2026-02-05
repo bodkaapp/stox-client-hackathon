@@ -1,5 +1,6 @@
 
 import 'dart:io';
+import 'dart:async';
 import 'package:flutter/material.dart';
 import '../../l10n/generated/app_localizations.dart';
 import 'package:share_plus/share_plus.dart';
@@ -32,6 +33,47 @@ class _PhotoViewerScreenState extends ConsumerState<PhotoViewerScreen> {
   bool _showInfo = true;
   bool _hasShownCompletionMessage = false;
   bool _isAnalyzing = false;
+  bool _isWaitingForAnalysis = false;
+  Timer? _analysisTimer;
+  
+  @override
+  void initState() {
+    super.initState();
+    if (widget.isNewCapture) {
+      _startDelayedAnalysis();
+    }
+  }
+
+  @override
+  void dispose() {
+    _analysisTimer?.cancel();
+    super.dispose();
+  }
+
+  void _startDelayedAnalysis() {
+    setState(() {
+      _isWaitingForAnalysis = true;
+    });
+    
+    _analysisTimer = Timer(const Duration(seconds: 5), () {
+      if (mounted) {
+        setState(() {
+          _isWaitingForAnalysis = false;
+        });
+        _analyzePhoto();
+      }
+    });
+  }
+
+  void _cancelAutoAnalysis() {
+    _analysisTimer?.cancel();
+    setState(() {
+      _isWaitingForAnalysis = false;
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(AppLocalizations.of(context)!.analysisCancelled)),
+    );
+  }
 
   Future<void> _analyzePhoto() async {
     setState(() {
@@ -154,15 +196,29 @@ class _PhotoViewerScreenState extends ConsumerState<PhotoViewerScreen> {
                   ),
                   child: analysisAsync.when(
                     data: (analysis) {
-                      // Case 1: Analyzing in progress (Manual or Auto)
-                      if (_isAnalyzing || (analysis == null && widget.isNewCapture)) {
+                      // Case 1: Analyzing in progress (Manual or Auto) or Waiting
+                      if (_isAnalyzing || _isWaitingForAnalysis) {
                         return Center(
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               const CircularProgressIndicator(color: Colors.pinkAccent),
                               const SizedBox(height: 16),
-                              Text(_isAnalyzing ? 'AIが解析中...' : '解析中...', style: const TextStyle(color: Colors.grey)),
+                              Text((_isAnalyzing || _isWaitingForAnalysis) ? AppLocalizations.of(context)!.analyzing : '', style: const TextStyle(color: Colors.grey)), // 解析中...
+                              if (_isWaitingForAnalysis) ...[
+                                const SizedBox(height: 24),
+                                ElevatedButton(
+                                  onPressed: _cancelAutoAnalysis,
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.grey[200],
+                                    foregroundColor: Colors.black,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                  ),
+                                  child: Text(AppLocalizations.of(context)!.cancelAnalysisLater),
+                                ),
+                              ],
                             ],
                           ),
                         );

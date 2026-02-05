@@ -235,6 +235,8 @@
   "foodPhotoAnalysisComplete": "料理の写真の解析が終わりました。",
   "sharedWithStox": "STOXで撮影しました",
   "actionAnalyzeNutritionWithAi": "AIで栄養価を解析する",
+  "cancelAnalysisLater": "今は解析しないのでキャンセル",
+  "analysisCancelled": "解析をキャンセルしました",
   "mealMorning": "朝",
   "mealNoon": "昼",
   "mealNight": "夜",

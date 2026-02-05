@@ -531,6 +531,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get actionAnalyzeNutritionWithAi => 'Analyze Nutrition with AI';
 
   @override
+  String get cancelAnalysisLater => 'Cancel for now, will analyze later';
+
+  @override
+  String get analysisCancelled => 'Analysis cancelled';
+
+  @override
   String get mealMorning => 'Morning';
 
   @override

@@ -524,6 +524,12 @@ class AppLocalizationsJa extends AppLocalizations {
   String get actionAnalyzeNutritionWithAi => 'AIで栄養価を解析する';
 
   @override
+  String get cancelAnalysisLater => '今は解析しないのでキャンセル';
+
+  @override
+  String get analysisCancelled => '解析をキャンセルしました';
+
+  @override
   String get mealMorning => '朝';
 
   @override
