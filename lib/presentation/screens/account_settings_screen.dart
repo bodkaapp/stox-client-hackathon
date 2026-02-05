@@ -9,6 +9,7 @@ import '../../config/app_colors.dart';
 import '../../domain/models/ingredient.dart';
 import '../../presentation/screens/ai_analyzed_stock_screen.dart';
 import '../../presentation/viewmodels/challenge_stamp_viewmodel.dart'; // [NEW]
+import 'ai_prompts_help_screen.dart';
 
 class AccountSettingsScreen extends ConsumerWidget { // Changed to ConsumerWidget
   const AccountSettingsScreen({super.key});
@@ -151,6 +152,23 @@ class AccountSettingsScreen extends ConsumerWidget { // Changed to ConsumerWidge
       ),
       body: ListView(
         children: [
+          _buildSettingsSection(
+            title: '使い方ガイド',
+            children: [
+              _buildSettingsTile(
+                icon: Icons.lightbulb_outline,
+                title: 'AIへの指示テキスト例',
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const AiPromptsHelpScreen(),
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
           const SizedBox(height: 16),
           ExpansionTile(
             title: Text(AppLocalizations.of(context)!.labelDebugDeveloperOptions), // デバッグ・開発者オプション
