@@ -727,6 +727,12 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
+  String get menuReturnToToday => '今日に戻る';
+
+  @override
+  String get menuReturnToTodayDescription => '今日のカレンダーに戻すためのボタンです';
+
+  @override
   String get menuAiProposalTitle => 'AI献立提案';
 
   @override

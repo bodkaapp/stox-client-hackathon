@@ -735,6 +735,13 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get menuReturnToToday => 'Return to Today';
+
+  @override
+  String get menuReturnToTodayDescription =>
+      'This button returns the calendar to today';
+
+  @override
   String get menuAiProposalTitle => 'AI Menu Proposal';
 
   @override

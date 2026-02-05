@@ -347,6 +347,8 @@
       }
     }
   },
+  "menuReturnToToday": "Return to Today",
+  "menuReturnToTodayDescription": "This button returns the calendar to today",
   "menuAiProposalTitle": "AI Menu Proposal",
   "menuAiProposalMessage": "Watch an ad to get a menu suggestion from AI?\n(Consider current fridge inventory and nutritional balance)",
   "menuAiProposalAction": "Watch ad and get suggestion",

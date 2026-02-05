@@ -1448,6 +1448,18 @@ abstract class AppLocalizations {
   /// **'{time}に作りました'**
   String menuCookedAt(Object time);
 
+  /// No description provided for @menuReturnToToday.
+  ///
+  /// In ja, this message translates to:
+  /// **'今日に戻る'**
+  String get menuReturnToToday;
+
+  /// No description provided for @menuReturnToTodayDescription.
+  ///
+  /// In ja, this message translates to:
+  /// **'今日のカレンダーに戻すためのボタンです'**
+  String get menuReturnToTodayDescription;
+
   /// No description provided for @menuAiProposalTitle.
   ///
   /// In ja, this message translates to:

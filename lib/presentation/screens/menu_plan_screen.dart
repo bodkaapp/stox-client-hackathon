@@ -80,6 +80,7 @@ class _MenuPlanScreenState extends ConsumerState<MenuPlanScreen> with AdManagerM
   late ScrollController _dateScrollController;
   bool _isMonthlyView = false;
   DateTime _focusedMonth = DateTime.now();
+  final GlobalKey _returnToTodayKey = GlobalKey();
 
   @override
   void initState() {
@@ -116,6 +117,75 @@ class _MenuPlanScreenState extends ConsumerState<MenuPlanScreen> with AdManagerM
     _dateScrollController.dispose();
     disposeAd();
     super.dispose();
+  }
+
+  void _showSpeechBubble(BuildContext context) {
+    final renderBox = _returnToTodayKey.currentContext?.findRenderObject() as RenderBox?;
+    if (renderBox == null) return;
+    final size = renderBox.size;
+    final offset = renderBox.localToGlobal(Offset.zero);
+
+    late OverlayEntry entry;
+    entry = OverlayEntry(
+      builder: (context) => Stack(
+        children: [
+          GestureDetector(
+             onTap: () => entry.remove(),
+             behavior: HitTestBehavior.translucent,
+             child: Container(color: Colors.transparent),
+          ),
+          Positioned(
+            top: offset.dy + size.height + 8,
+            right: MediaQuery.of(context).size.width - (offset.dx + size.width) - 10,
+            child: Material(
+              color: Colors.transparent,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(right: 24),
+                    child: CustomPaint(
+                      painter: _TrianglePainter(color: const Color(0xFF4B5563)),
+                      size: const Size(12, 8),
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF4B5563),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      AppLocalizations.of(context)!.menuReturnToTodayDescription,
+                      style: const TextStyle(color: Colors.white, fontSize: 12),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    Overlay.of(context).insert(entry);
+    
+    // Auto remove after 3 seconds
+    Future.delayed(const Duration(seconds: 3), () {
+      if (entry.mounted) {
+        entry.remove();
+      }
+    });
+  }
+
+  bool _isSameWeek(DateTime date1, DateTime date2) {
+    // Standardize to midnight to avoid time issues, though not strictly necessary for week calc if logic is robust
+    final d1 = DateTime(date1.year, date1.month, date1.day);
+    final d2 = DateTime(date2.year, date2.month, date2.day);
+    // Find the start of the week (Sunday)
+    final startOfWeek1 = d1.subtract(Duration(days: d1.weekday % 7));
+    final startOfWeek2 = d2.subtract(Duration(days: d2.weekday % 7));
+    return DateUtils.isSameDay(startOfWeek1, startOfWeek2);
   }
 
   @override
@@ -184,6 +254,40 @@ class _MenuPlanScreenState extends ConsumerState<MenuPlanScreen> with AdManagerM
                   )
                 : null),
         actions: [
+          Builder(
+            builder: (context) {
+              final isDifferentWeek = !_isSameWeek(selectedDate, DateTime.now());
+              final color = isDifferentWeek ? AppColors.stoxPrimary : Colors.grey[400];
+              return IconButton(
+                key: _returnToTodayKey,
+                onPressed: () {
+                  if (isDifferentWeek) {
+                    ref.read(selectedDateProvider.notifier).state = DateTime.now();
+                  } else {
+                    _showSpeechBubble(context);
+                  }
+                },
+                icon: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                     Icon(Icons.calendar_today, color: color),
+                     Padding(
+                       padding: const EdgeInsets.only(top: 5),
+                       child: Text(
+                         DateTime.now().day.toString(),
+                         style: TextStyle(
+                           fontSize: 10,
+                           fontWeight: FontWeight.w900,
+                           color: color,
+                         ),
+                       ),
+                     ),
+                  ],
+                ),
+                tooltip: isDifferentWeek ? AppLocalizations.of(context)!.menuReturnToToday : null,
+              );
+            }
+          ),
           LayoutBuilder(
             builder: (context, constraints) {
                final isTablet = MediaQuery.of(context).size.width >= 600;
@@ -1109,4 +1213,28 @@ class _MenuPlanScreenState extends ConsumerState<MenuPlanScreen> with AdManagerM
       }
     }
   }
+}
+
+class _TrianglePainter extends CustomPainter {
+  final Color color;
+
+  _TrianglePainter({required this.color});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.fill;
+
+    final path = Path();
+    path.moveTo(size.width / 2, 0);
+    path.lineTo(0, size.height);
+    path.lineTo(size.width, size.height);
+    path.close();
+
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

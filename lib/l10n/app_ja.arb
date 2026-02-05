@@ -347,6 +347,8 @@
       }
     }
   },
+  "menuReturnToToday": "今日に戻る",
+  "menuReturnToTodayDescription": "今日のカレンダーに戻すためのボタンです",
   "menuAiProposalTitle": "AI献立提案",
   "menuAiProposalMessage": "広告を視聴して、AIに献立を提案してもらいますか？\n（今の冷蔵庫の中身や前後の食事バランスを考慮します）",
   "menuAiProposalAction": "広告を見て提案してもらう",
