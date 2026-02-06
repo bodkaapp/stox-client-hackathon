@@ -348,15 +348,14 @@ class _AiIngredientListScreenState extends ConsumerState<AiIngredientListScreen>
 
       String recipeId = '';
       if (saveRecipe && (widget.sourceUrl != null || _recipeTitle.isNotEmpty)) {
-        recipeId = DateTime.now().microsecondsSinceEpoch.toString();
         final recipe = Recipe(
-          id: recipeId,
+          id: DateTime.now().microsecondsSinceEpoch.toString(),
           title: _recipeTitle,
           pageUrl: widget.sourceUrl ?? '',
           ogpImageUrl: widget.imageUrl ?? '',
           createdAt: DateTime.now(),
         );
-        await recipeRepo.save(recipe);
+        recipeId = await recipeRepo.save(recipe);
       }
 
       final stockIngredients = _ingredients

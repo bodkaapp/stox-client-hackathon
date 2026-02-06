@@ -4,7 +4,7 @@ abstract class RecipeRepository {
   Future<List<Recipe>> getAll();
   Future<Recipe?> getById(String id);
   Future<Recipe?> findByUrl(String url);
-  Future<void> save(Recipe recipe);
+  Future<String> save(Recipe recipe);
   Future<void> delete(String id);
   Future<List<Recipe>> search(String query);
   Stream<List<Recipe>> watchAll();

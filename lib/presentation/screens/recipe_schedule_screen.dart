@@ -118,7 +118,7 @@ class _RecipeScheduleScreenState extends ConsumerState<RecipeScheduleScreen> {
       final recipeRepo = await ref.read(recipeRepositoryProvider.future);
       final mealPlanRepo = await ref.read(mealPlanRepositoryProvider.future);
       
-      final recipeId = widget.existingRecipeId ?? DateTime.now().microsecondsSinceEpoch.toString();
+      String recipeId = widget.existingRecipeId ?? DateTime.now().microsecondsSinceEpoch.toString();
       
       if (widget.existingRecipeId == null) {
         final recipe = Recipe(
@@ -129,7 +129,7 @@ class _RecipeScheduleScreenState extends ConsumerState<RecipeScheduleScreen> {
           createdAt: DateTime.now(),
           memo: _memoController.text, 
         );
-        await recipeRepo.save(recipe);
+        recipeId = await recipeRepo.save(recipe);
       } else {
         // Handle existing recipe (manual entry or from search/history)
         final existing = await recipeRepo.getById(recipeId);
@@ -137,7 +137,7 @@ class _RecipeScheduleScreenState extends ConsumerState<RecipeScheduleScreen> {
            // We must ensure the recipe is marked as NOT temporary (Saved)
            // Also update memo if changed.
            if (existing.isTemporary || _memoController.text != widget.initialMemo) {
-              await recipeRepo.save(existing.copyWith(
+              recipeId = await recipeRepo.save(existing.copyWith(
                 isTemporary: false,
                 memo: _memoController.text
               ));

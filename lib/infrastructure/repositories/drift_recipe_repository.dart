@@ -66,10 +66,10 @@ class DriftRecipeRepository implements RecipeRepository {
   }
 
   @override
-  Future<void> save(Recipe recipe) async {
+  Future<String> save(Recipe recipe) async {
     final companion = RecipeDomainMapper.fromDomain(recipe);
     
-    await db.transaction(() async {
+    return await db.transaction(() async {
       // Check for existence by originalId OR pageUrl to merge temporary
       RecipeEntity? existing;
       
@@ -80,12 +80,10 @@ class DriftRecipeRepository implements RecipeRepository {
          existing = await (db.select(db.recipes)..where((t) => t.pageUrl.equals(recipe.pageUrl))).getSingleOrNull();
       }
 
+      final targetId = existing?.originalId ?? recipe.id;
+
       if (existing != null) {
-        // If we found by URL but IDs mismatch, we should probably update the existing one with new ID? 
-        // Or keep existing ID? Keeping existing ID is safer for consistency.
-        // But if we generated a new ID in domain, we might overwrite. 
-        // Let's rely on the strategy: if we find by URL, we update that record.
-        
+        // Update existing record
         final toWrite = companion.copyWith(
            originalId: Value(existing.originalId) // Ensure we keep the DB id
         );
@@ -99,10 +97,6 @@ class DriftRecipeRepository implements RecipeRepository {
       }
 
       // Insert new ingredients
-      // Use the actual ID we used (recipe.id or existing.originalId)
-      // If we merged, we used existing.originalId.
-      final targetId = existing?.originalId ?? recipe.id;
-
       if (recipe.ingredients.isNotEmpty) {
         final ingredients = recipe.ingredients.asMap().entries.map((e) {
           return RecipeIngredientsCompanion(
@@ -117,6 +111,8 @@ class DriftRecipeRepository implements RecipeRepository {
           batch.insertAll(db.recipeIngredients, ingredients);
         });
       }
+
+      return targetId;
     });
   }
 
