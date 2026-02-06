@@ -5,6 +5,8 @@ import '../../config/app_colors.dart';
 import '../../domain/models/ingredient.dart';
 import '../../infrastructure/repositories/drift_ingredient_repository.dart';
 import '../../infrastructure/repositories/ai_recipe_repository.dart';
+import '../../config/detailed_category.dart';
+import '../../config/category_mapper.dart';
 
 // Local model for added items in this session
 class AddedIngredientItem {
@@ -160,7 +162,7 @@ class _IngredientAddModalState extends ConsumerState<IngredientAddModal> {
           id: id,
           name: item.name,
           standardName: item.name, // Use same for now
-          category: item.category.isNotEmpty ? item.category : AppLocalizations.of(context)!.categoryOthers, // その他
+          category: item.category.isNotEmpty ? item.category : 'unknown', // internal name for Uncategorized
           unit: AppLocalizations.of(context)!.unitItem, // 個
           amount: item.quantity,
           status: widget.targetStatus, 
@@ -391,18 +393,41 @@ class _IngredientAddModalState extends ConsumerState<IngredientAddModal> {
   static const _tableHeaderStyle = TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.stoxSubText);
 
   Widget _buildCategoryIcon(String category) {
+    final detailed = DetailedCategory.fromString(category);
     IconData iconData = Icons.kitchen;
     Color iconColor = AppColors.stoxSubText;
 
-    if (category.contains('肉') || category.contains('魚')) {
-      iconData = Icons.restaurant;
-      iconColor = AppColors.stoxPrimary;
-    } else if (category.contains('野菜')) {
-      iconData = Icons.eco;
-      iconColor = AppColors.stoxGreen; 
-    } else if (category.contains('水')) {
-      iconData = Icons.water_drop;
-      iconColor = Colors.blue;
+    switch (detailed) {
+      case DetailedCategory.freshVegetables:
+      case DetailedCategory.frozenVegetables:
+        iconData = Icons.eco;
+        iconColor = AppColors.stoxGreen;
+        break;
+      case DetailedCategory.freshMeat:
+      case DetailedCategory.frozenMeat:
+      case DetailedCategory.processedMeat:
+      case DetailedCategory.freshFish:
+      case DetailedCategory.frozenFish:
+        iconData = Icons.restaurant;
+        iconColor = AppColors.stoxPrimary;
+        break;
+      case DetailedCategory.milkBeverage:
+      case DetailedCategory.petBottleBeverage:
+        iconData = Icons.local_drink;
+        iconColor = Colors.blue;
+        break;
+      case DetailedCategory.householdGoods:
+        iconData = Icons.shopping_bag;
+        iconColor = Colors.purple;
+        break;
+      case DetailedCategory.snacks:
+        iconData = Icons.cookie;
+        iconColor = Colors.brown;
+        break;
+      default:
+        // Fallback or unknown
+        iconData = Icons.kitchen;
+        iconColor = AppColors.stoxSubText;
     }
 
     return Icon(iconData, size: 18, color: iconColor.withOpacity(0.7));

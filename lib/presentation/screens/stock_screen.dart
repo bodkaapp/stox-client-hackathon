@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import '../../l10n/generated/app_localizations.dart';
+import '../../config/detailed_category.dart';
+import '../../config/category_mapper.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../config/app_colors.dart';
@@ -845,10 +848,11 @@ class _StockScreenState extends ConsumerState<StockScreen> {
   Widget _buildFilterBar() {
     final categories = [
       AppLocalizations.of(context)!.categoryAll,
-      AppLocalizations.of(context)!.categoryVegetablesFruits,
-      AppLocalizations.of(context)!.categoryMeatFish,
-      AppLocalizations.of(context)!.categoryDairy,
-      AppLocalizations.of(context)!.categorySeasoning,
+      '冷蔵庫（メイン）',
+      '冷蔵庫（野菜室）',
+      '冷凍庫',
+      '常温（パントリー）',
+      '日用品・その他',
     ];
     return Padding(
       key: const ValueKey('filterBar'),
@@ -909,25 +913,41 @@ class _StockScreenState extends ConsumerState<StockScreen> {
   static const _headerStyle = TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.stoxSubText); 
 
   Widget _buildListItem(Ingredient item) {
-    // Icon mapping logic
+    // Icon mapping logic using DetailedCategory
+    final detailed = DetailedCategory.fromString(item.category);
     IconData iconData;
     Color iconColor;
     
-    if (item.category.contains('肉') || item.category.contains('魚')) {
-      iconData = Icons.restaurant;
-      iconColor = AppColors.stoxPrimary.withOpacity(0.7);
-    } else if (item.category.contains('野菜')) {
-      iconData = Icons.eco;
-      iconColor = AppColors.stoxSubText.withOpacity(0.7); 
-    } else if (item.category.contains('乳') || item.category.contains('卵') || item.name.contains('たまご')) {
-      iconData = Icons.egg; 
-      iconColor = AppColors.stoxPrimary.withOpacity(0.7);
-    } else if (item.category.contains('水') || item.category.contains('飲料')) {
-      iconData = Icons.water_drop;
-      iconColor = Colors.blue.withOpacity(0.7); 
-    } else {
-      iconData = Icons.kitchen;
-      iconColor = AppColors.stoxSubText.withOpacity(0.7);
+    switch (detailed) {
+      case DetailedCategory.freshVegetables:
+      case DetailedCategory.frozenVegetables:
+        iconData = Icons.eco;
+        iconColor = AppColors.stoxGreen;
+        break;
+      case DetailedCategory.freshMeat:
+      case DetailedCategory.frozenMeat:
+      case DetailedCategory.processedMeat:
+      case DetailedCategory.freshFish:
+      case DetailedCategory.frozenFish:
+        iconData = Icons.restaurant;
+        iconColor = AppColors.stoxPrimary;
+        break;
+      case DetailedCategory.milkBeverage:
+      case DetailedCategory.petBottleBeverage:
+        iconData = Icons.local_drink;
+        iconColor = Colors.blue;
+        break;
+      case DetailedCategory.householdGoods:
+        iconData = Icons.shopping_bag;
+        iconColor = Colors.purple;
+        break;
+      case DetailedCategory.snacks:
+        iconData = Icons.cookie;
+        iconColor = Colors.brown;
+        break;
+      default:
+        iconData = Icons.kitchen;
+        iconColor = AppColors.stoxSubText;
     }
 
     // Amount color
@@ -1065,16 +1085,23 @@ class _StockScreenState extends ConsumerState<StockScreen> {
       return items.where((item) => item.name.contains(_searchQuery)).toList();
     }
 
-    // Otherwise filter by category
-    // Otherwise filter by category
+    // Otherwise filter by storage location using CategoryMapper
     if (_selectedCategoryIndex == 0) return items;
     
+    final categories = [
+      'ALL',
+      '冷蔵庫（メイン）',
+      '冷蔵庫（野菜室）',
+      '冷凍庫',
+      '常温（パントリー）',
+      '日用品・その他',
+    ];
+    final selectedLocation = categories[_selectedCategoryIndex];
+
     return items.where((item) {
-      if (_selectedCategoryIndex == 1) return item.category.contains('野菜') || item.category.contains('果物');
-      if (_selectedCategoryIndex == 2) return item.category.contains('肉') || item.category.contains('魚');
-      if (_selectedCategoryIndex == 3) return item.category.contains('乳') || item.category.contains('卵') || item.category.contains('ヨーグルト');
-      if (_selectedCategoryIndex == 4) return item.category.contains('調味料') || item.category.contains('香辛料');
-      return false; 
+      final detailed = DetailedCategory.fromString(item.category);
+      final location = CategoryMapper.toStorageLocation(detailed);
+      return location == selectedLocation;
     }).toList();
   }
 

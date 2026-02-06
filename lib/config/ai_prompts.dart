@@ -21,33 +21,36 @@ class AiPrompts {
 
   /// 買い物リスト解析プロンプト
   static const String parseShoppingList = '''
+役割: あなたは入力された商品名から、その商品の性質を分析し、最適なカテゴリに分類する専門家です。
+
 以下のテキストは、アプリのリスト（買い物リストまたは在庫リスト）に追加したいアイテムのメモ、または音声認識の結果です。
 ここから商品名、数量、単位を抽出し、適切なカテゴリを推測してJSON形式で返してください。
 
 【ルール】
 1. テキストには「〜を追加して」「〜も買う」「〜がある」などの余計な言葉が含まれる場合がありますが、商品名のみを抽出してください。
-2. 数量や単位が明示されていない場合は、amount: 1, unit: "個" としてください。
-3. カテゴリは以下のいずれかから推測してください:
-   - 野菜・果物
-   - 肉・魚
-   - 加工品
-   - 調味料
-   - 飲料
-   - 日用品
-   - その他
+2. 数量や単位が明示されていない場合は、amount: 1, unit: "個" としてください。数量は必ず数値型として出力してください。
+3. 詳細カテゴリリスト（detailed_category）は次の文字列のいずれか1つを返してください: [freshVegetables, freshFruits, frozenVegetables, freshMeat, frozenMeat, processedMeat, freshFish, frozenFish, milkBeverage, dairyProducts, tofuNatto, chilledNoodle, dryNoodle, seasoningLiquid, seasoningPowder, cannedFood, snacks, petBottleBeverage, householdGoods]
 4. 複数のアイテムが含まれている場合は、すべてリストアップしてください（例：「豚肉とキャベツ」→ リスト2件）。
 5. **食料品の場合**は、購入後のおおよその賞味期限（日数）を `shelf_life_days` プロパティに数値で入れてください。
    - 例: 牛乳なら 7, 豚肉なら 3, キャベツなら 10 など。
-   - 一般的な保存期間で構いません。
+   - 適切な場所で保存した際の一般的な保存期間で構いません。
 6. 日用品など、**食料品以外**や賞味期限を管理する必要がないものの場合は、`shelf_life_days` を `null` にしてください。
 
-出力形式:
+詳細カテゴリ分類の優先ルール:
+1. 最優先: 商品名に「冷凍」という言葉が含まれる場合、または、うどん・パスタ・餃子・炒飯・カット野菜など、明らかに冷凍食品として販売されている形態の場合は、必ず frozen で始まるカテゴリ（frozenVegetables, frozenMeat, frozenFish など。どれにも当てはまらない場合は、最も性質の近い frozen カテゴリ）を選択してください。
+2. 牛乳や紙パックのジュースは milkBeverage、ペットボトルや缶の飲料は petBottleBeverage に分類してください。
+3. 麺類について：
+  - 冷凍の麺であれば、必ず frozen 系のカテゴリに。
+  - 生麺・ゆで麺（冷蔵）なら chilledNoodle。
+  - カップ麺・袋入りの乾麺（常温）なら dryNoodle。
+
+出力形式: マークダウンのコードブロック（```json）などは使用せず、返答は必ず以下のJSON形式（リスト）の純粋な文字列のみとし、余計な解説は一切含めないでください。
 [
   {
     "name": "商品名",
     "amount": 数値,
     "unit": "単位",
-    "category": "カテゴリ",
+    "detailed_category": "選択したカテゴリ名",
     "shelf_life_days": 数値またはnull
   }
 ]
@@ -63,7 +66,7 @@ class AiPrompts {
 [
   {
     "name": "材料名",
-    "amount": 数値(推測できない場合は1),
+    "amount": 数値(推測できない場合は1、文字列ではなく数値型で出力してください),
     "unit": "単位(個, g, mlなど。推測できない場合は個)",
     "category": "野菜" などのカテゴリ（推測）,
     "status": "stock"

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../l10n/generated/app_localizations.dart';
+import '../../config/detailed_category.dart';
+import '../../config/category_mapper.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import '../../config/app_colors.dart';
@@ -762,11 +764,14 @@ class _ShoppingScreenState extends ConsumerState<ShoppingScreen> with AdManagerM
   List<Widget> _buildCategorizedItems(WidgetRef ref, List<Ingredient> items) {
     final Map<String, List<Ingredient>> categorized = {};
     for (var item in items) {
-      final cat = item.category.isNotEmpty ? item.category : '未分類';
-      categorized.putIfAbsent(cat, () => []).add(item);
+      // Use CategoryMapper to group by shopping section
+      final detailed = DetailedCategory.fromString(item.category);
+      final section = CategoryMapper.toShoppingSection(detailed);
+      categorized.putIfAbsent(section, () => []).add(item);
     }
 
     final List<Widget> widgets = [];
+    // Sort sections or keep a specific order? For now just as they come.
     categorized.forEach((category, catItems) {
       widgets.add(_buildCategorySection(ref, category, catItems));
     });
@@ -777,15 +782,24 @@ class _ShoppingScreenState extends ConsumerState<ShoppingScreen> with AdManagerM
   Widget _buildCategorySection(WidgetRef ref, String title, List<Ingredient> items) {
     Color barColor;
     switch (title) {
-      case '野菜・果物':
-      case '野菜・フルーツ':
+      case '青果':
         barColor = Colors.green;
         break;
-      case '肉・魚':
+      case '精肉・ハム':
+      case '鮮魚':
         barColor = Colors.redAccent;
         break;
-      case '調味料':
+      case '加工食品・調味料':
         barColor = Colors.amber.shade700;
+        break;
+      case '飲料・お酒':
+        barColor = Colors.blue;
+        break;
+      case '冷凍食品':
+        barColor = Colors.cyan;
+        break;
+      case '乳製品・豆腐・日配':
+        barColor = Colors.orange;
         break;
       default:
         barColor = AppColors.stoxPrimary;
