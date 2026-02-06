@@ -573,7 +573,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get actionSearch => '検索';
 
   @override
-  String get actionGetAiSuggestions => 'AIの提案を受ける';
+  String get actionGetAiSuggestions => 'AIに提案してもらう';
 
   @override
   String get labelSearchHistory => '検索履歴';

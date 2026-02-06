@@ -58,17 +58,22 @@ class _RecipeSearchResultsScreenState extends State<RecipeSearchResultsScreen> {
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
+        final List<dynamic> items = data['items'] ?? [];
+        debugPrint('Search: "$fullQuery" - ${items.length} recipes found.');
+        
         setState(() {
-          _webResults = data['items'] ?? [];
+          _webResults = items;
           _isLoading = false;
         });
       } else {
+        debugPrint('Search Failed: code ${response.statusCode}');
         setState(() {
           _errorMessage = '${AppLocalizations.of(context)!.searchFailedMessage} (${response.statusCode})'; // 検索に失敗しました
           _isLoading = false;
         });
       }
     } catch (e) {
+      debugPrint('Search Error: $e');
       setState(() {
         _errorMessage = AppLocalizations.of(context)!.errorNetwork; // 通信エラーが発生しました
         _isLoading = false;
@@ -157,10 +162,12 @@ class _RecipeSearchResultsScreenState extends State<RecipeSearchResultsScreen> {
       );
     }
 
+    if (_webResults.isEmpty) {
       return Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16),
         child: Text(AppLocalizations.of(context)!.noRecipeSearchResults, style: const TextStyle(color: AppColors.stoxSubText)), // レシピサイトに結果が見つかりませんでした
       );
+    }
 
     return ListView.builder(
       shrinkWrap: true,

@@ -1169,7 +1169,7 @@ abstract class AppLocalizations {
   /// No description provided for @actionGetAiSuggestions.
   ///
   /// In ja, this message translates to:
-  /// **'AIの提案を受ける'**
+  /// **'AIに提案してもらう'**
   String get actionGetAiSuggestions;
 
   /// No description provided for @labelSearchHistory.

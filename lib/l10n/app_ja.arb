@@ -251,7 +251,7 @@
   "categoryOthers": "その他",
   "actionAi": "AI",
   "actionSearch": "検索",
-  "actionGetAiSuggestions": "AIの提案を受ける",
+  "actionGetAiSuggestions": "AIに提案してもらう",
   "labelSearchHistory": "検索履歴",
   "actionManualRecipeEntryInstead": "検索せずに、レシピを手入力する",
   "labelManualRecipeEntry": "レシピを手入力",
