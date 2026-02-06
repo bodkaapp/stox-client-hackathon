@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../l10n/generated/app_localizations.dart';
 import '../../config/app_colors.dart';
 import '../viewmodels/search_history_viewmodel.dart';
@@ -201,16 +202,7 @@ class _SearchModalState extends ConsumerState<SearchModal> {
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 0),
                 children: [
                    // ... (Existing AI, History content) ... 
-                   // AI Button
-                   Padding(
-                     padding: const EdgeInsets.only(bottom: 24),
-                     child: AiSuggestionButton(
-                       onTap: () {
-                         // Empty function as requested
-                       },
-                       label: AppLocalizations.of(context)!.actionGetAiSuggestions, // AIに提案してもらう
-                     ),
-                   ),
+                   // AI Button (MOVED TO BOTTOM)
 
                    // History Section
                    Row(
@@ -300,7 +292,7 @@ class _SearchModalState extends ConsumerState<SearchModal> {
               ),
             ),
             
-            // Manual Entry Button
+            // Manual Entry and AI Suggestion Buttons
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(20),
@@ -308,31 +300,47 @@ class _SearchModalState extends ConsumerState<SearchModal> {
                 color: Colors.white,
                 border: Border(top: BorderSide(color: Color(0xFFE7E5E4))), // stone-200
               ),
-              child: SizedBox(
-                height: 50,
-                child: OutlinedButton(
-                  onPressed: () {
-                    // Navigate to Manual Recipe Entry
-                    Navigator.push(
-                      context, 
-                      MaterialPageRoute(builder: (context) => ManualRecipeEntryScreen(
-                        initialDate: widget.initialDate,
-                        initialMealType: widget.initialMealType,
-                      )),
-                    );
-                  },
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: const Color(0xFF57534E), // stone-600
-                    side: const BorderSide(color: Color(0xFFD6D3D1)), // stone-300
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                   // Manual Entry Button
+                  SizedBox(
+                    height: 50,
+                    width: double.infinity,
+                    child: OutlinedButton(
+                      onPressed: () {
+                        // Navigate to Manual Recipe Entry
+                        Navigator.push(
+                          context, 
+                          MaterialPageRoute(builder: (context) => ManualRecipeEntryScreen(
+                            initialDate: widget.initialDate,
+                            initialMealType: widget.initialMealType,
+                          )),
+                        );
+                      },
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: const Color(0xFF57534E), // stone-600
+                        side: const BorderSide(color: Color(0xFFD6D3D1)), // stone-300
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                      child: Text(
+                        AppLocalizations.of(context)!.actionManualRecipeEntryInstead, // 検索せずに、レシピを手入力する
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
                     ),
                   ),
-                  child: Text(
-                    AppLocalizations.of(context)!.actionManualRecipeEntryInstead, // 検索せずに、レシピを手入力する
-                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  const SizedBox(height: 12),
+                  // AI Suggestion Button
+                  AiSuggestionButton(
+                    onTap: () {
+                      Navigator.pop(context);
+                      context.push('/ai_recipe_intro');
+                    },
+                    label: AppLocalizations.of(context)!.actionTakeRefrigeratorPhotoAndAiSuggest, // 冷蔵庫を撮影してAIで提案する
                   ),
-                ),
+                ],
               ),
             ),
           ],

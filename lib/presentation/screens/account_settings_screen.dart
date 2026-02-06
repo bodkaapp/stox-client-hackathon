@@ -41,7 +41,7 @@ class AccountSettingsScreen extends ConsumerWidget { // Changed to ConsumerWidge
       await prefs.setBool('is_first_launch', true);
       
       if (context.mounted) {
-        context.go('/tutorial');
+        context.go('/ai_recipe_intro');
       }
     }
   }

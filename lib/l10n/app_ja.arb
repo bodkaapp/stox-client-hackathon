@@ -763,5 +763,6 @@
   "nutritionStatistics": "栄養統計",
   "nutritionAverage": "平均",
   "nutritionAnalysisData": "栄養価データ",
-  "nutritionPfcBalance": "PFCバランス"
+  "nutritionPfcBalance": "PFCバランス",
+  "actionTakeRefrigeratorPhotoAndAiSuggest": "冷蔵庫を撮影してAIが提案する"
 }

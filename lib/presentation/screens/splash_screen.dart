@@ -36,7 +36,7 @@ class _SplashScreenState extends State<SplashScreen> {
 
     if (mounted) {
       if (isFirstLaunch) {
-        context.go('/tutorial');
+        context.go('/ai_recipe_intro');
       } else {
         context.go('/');
       }

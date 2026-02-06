@@ -1498,4 +1498,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get nutritionPfcBalance => 'PFCバランス';
+
+  @override
+  String get actionTakeRefrigeratorPhotoAndAiSuggest => '冷蔵庫を撮影してAIが提案する';
 }

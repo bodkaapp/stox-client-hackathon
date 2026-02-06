@@ -2875,6 +2875,12 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'PFCバランス'**
   String get nutritionPfcBalance;
+
+  /// No description provided for @actionTakeRefrigeratorPhotoAndAiSuggest.
+  ///
+  /// In ja, this message translates to:
+  /// **'冷蔵庫を撮影してAIが提案する'**
+  String get actionTakeRefrigeratorPhotoAndAiSuggest;
 }
 
 class _AppLocalizationsDelegate

@@ -10,7 +10,7 @@ import '../presentation/screens/flyer_screen.dart';
 import '../presentation/screens/scaffold_with_nav_bar.dart';
 import '../presentation/screens/notification_list_screen.dart';
 import '../presentation/screens/splash_screen.dart';
-import '../presentation/screens/tutorial_screen.dart';
+import '../presentation/screens/ai_recipe_intro_screen.dart';
 import '../presentation/screens/account_settings_screen.dart';
 import '../presentation/screens/food_camera_screen.dart';
 import '../presentation/screens/menu_plan_screen.dart';
@@ -33,8 +33,8 @@ GoRouter router(RouterRef ref) {
         builder: (context, state) => const SplashScreen(),
       ),
       GoRoute(
-        path: '/tutorial',
-        builder: (context, state) => const TutorialScreen(),
+        path: '/ai_recipe_intro',
+        builder: (context, state) => const AiRecipeIntroScreen(),
       ),
       GoRoute(
         path: '/splash_view',

@@ -7,8 +7,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'ai_recipe_loading_screen.dart';
 import 'photo_stock_location_screen.dart';
 
-class TutorialScreen extends StatelessWidget {
-  const TutorialScreen({super.key});
+class AiRecipeIntroScreen extends StatelessWidget {
+  const AiRecipeIntroScreen({super.key});
 
   Future<void> _setFirstLaunchDone() async {
     final prefs = await SharedPreferences.getInstance();

@@ -755,5 +755,6 @@
   "nutritionStatistics": "Nutrition Stats",
   "nutritionAverage": "Avg",
   "nutritionAnalysisData": "Nutrition Data",
-  "nutritionPfcBalance": "PFC Balance"
+  "nutritionPfcBalance": "PFC Balance",
+  "actionTakeRefrigeratorPhotoAndAiSuggest": "Take a fridge photo and suggest by AI"
 }

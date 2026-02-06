@@ -1516,4 +1516,8 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get nutritionPfcBalance => 'PFC Balance';
+
+  @override
+  String get actionTakeRefrigeratorPhotoAndAiSuggest =>
+      'Take a fridge photo and suggest by AI';
 }
