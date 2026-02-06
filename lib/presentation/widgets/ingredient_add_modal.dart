@@ -11,8 +11,14 @@ class AddedIngredientItem {
   final String name;
   final double quantity;
   final String category;
+  final DateTime? expiryDate;
 
-  AddedIngredientItem({required this.name, required this.quantity, required this.category});
+  AddedIngredientItem({
+    required this.name,
+    required this.quantity, 
+    required this.category,
+    this.expiryDate,
+  });
 }
 
 class IngredientAddModal extends ConsumerStatefulWidget {
@@ -67,24 +73,7 @@ class _IngredientAddModalState extends ConsumerState<IngredientAddModal> {
   }
 
 
-  void _addItem() {
-    final name = _nameController.text.trim();
-    if (name.isEmpty) return;
-
-    setState(() {
-      _addedItems.add(AddedIngredientItem(
-        name: name,
-        quantity: _quantity,
-        category: _categoryController.text.trim(),
-      ));
-      // Reset inputs
-      _nameController.clear();
-      _categoryController.clear();
-      _quantity = 1.0;
-    });
-  }
-
-  Future<void> _addWithAi() async {
+  Future<void> _addItem() async {
     final text = _nameController.text.trim();
     if (text.isEmpty) return;
 
@@ -103,33 +92,42 @@ class _IngredientAddModalState extends ConsumerState<IngredientAddModal> {
               name: item.name,
               quantity: item.amount,
               category: item.category,
+              expiryDate: item.expiryDate,
             ));
           }
-          // Clear inputs on success
+          // Reset inputs
           _nameController.clear();
           _categoryController.clear();
           _quantity = 1.0;
         });
-        
-        if (mounted) {
-           ScaffoldMessenger.of(context).showSnackBar(
-             SnackBar(content: Text(AppLocalizations.of(context)!.addModalAiSuccess(ingredients.length))),
-           );
-        }
       } else {
-        if (mounted) {
-           ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(AppLocalizations.of(context)!.addModalAiError)),
-           );
-        }
+        // AI returned empty, fallback to manual add
+        setState(() {
+          _addedItems.add(AddedIngredientItem(
+            name: text,
+            quantity: _quantity,
+            category: _categoryController.text.trim(),
+          ));
+          // Reset inputs
+          _nameController.clear();
+          _categoryController.clear();
+          _quantity = 1.0;
+        });
       }
     } catch (e) {
       debugPrint("AI Add Error: $e");
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('${AppLocalizations.of(context)!.errorOccurred}: $e')), // エラー
-        );
-      }
+      // Fallback on error
+      setState(() {
+        _addedItems.add(AddedIngredientItem(
+          name: text,
+          quantity: _quantity,
+          category: _categoryController.text.trim(),
+        ));
+        // Reset inputs
+        _nameController.clear();
+        _categoryController.clear();
+        _quantity = 1.0;
+      });
     } finally {
       if (mounted) {
         setState(() {
@@ -140,6 +138,8 @@ class _IngredientAddModalState extends ConsumerState<IngredientAddModal> {
       }
     }
   }
+
+  // Remove _addWithAi as it is now integrated into _addItem
 
   void _onSuggestionTap(String suggestion) {
     _nameController.text = suggestion;
@@ -166,7 +166,7 @@ class _IngredientAddModalState extends ConsumerState<IngredientAddModal> {
           status: widget.targetStatus, 
           storageType: StorageType.fridge, // Default to fridge
           purchaseDate: DateTime.now(),
-          expiryDate: DateTime.now().add(const Duration(days: 7)), // Default +7 days
+          expiryDate: item.expiryDate ?? DateTime.now().add(const Duration(days: 7)), // Use AI estimated or default +7 days
         );
       }).toList();
 
@@ -513,38 +513,12 @@ class _IngredientAddModalState extends ConsumerState<IngredientAddModal> {
               ),
               const SizedBox(width: 8),
 
-              // AI Add Button
-              GestureDetector(
-                onTap: _addWithAi,
-                child: Container(
-                  height: 44,
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  decoration: BoxDecoration(
-                    color: AppColors.stoxAccent.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: AppColors.stoxAccent.withOpacity(0.5)),
-                  ),
-                  alignment: Alignment.center,
-                  child: Row(
-                    children: [
-                      const Icon(Icons.auto_awesome, color: AppColors.stoxAccent, size: 16),
-                      const SizedBox(width: 4),
-                      Text(
-                        AppLocalizations.of(context)!.actionAi, // AI
-                        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.stoxAccent),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(width: 8),
-              
               // Add Button
               GestureDetector(
                 onTap: _addItem,
                 child: Container(
                   height: 44,
-                  padding: const EdgeInsets.symmetric(horizontal: 24), // Reduced padding to fit
+                  padding: const EdgeInsets.symmetric(horizontal: 32), 
                   decoration: BoxDecoration(
                     color: AppColors.stoxPrimary,
                     borderRadius: BorderRadius.circular(12),
