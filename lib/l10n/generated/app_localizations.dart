@@ -953,7 +953,7 @@ abstract class AppLocalizations {
   /// No description provided for @actionRegisterToMyRecipeBook.
   ///
   /// In ja, this message translates to:
-  /// **'マイレシピ帳に登録する'**
+  /// **'献立に登録する'**
   String get actionRegisterToMyRecipeBook;
 
   /// No description provided for @aiAnalysisRecipeIngredientsDescriptionLong.

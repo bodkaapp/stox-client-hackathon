@@ -460,7 +460,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get recipeSaveQuestion => 'このレシピをどうしますか？';
 
   @override
-  String get actionRegisterToMyRecipeBook => 'マイレシピ帳に登録する';
+  String get actionRegisterToMyRecipeBook => '献立に登録する';
 
   @override
   String get aiAnalysisRecipeIngredientsDescriptionLong =>

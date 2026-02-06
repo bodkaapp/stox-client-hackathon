@@ -203,7 +203,7 @@
   "recipeSaveError": "Failed to register recipe",
   "recipeSaveTitle": "Save Recipe",
   "recipeSaveQuestion": "What would you like to do with this recipe?",
-  "actionRegisterToMyRecipeBook": "Register to My Recipe Book",
+  "actionRegisterToMyRecipeBook": "Register to Menu plan",
   "aiAnalysisRecipeIngredientsDescriptionLong": "AI is analyzing recipe ingredients.\nAnalysis will be performed while you watch the ad.",
   "actionWatchAdAndAnalyze": "Watch Ad & Analyze",
   "analysisFailedTryAgain": "Analysis failed. Please try again.",

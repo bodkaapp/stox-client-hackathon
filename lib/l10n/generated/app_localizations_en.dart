@@ -466,7 +466,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'What would you like to do with this recipe?';
 
   @override
-  String get actionRegisterToMyRecipeBook => 'Register to My Recipe Book';
+  String get actionRegisterToMyRecipeBook => 'Register to Menu plan';
 
   @override
   String get aiAnalysisRecipeIngredientsDescriptionLong =>

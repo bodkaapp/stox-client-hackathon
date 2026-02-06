@@ -203,7 +203,7 @@
   "recipeSaveError": "登録に失敗しました",
   "recipeSaveTitle": "レシピの保存",
   "recipeSaveQuestion": "このレシピをどうしますか？",
-  "actionRegisterToMyRecipeBook": "マイレシピ帳に登録する",
+  "actionRegisterToMyRecipeBook": "献立に登録する",
   "aiAnalysisRecipeIngredientsDescriptionLong": "AIがレシピの材料を分析しています。\n広告を再生している間に解析を行います。",
   "actionWatchAdAndAnalyze": "広告を見て解析する",
   "analysisFailedTryAgain": "解析に失敗しました。もう一度お試しください。",
