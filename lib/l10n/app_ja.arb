@@ -508,7 +508,7 @@
   "dateYesterday": "昨日",
   "aiMenuThinking": "献立を考えています...",
   "aiMenuCheckingStock": "冷蔵庫の中身を確認しています...",
-  "aiMenuGenerating": "AIがメニューを生成しています...",
+  "aiMenuGenerating": "AIが献立を考えています...",
   "aiMenuGenerationFailed": "提案を作成できませんでした",
   "errorOccurredTryAgain": "エラーが発生しました。\nもう一度お試しください。",
   "menuSnack": "間食",

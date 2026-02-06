@@ -5,7 +5,7 @@ import 'package:intl/intl.dart';
 import '../../config/food_events.dart';
 import '../../config/app_colors.dart';
 import '../../l10n/generated/app_localizations.dart';
-import 'particle_button.dart';
+import '../components/ai_suggestion_button.dart';
 
 class DateHeaderWidget extends StatelessWidget {
   final DateTime date;
@@ -202,41 +202,9 @@ class DateHeaderWidget extends StatelessWidget {
                      ],
                    ),
                  ),
-                 ParticleButton(
-                   onPressed: () => onAiButtonTap!(targetActionDate!),
-                   child: Container(
-                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                     decoration: BoxDecoration(
-                       gradient: const LinearGradient(
-                         colors: [AppColors.stoxPrimary, Color(0xFFFFCC80)], // Orange gradient
-                         begin: Alignment.topLeft,
-                         end: Alignment.bottomRight,
-                       ),
-                       borderRadius: BorderRadius.circular(20),
-                       boxShadow: [
-                         BoxShadow(
-                           color: AppColors.stoxPrimary.withOpacity(0.3),
-                           blurRadius: 4,
-                           offset: const Offset(0, 2),
-                         ),
-                       ],
-                     ),
-                     child: Row(
-                       mainAxisSize: MainAxisSize.min,
-                       children: [
-                         const Icon(Icons.auto_awesome, color: Colors.white, size: 14),
-                         const SizedBox(width: 4),
-                         Text(
-                           buttonLabel,
-                           style: const TextStyle(
-                             color: Colors.white,
-                             fontSize: 11,
-                             fontWeight: FontWeight.bold,
-                           ),
-                         ),
-                       ],
-                     ),
-                   ),
+                 AiSuggestionButton.small(
+                   onTap: () => onAiButtonTap!(targetActionDate!),
+                   label: buttonLabel,
                  ),
                ],
              )

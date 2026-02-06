@@ -988,7 +988,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get aiMenuCheckingStock => '冷蔵庫の中身を確認しています...';
 
   @override
-  String get aiMenuGenerating => 'AIがメニューを生成しています...';
+  String get aiMenuGenerating => 'AIが献立を考えています...';
 
   @override
   String get aiMenuGenerationFailed => '提案を作成できませんでした';

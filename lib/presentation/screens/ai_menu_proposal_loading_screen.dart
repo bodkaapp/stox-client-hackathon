@@ -104,7 +104,7 @@ class _AiMenuProposalLoadingScreenState extends ConsumerState<AiMenuProposalLoad
 
       if (mounted) {
         setState(() {
-          _displayText = AppLocalizations.of(context)!.aiMenuGenerating; // AIがメニューを生成しています...
+          _displayText = AppLocalizations.of(context)!.aiMenuGenerating; // AIが献立を考えています...
         });
       }
 

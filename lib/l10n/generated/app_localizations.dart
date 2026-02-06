@@ -1913,7 +1913,7 @@ abstract class AppLocalizations {
   /// No description provided for @aiMenuGenerating.
   ///
   /// In ja, this message translates to:
-  /// **'AIがメニューを生成しています...'**
+  /// **'AIが献立を考えています...'**
   String get aiMenuGenerating;
 
   /// No description provided for @aiMenuGenerationFailed.
