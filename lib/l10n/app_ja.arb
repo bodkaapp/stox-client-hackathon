@@ -102,7 +102,7 @@
   "voiceAnalyzing": "AIが解析中...",
   "voiceListening": "聞いています...",
   "voiceTapToStart": "タップして開始",
-  "voiceHint": "商品名を話しかけてください\\n例：「長ネギ」「豚肉とキャベツ」",
+  "voiceHint": "商品名を話しかけてください\n例：「長ネギ」「豚肉とキャベツ」",
   "voiceHistoryPlaceholder": "追加履歴がここに表示されます",
   "voiceAdded": "追加済",
   "voiceClose": "閉じる",
@@ -750,5 +750,18 @@
     }
   },
   "actionAiMenuTomorrow": "AI明日の献立",
-  "actionAiMenuDayAfterTomorrow": "AI明後日の献立"
+  "actionAiMenuDayAfterTomorrow": "AI明後日の献立",
+  "nutritionTotal": "合計",
+  "nutritionCalories": "カロリー",
+  "nutritionProtein": "タンパク質(P)",
+  "nutritionFat": "脂質(F)",
+  "nutritionCarbs": "炭水化物(C)",
+  "nutritionDailyTotal": "1日の合計栄養価",
+  "nutritionSectionTotal": "この時間の合計",
+  "nutritionWeeklyAverage": "週平均",
+  "nutritionMonthlyAverage": "月平均",
+  "nutritionStatistics": "栄養統計",
+  "nutritionAverage": "平均",
+  "nutritionAnalysisData": "栄養価データ",
+  "nutritionPfcBalance": "PFCバランス"
 }

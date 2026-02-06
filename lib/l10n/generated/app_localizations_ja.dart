@@ -206,7 +206,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get voiceTapToStart => 'タップして開始';
 
   @override
-  String get voiceHint => '商品名を話しかけてください\\n例：「長ネギ」「豚肉とキャベツ」';
+  String get voiceHint => '商品名を話しかけてください\n例：「長ネギ」「豚肉とキャベツ」';
 
   @override
   String get voiceHistoryPlaceholder => '追加履歴がここに表示されます';
@@ -1459,4 +1459,43 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get actionAiMenuDayAfterTomorrow => 'AI明後日の献立';
+
+  @override
+  String get nutritionTotal => '合計';
+
+  @override
+  String get nutritionCalories => 'カロリー';
+
+  @override
+  String get nutritionProtein => 'タンパク質(P)';
+
+  @override
+  String get nutritionFat => '脂質(F)';
+
+  @override
+  String get nutritionCarbs => '炭水化物(C)';
+
+  @override
+  String get nutritionDailyTotal => '1日の合計栄養価';
+
+  @override
+  String get nutritionSectionTotal => 'この時間の合計';
+
+  @override
+  String get nutritionWeeklyAverage => '週平均';
+
+  @override
+  String get nutritionMonthlyAverage => '月平均';
+
+  @override
+  String get nutritionStatistics => '栄養統計';
+
+  @override
+  String get nutritionAverage => '平均';
+
+  @override
+  String get nutritionAnalysisData => '栄養価データ';
+
+  @override
+  String get nutritionPfcBalance => 'PFCバランス';
 }

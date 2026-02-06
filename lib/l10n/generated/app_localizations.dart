@@ -473,7 +473,7 @@ abstract class AppLocalizations {
   /// No description provided for @voiceHint.
   ///
   /// In ja, this message translates to:
-  /// **'商品名を話しかけてください\\n例：「長ネギ」「豚肉とキャベツ」'**
+  /// **'商品名を話しかけてください\n例：「長ネギ」「豚肉とキャベツ」'**
   String get voiceHint;
 
   /// No description provided for @voiceHistoryPlaceholder.
@@ -2797,6 +2797,84 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'AI明後日の献立'**
   String get actionAiMenuDayAfterTomorrow;
+
+  /// No description provided for @nutritionTotal.
+  ///
+  /// In ja, this message translates to:
+  /// **'合計'**
+  String get nutritionTotal;
+
+  /// No description provided for @nutritionCalories.
+  ///
+  /// In ja, this message translates to:
+  /// **'カロリー'**
+  String get nutritionCalories;
+
+  /// No description provided for @nutritionProtein.
+  ///
+  /// In ja, this message translates to:
+  /// **'タンパク質(P)'**
+  String get nutritionProtein;
+
+  /// No description provided for @nutritionFat.
+  ///
+  /// In ja, this message translates to:
+  /// **'脂質(F)'**
+  String get nutritionFat;
+
+  /// No description provided for @nutritionCarbs.
+  ///
+  /// In ja, this message translates to:
+  /// **'炭水化物(C)'**
+  String get nutritionCarbs;
+
+  /// No description provided for @nutritionDailyTotal.
+  ///
+  /// In ja, this message translates to:
+  /// **'1日の合計栄養価'**
+  String get nutritionDailyTotal;
+
+  /// No description provided for @nutritionSectionTotal.
+  ///
+  /// In ja, this message translates to:
+  /// **'この時間の合計'**
+  String get nutritionSectionTotal;
+
+  /// No description provided for @nutritionWeeklyAverage.
+  ///
+  /// In ja, this message translates to:
+  /// **'週平均'**
+  String get nutritionWeeklyAverage;
+
+  /// No description provided for @nutritionMonthlyAverage.
+  ///
+  /// In ja, this message translates to:
+  /// **'月平均'**
+  String get nutritionMonthlyAverage;
+
+  /// No description provided for @nutritionStatistics.
+  ///
+  /// In ja, this message translates to:
+  /// **'栄養統計'**
+  String get nutritionStatistics;
+
+  /// No description provided for @nutritionAverage.
+  ///
+  /// In ja, this message translates to:
+  /// **'平均'**
+  String get nutritionAverage;
+
+  /// No description provided for @nutritionAnalysisData.
+  ///
+  /// In ja, this message translates to:
+  /// **'栄養価データ'**
+  String get nutritionAnalysisData;
+
+  /// No description provided for @nutritionPfcBalance.
+  ///
+  /// In ja, this message translates to:
+  /// **'PFCバランス'**
+  String get nutritionPfcBalance;
 }
 
 class _AppLocalizationsDelegate

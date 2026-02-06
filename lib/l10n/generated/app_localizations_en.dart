@@ -207,7 +207,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get voiceHint =>
-      'Speak item names\\ne.g. \"Onions\", \"Pork and Cabbage\"';
+      'Speak item names\ne.g. \"Onions\", \"Pork and Cabbage\"';
 
   @override
   String get voiceHistoryPlaceholder => 'History will appear here';
@@ -1477,4 +1477,43 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get actionAiMenuDayAfterTomorrow => 'AI Day After Tomorrow\'s Menu';
+
+  @override
+  String get nutritionTotal => 'Total';
+
+  @override
+  String get nutritionCalories => 'Calories';
+
+  @override
+  String get nutritionProtein => 'Protein(P)';
+
+  @override
+  String get nutritionFat => 'Fat(F)';
+
+  @override
+  String get nutritionCarbs => 'Carbs(C)';
+
+  @override
+  String get nutritionDailyTotal => 'Daily Nutritional Total';
+
+  @override
+  String get nutritionSectionTotal => 'Section Total';
+
+  @override
+  String get nutritionWeeklyAverage => 'Weekly Average';
+
+  @override
+  String get nutritionMonthlyAverage => 'Monthly Average';
+
+  @override
+  String get nutritionStatistics => 'Nutrition Stats';
+
+  @override
+  String get nutritionAverage => 'Avg';
+
+  @override
+  String get nutritionAnalysisData => 'Nutrition Data';
+
+  @override
+  String get nutritionPfcBalance => 'PFC Balance';
 }

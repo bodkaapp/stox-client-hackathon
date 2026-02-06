@@ -15,6 +15,7 @@ import '../presentation/screens/account_settings_screen.dart';
 import '../presentation/screens/food_camera_screen.dart';
 import '../presentation/screens/menu_plan_screen.dart';
 import '../presentation/screens/photo_gallery_screen.dart';
+import '../presentation/screens/nutrition_statistics_screen.dart';
 
 part 'router.g.dart';
 
@@ -103,7 +104,11 @@ GoRouter router(RouterRef ref) {
         parentNavigatorKey: _rootNavigatorKey,
         builder: (context, state) => const PhotoGalleryScreen(),
       ),
-
+      GoRoute(
+        path: '/nutrition_statistics',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => const NutritionStatisticsScreen(),
+      ),
     ],
   );
 }

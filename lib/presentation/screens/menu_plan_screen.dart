@@ -34,6 +34,7 @@ import '../components/ai_suggestion_button.dart';
 import '../../l10n/generated/app_localizations.dart';
 import '../../domain/models/food_photo.dart';
 import '../../infrastructure/repositories/drift_food_photo_repository.dart';
+import '../viewmodels/nutrition_viewmodel.dart';
 
 
 // -----------------------------------------------------------------------------
@@ -293,6 +294,11 @@ class _MenuPlanScreenState extends ConsumerState<MenuPlanScreen> with AdManagerM
               );
             }
           ),
+          IconButton(
+            onPressed: () => context.push('/nutrition_statistics'),
+            icon: const Icon(Icons.bar_chart, color: Color(0xFF57534E)),
+            tooltip: AppLocalizations.of(context)!.nutritionStatistics,
+          ),
           LayoutBuilder(
             builder: (context, constraints) {
                final isTablet = MediaQuery.of(context).size.width >= 600;
@@ -329,83 +335,101 @@ class _MenuPlanScreenState extends ConsumerState<MenuPlanScreen> with AdManagerM
   }
 
   Widget _buildMobileLayout(DateTime selectedDate, AsyncValue<List<MealPlanWithRecipe>> mealPlansAsync) {
-    return Column(
+    return Stack(
       children: [
-        _isMonthlyView 
-          ? MonthlyCalendarView(
-              selectedDate: selectedDate,
-              focusedMonth: _focusedMonth,
-              onDateSelected: (date) {
-                ref.read(selectedDateProvider.notifier).state = date;
-              },
-              onPageChanged: (date) {
-                setState(() {
-                  _focusedMonth = date;
-                });
-              },
-            )
-          : WeeklyCalendarStrip(
-              selectedDate: selectedDate,
-              onDateSelected: (date) {
-                ref.read(selectedDateProvider.notifier).state = date;
-              },
-              scrollController: _dateScrollController,
-            ),
-        
-        const Divider(height: 1, color: Color(0xFFF5F5F4)),
+        Column(
+          children: [
+            _isMonthlyView 
+              ? MonthlyCalendarView(
+                  selectedDate: selectedDate,
+                  focusedMonth: _focusedMonth,
+                  onDateSelected: (date) {
+                    ref.read(selectedDateProvider.notifier).state = date;
+                  },
+                  onPageChanged: (date) {
+                    setState(() {
+                      _focusedMonth = date;
+                    });
+                  },
+                )
+              : WeeklyCalendarStrip(
+                  selectedDate: selectedDate,
+                  onDateSelected: (date) {
+                    ref.read(selectedDateProvider.notifier).state = date;
+                  },
+                  scrollController: _dateScrollController,
+                ),
+            
+            const Divider(height: 1, color: Color(0xFFF5F5F4)),
 
-        Expanded(
-          child: mealPlansAsync.when(
-            data: (data) => _buildMealSections(data, selectedDate),
-            loading: () => const Center(child: CircularProgressIndicator(color: AppColors.stoxPrimary)),
-            error: (err, stack) => Center(child: Text('Error: $err')),
-          ),
+            Expanded(
+              child: mealPlansAsync.when(
+                data: (data) => _buildMealSections(data, selectedDate),
+                loading: () => const Center(child: CircularProgressIndicator(color: AppColors.stoxPrimary)),
+                error: (err, stack) => Center(child: Text('Error: $err')),
+              ),
+            ),
+          ],
+        ),
+        mealPlansAsync.when(
+          data: (data) => _buildDailySummarySheet(data),
+          loading: () => const SizedBox.shrink(),
+          error: (_, __) => const SizedBox.shrink(),
         ),
       ],
     );
   }
 
   Widget _buildTabletLayout(DateTime selectedDate, AsyncValue<List<MealPlanWithRecipe>> mealPlansAsync) {
-     return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
+     return Stack(
       children: [
-        Container(
-          width: 360,
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            border: Border(right: BorderSide(color: Color(0xFFF5F5F4))),
-          ),
-          child: Column(
-            children: [
-               Expanded(
-                 child: SingleChildScrollView(
-                   child: Padding(
-                     padding: const EdgeInsets.only(top: 16.0),
-                     child: MonthlyCalendarView(
-                        selectedDate: selectedDate,
-                        focusedMonth: _focusedMonth,
-                        onDateSelected: (date) {
-                          ref.read(selectedDateProvider.notifier).state = date;
-                        },
-                        onPageChanged: (date) {
-                          setState(() {
-                            _focusedMonth = date;
-                          });
-                        },
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: 360,
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                border: Border(right: BorderSide(color: Color(0xFFF5F5F4))),
+              ),
+              child: Column(
+                children: [
+                  Expanded(
+                    child: SingleChildScrollView(
+                      child: Padding(
+                        padding: const EdgeInsets.only(top: 16.0),
+                        child: MonthlyCalendarView(
+                            selectedDate: selectedDate,
+                            focusedMonth: _focusedMonth,
+                            onDateSelected: (date) {
+                              ref.read(selectedDateProvider.notifier).state = date;
+                            },
+                            onPageChanged: (date) {
+                              setState(() {
+                                _focusedMonth = date;
+                              });
+                            },
+                          ),
                       ),
-                   ),
-                 ),
-               ),
-            ],
-          ),
-        ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
 
-        Expanded(
-          child: mealPlansAsync.when(
-            data: (data) => _buildMealSections(data, selectedDate),
-            loading: () => const Center(child: CircularProgressIndicator(color: AppColors.stoxPrimary)),
-            error: (err, stack) => Center(child: Text('Error: $err')),
-          ),
+            Expanded(
+              child: mealPlansAsync.when(
+                data: (data) => _buildMealSections(data, selectedDate),
+                loading: () => const Center(child: CircularProgressIndicator(color: AppColors.stoxPrimary)),
+                error: (err, stack) => Center(child: Text('Error: $err')),
+              ),
+            ),
+          ],
+        ),
+        mealPlansAsync.when(
+          data: (data) => _buildDailySummarySheet(data),
+          loading: () => const SizedBox.shrink(),
+          error: (_, __) => const SizedBox.shrink(),
         ),
       ],
     );
@@ -422,7 +446,7 @@ class _MenuPlanScreenState extends ConsumerState<MenuPlanScreen> with AdManagerM
     final undecided = plans.where((p) => p.mealPlan.mealType == MealType.undecided).toList();
 
     return ListView(
-      padding: const EdgeInsets.fromLTRB(16, 4, 16, 80),
+      padding: const EdgeInsets.fromLTRB(16, 4, 16, 150),
       children: [
         DateHeaderWidget(
           date: selectedDate,
@@ -654,58 +678,92 @@ class _MenuPlanScreenState extends ConsumerState<MenuPlanScreen> with AdManagerM
               return _buildVerticalCard(items[index]);
             },
           ),
-          
-        if (items.any((e) => e.mealPlan.photos.isNotEmpty))
-           Container(
-             height: 100,
-             margin: const EdgeInsets.only(top: 12),
-             child: ListView(
-               scrollDirection: Axis.horizontal,
-               children: items.expand((e) => e.mealPlan.photos).map((path) {
-                 return Padding(
-                   padding: const EdgeInsets.only(right: 8),
-                   child: GestureDetector(
-                     onTap: () {
-                        Navigator.of(context, rootNavigator: true).push(
-                          MaterialPageRoute(
-                            builder: (_) => PhotoViewerScreen(filePath: path),
+        if (items.any((e) => e.mealPlan.photos.isNotEmpty)) ...[
+          Container(
+            height: 100,
+            margin: const EdgeInsets.only(top: 12),
+            child: ListView(
+              scrollDirection: Axis.horizontal,
+              children: items.expand((e) => e.mealPlan.photos).map((path) {
+                return Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: GestureDetector(
+                    onTap: () {
+                      Navigator.of(context, rootNavigator: true).push(
+                        MaterialPageRoute(
+                          builder: (_) => PhotoViewerScreen(filePath: path),
+                        ),
+                      );
+                    },
+                    child: Stack(
+                      children: [
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: Image.file(File(path), width: 100, height: 100, fit: BoxFit.cover),
+                        ),
+                        Positioned(
+                          bottom: 4,
+                          right: 4,
+                          child: FutureBuilder<DateTime>(
+                            future: File(path).lastModified(),
+                            builder: (context, snapshot) {
+                              if (!snapshot.hasData) return const SizedBox.shrink();
+                              return Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: Colors.black.withOpacity(0.6),
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: Text(
+                                  DateFormat('HH:mm').format(snapshot.data!),
+                                  style: const TextStyle(fontSize: 10, color: Colors.white, fontWeight: FontWeight.bold),
+                                ),
+                              );
+                            },
                           ),
-                        );
-                     },
-                     child: Stack(
-                       children: [
-                         ClipRRect(
-                           borderRadius: BorderRadius.circular(8),
-                           child: Image.file(File(path), width: 100, height: 100, fit: BoxFit.cover),
-                         ),
-                       Positioned(
-                         bottom: 4,
-                         right: 4,
-                         child: FutureBuilder<DateTime>(
-                           future: File(path).lastModified(),
-                           builder: (context, snapshot) {
-                             if (!snapshot.hasData) return const SizedBox.shrink();
-                             return Container(
-                               padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-                               decoration: BoxDecoration(
-                                 color: Colors.black.withOpacity(0.6),
-                                 borderRadius: BorderRadius.circular(4),
-                               ),
-                               child: Text(
-                                 DateFormat('HH:mm').format(snapshot.data!),
-                                 style: const TextStyle(fontSize: 10, color: Colors.white, fontWeight: FontWeight.bold),
-                               ),
-                             );
-                           },
-                         ),
-                       ),
-                     ],
-                   ),
+                        ),
+                      ],
+                    ),
                   ),
-                 );
-               }).toList(),
-             ),
-           ),
+                );
+              }).toList(),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Consumer(
+            builder: (context, ref, child) {
+              final photoPaths = items.expand((e) => e.mealPlan.photos).toList();
+              final summaryAsync = ref.watch(mealNutritionalSummaryProvider(photoPaths));
+
+              return summaryAsync.when(
+                data: (summary) {
+                  if (summary.calories == 0) return const SizedBox.shrink();
+                  return Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFDF2F8),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.analytics_outlined, size: 16, color: Color(0xFFDB2777)),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            '${AppLocalizations.of(context)!.nutritionSectionTotal}: ${summary.calories}kcal  P:${summary.protein.toStringAsFixed(1)}g F:${summary.fat.toStringAsFixed(1)}g C:${summary.carbs.toStringAsFixed(1)}g',
+                            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFFDB2777)),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+                loading: () => const SizedBox.shrink(),
+                error: (_, __) => const SizedBox.shrink(),
+              );
+            },
+          ),
+        ],
 
         Align(
           alignment: Alignment.centerRight,
@@ -1177,6 +1235,189 @@ class _MenuPlanScreenState extends ConsumerState<MenuPlanScreen> with AdManagerM
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.menuImageSaveFailed(e)))); // 画像の保存に失敗しました: {error}
       }
     }
+  }
+
+  Widget _buildDailySummarySheet(List<MealPlanWithRecipe> mealPlans) {
+    if (mealPlans.isEmpty) return const SizedBox.shrink();
+
+    final allPlans = mealPlans.map((e) => e.mealPlan).toList();
+
+    return DraggableScrollableSheet(
+      initialChildSize: 0.1,
+      minChildSize: 0.1,
+      maxChildSize: 0.6,
+      snap: true,
+      builder: (context, scrollController) {
+        return Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 10,
+                offset: const Offset(0, -2),
+              ),
+            ],
+          ),
+          child: Consumer(
+            builder: (context, ref, child) {
+              final summaryAsync = ref.watch(dailyNutritionalSummaryProvider(allPlans));
+              final detailedAsync = ref.watch(dailyDetailedNutritionalSummaryProvider(allPlans));
+
+              return summaryAsync.when(
+                data: (summary) => detailedAsync.when(
+                  data: (detailed) => ListView(
+                    controller: scrollController,
+                    padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+                    children: [
+                      Center(
+                        child: Container(
+                          margin: const EdgeInsets.only(top: 12, bottom: 16),
+                          width: 40,
+                          height: 4,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFE7E5E4),
+                            borderRadius: BorderRadius.circular(2),
+                          ),
+                        ),
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            AppLocalizations.of(context)!.nutritionDailyTotal,
+                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF292524)),
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFFEF2F2),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Row(
+                              children: [
+                                const Icon(Icons.local_fire_department, size: 16, color: Color(0xFFEF4444)),
+                                const SizedBox(width: 4),
+                                Text(
+                                  '${summary.calories} kcal',
+                                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: Color(0xFFEF4444)),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 24),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          _buildNutritionItem('P', summary.protein, const Color(0xFF3B82F6)),
+                          _buildNutritionItem('F', summary.fat, const Color(0xFFEF4444)),
+                          _buildNutritionItem('C', summary.carbs, const Color(0xFF10B981)),
+                        ],
+                      ),
+                      const SizedBox(height: 32),
+                      const Divider(color: Color(0xFFF5F5F4)),
+                      const SizedBox(height: 16),
+                      _buildDetailedNutritionTable(context, detailed),
+                    ],
+                  ),
+                  loading: () => const Center(child: CircularProgressIndicator(color: AppColors.stoxPrimary)),
+                  error: (_, __) => const SizedBox.shrink(),
+                ),
+                loading: () => const SizedBox.shrink(),
+                error: (_, __) => const SizedBox.shrink(),
+              );
+            },
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildDetailedNutritionTable(BuildContext context, Map<MealType, NutritionalSummary> detailed) {
+    final types = [MealType.breakfast, MealType.lunch, MealType.dinner];
+    final labels = {
+      MealType.breakfast: AppLocalizations.of(context)!.menuBreakfastLabel,
+      MealType.lunch: AppLocalizations.of(context)!.menuLunchLabel,
+      MealType.dinner: AppLocalizations.of(context)!.menuDinnerLabel,
+    };
+
+    return Table(
+      columnWidths: const {
+        0: FlexColumnWidth(1.2),
+        1: FlexColumnWidth(1),
+        2: FlexColumnWidth(1),
+        3: FlexColumnWidth(1),
+        4: FlexColumnWidth(1),
+      },
+      children: [
+        TableRow(
+          children: [
+            const SizedBox(),
+            _buildTableHeader('kcal'),
+            _buildTableHeader('P(g)'),
+            _buildTableHeader('F(g)'),
+            _buildTableHeader('C(g)'),
+          ],
+        ),
+        for (var type in types)
+          TableRow(
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 12.0),
+                child: Text(labels[type] ?? '', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFF78716C))),
+              ),
+              _buildTableCell(detailed[type]?.calories.toString() ?? '0'),
+              _buildTableCell(detailed[type]?.protein.toStringAsFixed(1) ?? '0.0'),
+              _buildTableCell(detailed[type]?.fat.toStringAsFixed(1) ?? '0.0'),
+              _buildTableCell(detailed[type]?.carbs.toStringAsFixed(1) ?? '0.0'),
+            ],
+          ),
+      ],
+    );
+  }
+
+  Widget _buildTableHeader(String text) {
+     return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Text(text, textAlign: TextAlign.center, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFFA8A29E))),
+    );
+  }
+
+  Widget _buildTableCell(String text) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 12.0),
+      child: Text(text, textAlign: TextAlign.center, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF44403C))),
+    );
+  }
+
+  Widget _buildNutritionItem(String label, double value, Color color) {
+    return Column(
+      children: [
+        Text(
+          label,
+          style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: color),
+        ),
+        const SizedBox(height: 4),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.baseline,
+          textBaseline: TextBaseline.alphabetic,
+          children: [
+            Text(
+              value.toStringAsFixed(1),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: Color(0xFF292524)),
+            ),
+            const SizedBox(width: 2),
+            const Text(
+              'g',
+              style: TextStyle(fontSize: 11, color: Color(0xFF78716C)),
+            ),
+          ],
+        ),
+      ],
+    );
   }
 
   void _onCook(List<MealPlanWithRecipe> items) {

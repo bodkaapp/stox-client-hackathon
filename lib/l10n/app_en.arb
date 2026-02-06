@@ -102,7 +102,7 @@
   "voiceAnalyzing": "Analyzing...",
   "voiceListening": "Listening...",
   "voiceTapToStart": "Tap to start",
-  "voiceHint": "Speak item names\\ne.g. \"Onions\", \"Pork and Cabbage\"",
+  "voiceHint": "Speak item names\ne.g. \"Onions\", \"Pork and Cabbage\"",
   "voiceHistoryPlaceholder": "History will appear here",
   "voiceAdded": "Added",
   "voiceClose": "Close",
@@ -742,5 +742,18 @@
     }
   },
   "actionAiMenuTomorrow": "AI Tomorrow's Menu",
-  "actionAiMenuDayAfterTomorrow": "AI Day After Tomorrow's Menu"
+  "actionAiMenuDayAfterTomorrow": "AI Day After Tomorrow's Menu",
+  "nutritionTotal": "Total",
+  "nutritionCalories": "Calories",
+  "nutritionProtein": "Protein(P)",
+  "nutritionFat": "Fat(F)",
+  "nutritionCarbs": "Carbs(C)",
+  "nutritionDailyTotal": "Daily Nutritional Total",
+  "nutritionSectionTotal": "Section Total",
+  "nutritionWeeklyAverage": "Weekly Average",
+  "nutritionMonthlyAverage": "Monthly Average",
+  "nutritionStatistics": "Nutrition Stats",
+  "nutritionAverage": "Avg",
+  "nutritionAnalysisData": "Nutrition Data",
+  "nutritionPfcBalance": "PFC Balance"
 }
