@@ -402,6 +402,7 @@
   "recipeCategorySnack": "Snack",
   "recipeCategoryFavorite": "Favorites",
   "recipeCategoryOther": "Others",
+  "recipeCookManualOnlyError": "Manual recipes cannot be opened.",
   "recipeRecentlyViewed": "Recently Viewed",
   "recipeAddedDate": "Added on {date}",
   "@recipeAddedDate": {

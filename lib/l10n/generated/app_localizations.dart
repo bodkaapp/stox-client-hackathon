@@ -1652,6 +1652,12 @@ abstract class AppLocalizations {
   /// **'その他'**
   String get recipeCategoryOther;
 
+  /// No description provided for @recipeCookManualOnlyError.
+  ///
+  /// In ja, this message translates to:
+  /// **'手入力のレシピは開けません。'**
+  String get recipeCookManualOnlyError;
+
   /// No description provided for @recipeRecentlyViewed.
   ///
   /// In ja, this message translates to:

@@ -17,11 +17,41 @@ import '../../domain/models/challenge_stamp.dart';
 import '../viewmodels/challenge_stamp_viewmodel.dart';
 import '../../l10n/generated/app_localizations.dart';
 
-class RecipeBookScreen extends ConsumerWidget {
+class RecipeBookScreen extends ConsumerStatefulWidget {
   const RecipeBookScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<RecipeBookScreen> createState() => _RecipeBookScreenState();
+}
+
+class _RecipeBookScreenState extends ConsumerState<RecipeBookScreen> {
+  final DraggableScrollableController _sheetController = DraggableScrollableController();
+  final FocusNode _searchFocusNode = FocusNode();
+  final GlobalKey<TooltipState> _cookNowTooltipKey = GlobalKey<TooltipState>();
+
+  @override
+  void initState() {
+    super.initState();
+    _searchFocusNode.addListener(() {
+      if (_searchFocusNode.hasFocus) {
+        _sheetController.animateTo(
+          0.9,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _sheetController.dispose();
+    _searchFocusNode.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     // Used for potential data binding later
     final stateAsync = ref.watch(recipeBookViewModelProvider);
 
@@ -29,15 +59,108 @@ class RecipeBookScreen extends ConsumerWidget {
       backgroundColor: AppColors.stoxBackground, // bg-white
       body: SafeArea(
         bottom: false,
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            if (constraints.maxWidth >= 600) {
-              return _buildTabletLayout(context, ref, stateAsync);
-            }
-            return _buildMobileLayout(context, ref, stateAsync);
-          },
+        child: Stack(
+          children: [
+            LayoutBuilder(
+              builder: (context, constraints) {
+                if (constraints.maxWidth >= 600) {
+                  return _buildTabletLayout(context, ref, stateAsync);
+                }
+                return _buildMobileLayout(context, ref, stateAsync);
+              },
+            ),
+            _buildSearchBottomSheet(context),
+          ],
         ),
       ),
+    );
+  }
+
+  Future<void> _handleSearchIntent(SearchIntent intent) async {
+    if (intent is UrlSearchIntent) {
+      if (mounted) {
+        await Navigator.of(context, rootNavigator: true).push(
+          MaterialPageRoute(
+            builder: (context) => RecipeWebViewScreen(
+              url: intent.url,
+              title: AppLocalizations.of(context)!.menuLoading, // 読み込み中...
+            ),
+          ),
+        );
+      }
+    } else if (intent is TextSearchIntent) {
+      if (mounted) {
+        await Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => RecipeSearchResultsScreen(
+              searchQuery: intent.query,
+            ),
+          ),
+        );
+      }
+    }
+    
+    // [NEW] Challenge 3: Search Recipe
+    ref.read(challengeStampViewModelProvider.notifier).complete(ChallengeType.searchRecipe.id);
+  }
+
+  Widget _buildSearchBottomSheet(BuildContext context) {
+    return DraggableScrollableSheet(
+      controller: _sheetController,
+      initialChildSize: 0.12,
+      minChildSize: 0.12,
+      maxChildSize: 0.9,
+      snap: true,
+      builder: (context, scrollController) {
+        return Container(
+          decoration: BoxDecoration(
+            color: const Color(0xFFFFFDFA),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 10,
+                offset: const Offset(0, -2),
+              ),
+            ],
+          ),
+          child: Column(
+            children: [
+              Center(
+                child: Container(
+                  margin: const EdgeInsets.only(top: 8, bottom: 4),
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFE7E5E4),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              Expanded(
+                child: Focus(
+                  onFocusChange: (hasFocus) {
+                    if (hasFocus) {
+                      _sheetController.animateTo(
+                        0.9,
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.easeOut,
+                      );
+                    }
+                  },
+                  child: SearchModal(
+                    showHeader: false,
+                    scrollController: scrollController,
+                    focusNode: _searchFocusNode,
+                    onIntent: _handleSearchIntent,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -180,7 +303,7 @@ class RecipeBookScreen extends ConsumerWidget {
   Widget _buildHeaderAndSearch(BuildContext context, WidgetRef ref) {
     return SliverToBoxAdapter(
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
+        padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 4.0),
         child: Column(
           children: [
             Row(
@@ -219,65 +342,7 @@ class RecipeBookScreen extends ConsumerWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 16),
-            // Search Bar
-            TextField(
-              readOnly: true,
-              onTap: () async {
-                final intent = await SearchModal.show(context);
-                if (intent is UrlSearchIntent) {
-                  if (context.mounted) {
-                    await Navigator.of(context, rootNavigator: true).push(
-                      MaterialPageRoute(
-                        builder: (context) => RecipeWebViewScreen(
-                          url: intent.url,
-                          title: AppLocalizations.of(context)!.menuLoading, // 読み込み中...
-                        ),
-                      ),
-                    );
-                    // No need to manually refresh if ViewModel is stream-based, 
-                    // but if there are other side effects or if stream isn't fully perfect yet, it's safe.
-                    // However, with Stream, it should auto-update.
-                  }
-                } else if (intent is TextSearchIntent) {
-                  if (context.mounted) {
-                    await Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => RecipeSearchResultsScreen(
-                          searchQuery: intent.query,
-                        ),
-                      ),
-                    );
-                  }
-                }
-                
-                // [NEW] Challenge 3: Search Recipe
-                if (intent != null) {
-                   ref.read(challengeStampViewModelProvider.notifier).complete(ChallengeType.searchRecipe.id);
-                }
-              },
-              decoration: InputDecoration(
-                hintText: AppLocalizations.of(context)!.recipeSearchPlaceholder, // レシピを検索またはURLを入力
-                hintStyle: const TextStyle(color: Color(0xFF78716C), fontSize: 14), // text-stone-500
-                prefixIcon: const Icon(Icons.search, color: Color(0xFFA8A29E)), // text-stone-400
-                filled: true,
-                fillColor: Colors.white,
-                contentPadding: const EdgeInsets.symmetric(vertical: 14),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(16),
-                  borderSide: const BorderSide(color: Color(0xFFD6D3D1)), // stone-300
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(16),
-                  borderSide: const BorderSide(color: Color(0xFFD6D3D1)), // stone-300
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(16),
-                  borderSide: const BorderSide(color: Color(0xFFD6D3D1)), // stone-300
-                ),
-              ),
-            ),
+            // Padding reduced and SizedBox removed to eliminate excess space
           ],
         ),
       ),
@@ -318,31 +383,49 @@ class RecipeBookScreen extends ConsumerWidget {
                         if (recipes.isNotEmpty)
                           Row(
                             children: [
-                              ElevatedButton(
-                                onPressed: () {
-                                  Navigator.of(context, rootNavigator: true).push(
-                                    MaterialPageRoute(
-                                      builder: (context) => CookingModeScreen(recipes: recipes),
+                              Builder(
+                                builder: (context) {
+                                  final hasUrl = recipes.any((r) => r.pageUrl.isNotEmpty);
+                                  
+                                  return Tooltip(
+                                    key: _cookNowTooltipKey,
+                                    message: AppLocalizations.of(context)!.recipeCookManualOnlyError,
+                                    triggerMode: TooltipTriggerMode.manual,
+                                    child: ElevatedButton(
+                                      onPressed: () {
+                                        if (hasUrl) {
+                                          Navigator.of(context, rootNavigator: true).push(
+                                            MaterialPageRoute(
+                                              builder: (context) => CookingModeScreen(recipes: recipes),
+                                            ),
+                                          );
+                                        } else {
+                                          _cookNowTooltipKey.currentState?.ensureTooltipVisible();
+                                        }
+                                      },
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: hasUrl ? AppColors.stoxPrimary : const Color(0xFFE7E5E4), // stone-200 for grey
+                                        foregroundColor: hasUrl ? Colors.white : const Color(0xFF78716C), // stone-500 for text
+                                        elevation: 0,
+                                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(20),
+                                        ),
+                                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                      ),
+                                      child: Row(
+                                        children: [
+                                          Icon(Icons.restaurant_menu, size: 16),
+                                          const SizedBox(width: 4),
+                                          Text(
+                                            AppLocalizations.of(context)!.recipeCookNow,
+                                            style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                                          ),
+                                        ],
+                                      ),
                                     ),
                                   );
                                 },
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: AppColors.stoxPrimary,
-                                  foregroundColor: Colors.white,
-                                  elevation: 0,
-                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(20),
-                                  ),
-                                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                ),
-                                child: Row(
-                                  children: [
-                                    Icon(Icons.restaurant_menu, size: 16),
-                                    const SizedBox(width: 4),
-                                    Text(AppLocalizations.of(context)!.recipeCookNow, style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)), // 今すぐ作る
-                                  ],
-                                ),
                               ),
                             ],
                           ),

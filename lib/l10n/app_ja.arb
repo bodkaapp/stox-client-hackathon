@@ -402,6 +402,7 @@
   "recipeCategorySnack": "おつまみ",
   "recipeCategoryFavorite": "お気に入り",
   "recipeCategoryOther": "その他",
+  "recipeCookManualOnlyError": "手入力のレシピは開けません。",
   "recipeRecentlyViewed": "最近見たレシピ",
   "recipeAddedDate": "{date} 追加",
   "@recipeAddedDate": {

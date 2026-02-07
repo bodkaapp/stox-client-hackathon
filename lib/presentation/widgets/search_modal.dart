@@ -12,8 +12,20 @@ import '../components/ai_suggestion_button.dart';
 class SearchModal extends ConsumerStatefulWidget {
   final DateTime? initialDate;
   final MealType? initialMealType;
+  final bool showHeader;
+  final ScrollController? scrollController;
+  final FocusNode? focusNode;
+  final void Function(SearchIntent)? onIntent;
 
-  const SearchModal({super.key, this.initialDate, this.initialMealType});
+  const SearchModal({
+    super.key,
+    this.initialDate,
+    this.initialMealType,
+    this.showHeader = true,
+    this.scrollController,
+    this.focusNode,
+    this.onIntent,
+  });
 
   static Future<SearchIntent?> show(BuildContext context, {DateTime? initialDate, MealType? initialMealType}) {
     return showGeneralDialog<SearchIntent>(
@@ -57,23 +69,28 @@ class TextSearchIntent extends SearchIntent {
 
 class _SearchModalState extends ConsumerState<SearchModal> {
   late final TextEditingController _controller;
-  final FocusNode _focusNode = FocusNode();
+  late final FocusNode _focusNode;
 
   @override
   void initState() {
     super.initState();
     _controller = TextEditingController();
+    _focusNode = widget.focusNode ?? FocusNode();
     
     // Auto focus
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _focusNode.requestFocus();
-    });
+    if (widget.showHeader) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _focusNode.requestFocus();
+      });
+    }
   }
 
   @override
   void dispose() {
     _controller.dispose();
-    _focusNode.dispose();
+    if (widget.focusNode == null) {
+      _focusNode.dispose();
+    }
     super.dispose();
   }
 
@@ -90,10 +107,12 @@ class _SearchModalState extends ConsumerState<SearchModal> {
     }
 
     // Return the intent
-    if (isUrl) {
-      Navigator.pop(context, UrlSearchIntent(trimmedValue));
+    final intent = isUrl ? UrlSearchIntent(trimmedValue) : TextSearchIntent(trimmedValue);
+    
+    if (widget.onIntent != null) {
+      widget.onIntent!(intent);
     } else {
-      Navigator.pop(context, TextSearchIntent(trimmedValue));
+      Navigator.pop(context, intent);
     }
   }
 
@@ -102,44 +121,44 @@ class _SearchModalState extends ConsumerState<SearchModal> {
     final historyAsync = ref.watch(searchHistoryViewModelProvider);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFFFFDFA), // bg-cream
+      backgroundColor: widget.showHeader ? const Color(0xFFFFFDFA) : Colors.transparent, // bg-cream or transparent
       body: SafeArea(
+        top: widget.showHeader,
+        bottom: false,
         child: Column(
           children: [
-            // Header (Time/Status bar is system handled, just close button area)
-            // Design has a specific header layout.
-            // Matches design: padding top for status bar? SafeArea handles it.
-            // Close button row
-            // Header
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                   Text(
-                     AppLocalizations.of(context)!.actionSearchRecipe, // レシピを検索する
-                     style: const TextStyle(
-                       fontSize: 18,
-                       fontWeight: FontWeight.bold,
-                       color: Color(0xFF292524), // stone-800
-                     ),
-                   ),
-                  IconButton(
-                    icon: const Icon(Icons.close, size: 28, color: Color(0xFF57534E)), // stone-600
-                    onPressed: () => Navigator.pop(context),
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
-                    style: IconButton.styleFrom(
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            if (widget.showHeader) ...[
+              // Header
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      AppLocalizations.of(context)!.actionSearchRecipe, // レシピを検索する
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF292524), // stone-800
+                      ),
                     ),
-                  ),
-                ],
+                    IconButton(
+                      icon: const Icon(Icons.close, size: 28, color: Color(0xFF57534E)), // stone-600
+                      onPressed: () => Navigator.pop(context),
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                      style: IconButton.styleFrom(
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
+            ],
             
             // Search Bar Area
             Padding(
-              padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
+              padding: EdgeInsets.fromLTRB(20, widget.showHeader ? 0 : 8, 20, 8),
               child: Row(
                 children: [
                   Expanded(
@@ -199,6 +218,7 @@ class _SearchModalState extends ConsumerState<SearchModal> {
             // Use Expanded for list view but leave space for footer
             Expanded(
               child: ListView(
+                controller: widget.scrollController,
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 0),
                 children: [
                    // ... (Existing AI, History content) ... 
@@ -272,7 +292,7 @@ class _SearchModalState extends ConsumerState<SearchModal> {
                                    IconButton(
                                      icon: const Icon(Icons.close, color: Color(0xFFD6D3D1), size: 20),
                                      onPressed: () {
-                                        ref.read(searchHistoryViewModelProvider.notifier).delete(history.id);
+                                         ref.read(searchHistoryViewModelProvider.notifier).delete(history.id);
                                      },
                                      padding: EdgeInsets.zero,
                                      constraints: const BoxConstraints(),
@@ -288,63 +308,69 @@ class _SearchModalState extends ConsumerState<SearchModal> {
                      error: (err, _) => Center(child: Text('Error: $err')),
                    ),
                    const SizedBox(height: 20), // Bottom padding
+                   if (!widget.showHeader) _buildFooterButtons(context),
                 ],
               ),
             ),
             
-            // Manual Entry and AI Suggestion Buttons
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(20),
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                border: Border(top: BorderSide(color: Color(0xFFE7E5E4))), // stone-200
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                   // Manual Entry Button
-                  SizedBox(
-                    height: 50,
-                    width: double.infinity,
-                    child: OutlinedButton(
-                      onPressed: () {
-                        // Navigate to Manual Recipe Entry
-                        Navigator.push(
-                          context, 
-                          MaterialPageRoute(builder: (context) => ManualRecipeEntryScreen(
-                            initialDate: widget.initialDate,
-                            initialMealType: widget.initialMealType,
-                          )),
-                        );
-                      },
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: const Color(0xFF57534E), // stone-600
-                        side: const BorderSide(color: Color(0xFFD6D3D1)), // stone-300
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                      ),
-                      child: Text(
-                        AppLocalizations.of(context)!.actionManualRecipeEntryInstead, // 検索せずに、レシピを手入力する
-                        style: const TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  // AI Suggestion Button
-                  AiSuggestionButton(
-                    onTap: () {
-                      Navigator.pop(context);
-                      context.push('/ai_recipe_intro');
-                    },
-                    label: AppLocalizations.of(context)!.actionTakeRefrigeratorPhotoAndAiSuggest, // 冷蔵庫を撮影してAIで提案する
-                  ),
-                ],
-              ),
-            ),
+            if (widget.showHeader) _buildFooterButtons(context),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildFooterButtons(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: widget.showHeader ? const Border(top: BorderSide(color: Color(0xFFE7E5E4))) : null, // stone-200
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+           // Manual Entry Button
+          SizedBox(
+            height: 50,
+            width: double.infinity,
+            child: OutlinedButton(
+              onPressed: () {
+                // Navigate to Manual Recipe Entry
+                Navigator.push(
+                  context, 
+                  MaterialPageRoute(builder: (context) => ManualRecipeEntryScreen(
+                    initialDate: widget.initialDate,
+                    initialMealType: widget.initialMealType,
+                  )),
+                );
+              },
+              style: OutlinedButton.styleFrom(
+                foregroundColor: const Color(0xFF57534E), // stone-600
+                side: const BorderSide(color: Color(0xFFD6D3D1)), // stone-300
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+              ),
+              child: Text(
+                AppLocalizations.of(context)!.actionManualRecipeEntryInstead, // 検索せずに、レシピを手入力する
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          // AI Suggestion Button
+          AiSuggestionButton(
+            onTap: () {
+              if (widget.showHeader) {
+                Navigator.pop(context);
+              }
+              context.push('/ai_recipe_intro');
+            },
+            label: AppLocalizations.of(context)!.actionTakeRefrigeratorPhotoAndAiSuggest, // 冷蔵庫を撮影してAIで提案する
+          ),
+        ],
       ),
     );
   }

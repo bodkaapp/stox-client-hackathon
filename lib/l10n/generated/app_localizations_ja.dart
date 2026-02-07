@@ -838,6 +838,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get recipeCategoryOther => 'その他';
 
   @override
+  String get recipeCookManualOnlyError => '手入力のレシピは開けません。';
+
+  @override
   String get recipeRecentlyViewed => '最近見たレシピ';
 
   @override

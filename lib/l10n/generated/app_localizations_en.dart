@@ -846,6 +846,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get recipeCategoryOther => 'Others';
 
   @override
+  String get recipeCookManualOnlyError => 'Manual recipes cannot be opened.';
+
+  @override
   String get recipeRecentlyViewed => 'Recently Viewed';
 
   @override
