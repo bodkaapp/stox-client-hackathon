@@ -10,6 +10,7 @@ import '../../domain/models/ingredient.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter/foundation.dart';
 import '../../config/ai_prompts.dart';
+import '../services/ai_token_logger.dart';
 
 part 'ai_recipe_repository.g.dart';
 
@@ -70,6 +71,14 @@ class AiRecipeRepository {
     final content = [Content.text(prompt)];
     final response = await _model.generateContent(content);
     
+    // Log token usage
+    await AiTokenLogger.logUsage(
+      prompt: prompt,
+      kind: 'extractIngredients',
+      response: response,
+      modelName: AppConstants.geminiModel,
+    );
+    
     final responseText = response.text;
     if (responseText == null) return [];
 
@@ -108,6 +117,15 @@ class AiRecipeRepository {
     final content = [Content.text(prompt)];
     try {
       final response = await _model.generateContent(content);
+
+      // Log token usage
+      await AiTokenLogger.logUsage(
+        prompt: prompt,
+        kind: 'parseShoppingList',
+        response: response,
+        modelName: AppConstants.geminiModel,
+      );
+
       final responseText = response.text;
       
       if (responseText == null) return [];
@@ -176,6 +194,15 @@ class AiRecipeRepository {
 
     // Let exceptions bubble up to be handled by the UI
     final response = await _model.generateContent(content);
+
+    // Log token usage
+    await AiTokenLogger.logUsage(
+      prompt: prompt,
+      kind: 'analyzeStockImage',
+      response: response,
+      modelName: AppConstants.geminiModel,
+    );
+
     final responseText = response.text;
     
     if (responseText == null) {
@@ -234,6 +261,15 @@ class AiRecipeRepository {
 
     try {
       final response = await _model.generateContent(content);
+
+      // Log token usage
+      await AiTokenLogger.logUsage(
+        prompt: prompt,
+        kind: 'analyzeReceiptImage',
+        response: response,
+        modelName: AppConstants.geminiModel,
+      );
+
       final responseText = response.text;
       
       if (responseText == null) {
@@ -290,6 +326,15 @@ class AiRecipeRepository {
 
     try {
       final response = await _model.generateContent(content);
+
+      // Log token usage
+      await AiTokenLogger.logUsage(
+        prompt: prompt,
+        kind: 'analyzeImageForRecipe',
+        response: response,
+        modelName: AppConstants.geminiModel,
+      );
+
       final responseText = response.text;
 
       if (responseText == null) {
@@ -342,6 +387,15 @@ class AiRecipeRepository {
 
     try {
       final response = await _model.generateContent(content);
+
+      // Log token usage
+      await AiTokenLogger.logUsage(
+        prompt: prompt,
+        kind: 'identifyKitchenItems',
+        response: response,
+        modelName: AppConstants.geminiModel,
+      );
+
       final responseText = response.text;
 
       if (responseText == null) return [];
@@ -374,6 +428,15 @@ class AiRecipeRepository {
 
     try {
       final response = await _model.generateContent(content);
+
+      // Log token usage
+      await AiTokenLogger.logUsage(
+        prompt: prompt,
+        kind: 'suggestRecipesFromItems',
+        response: response,
+        modelName: AppConstants.geminiModel,
+      );
+
       final responseText = response.text;
 
       if (responseText == null) return [];
@@ -447,6 +510,15 @@ class AiRecipeRepository {
 
     try {
       final response = await _model.generateContent(content);
+
+      // Log token usage
+      await AiTokenLogger.logUsage(
+        prompt: prompt,
+        kind: 'analyzeFoodImage',
+        response: response,
+        modelName: AppConstants.geminiModel,
+      );
+
       final responseText = response.text;
 
       if (responseText == null) {
@@ -511,6 +583,15 @@ ${AiPrompts.suggestMenuPlan.split('【依頼】')[1]}
 
     try {
       final response = await _model.generateContent(content);
+
+      // Log token usage
+      await AiTokenLogger.logUsage(
+        prompt: prompt,
+        kind: 'suggestMenuPlan',
+        response: response,
+        modelName: AppConstants.geminiModel,
+      );
+
       final responseText = response.text;
 
       if (responseText == null) return [];
