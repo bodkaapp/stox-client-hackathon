@@ -15,9 +15,17 @@ import '../services/ai_token_logger.dart';
 part 'ai_recipe_repository.g.dart';
 
 class AiRecipeRepository {
-  final GenerativeModel _model;
+  final String _apiKey;
 
-  AiRecipeRepository(this._model);
+  AiRecipeRepository({required String apiKey}) : _apiKey = apiKey;
+
+  GenerativeModel _createModel({Content? systemInstruction}) {
+    return GenerativeModel(
+      model: AppConstants.geminiModel,
+      apiKey: _apiKey,
+      systemInstruction: systemInstruction,
+    );
+  }
 
   /// URLまたはテキストから材料を抽出する
   Future<List<Ingredient>> extractIngredients(String input) async {
@@ -66,10 +74,13 @@ class AiRecipeRepository {
   Future<List<Ingredient>> _extractWithAi(String text) async {
     if (text.isEmpty) return [];
 
-    final prompt = '${AiPrompts.extractIngredients}$text\n';
+    final prompt = text;
 
     final content = [Content.text(prompt)];
-    final response = await _model.generateContent(content);
+    final model = _createModel(
+      systemInstruction: Content.system(AiPrompts.extractIngredientsSystem),
+    );
+    final response = await model.generateContent(content);
     
     // Log token usage
     await AiTokenLogger.logUsage(
@@ -112,11 +123,14 @@ class AiRecipeRepository {
   Future<List<Ingredient>> parseShoppingList(String input) async {
     if (input.trim().isEmpty) return [];
 
-    final prompt = '${AiPrompts.parseShoppingList}$input\n';
+    final prompt = input;
 
     final content = [Content.text(prompt)];
     try {
-      final response = await _model.generateContent(content);
+      final model = _createModel(
+        systemInstruction: Content.system(AiPrompts.parseShoppingListSystem),
+      );
+      final response = await model.generateContent(content);
 
       // Log token usage
       await AiTokenLogger.logUsage(
@@ -179,7 +193,7 @@ class AiRecipeRepository {
 
   /// 画像から在庫アイテムを解析する
   Future<List<Ingredient>> analyzeStockImage(Uint8List imageBytes, String location, {String? mimeType}) async {
-    final prompt = '$location${AiPrompts.analyzeStockImage}';
+    final prompt = location;
 
   // Determine mimeType if not provided
   // Default to jpeg if unknown, as it's most common for camera captures
@@ -192,8 +206,11 @@ class AiRecipeRepository {
       ])
     ];
 
+    final model = _createModel(
+      systemInstruction: Content.system(AiPrompts.analyzeStockImageSystem),
+    );
     // Let exceptions bubble up to be handled by the UI
-    final response = await _model.generateContent(content);
+    final response = await model.generateContent(content);
 
     // Log token usage
     await AiTokenLogger.logUsage(
@@ -247,7 +264,7 @@ class AiRecipeRepository {
 
   /// レシート画像から購入品を解析する
   Future<List<Ingredient>> analyzeReceiptImage(Uint8List imageBytes, {String? mimeType}) async {
-    const prompt = AiPrompts.analyzeReceiptImage;
+    const prompt = 'Analyze this receipt image.';
 
   // Determine mimeType if not provided
   final finalMimeType = mimeType ?? 'image/jpeg';
@@ -260,7 +277,10 @@ class AiRecipeRepository {
     ];
 
     try {
-      final response = await _model.generateContent(content);
+      final model = _createModel(
+        systemInstruction: Content.system(AiPrompts.analyzeReceiptImageSystem),
+      );
+      final response = await model.generateContent(content);
 
       // Log token usage
       await AiTokenLogger.logUsage(
@@ -313,7 +333,7 @@ class AiRecipeRepository {
 
   /// 画像からレシピ提案用の解析を行う
   Future<AiRecipeAnalysisResult> analyzeImageForRecipe(Uint8List imageBytes, {String? mimeType}) async {
-    const prompt = AiPrompts.analyzeImageForRecipe;
+    const prompt = 'Analyze this fridge image for ingredients and a recipe.';
 
     final finalMimeType = mimeType ?? 'image/jpeg';
 
@@ -325,7 +345,10 @@ class AiRecipeRepository {
     ];
 
     try {
-      final response = await _model.generateContent(content);
+      final model = _createModel(
+        systemInstruction: Content.system(AiPrompts.analyzeImageForRecipeSystem),
+      );
+      final response = await model.generateContent(content);
 
       // Log token usage
       await AiTokenLogger.logUsage(
@@ -374,7 +397,7 @@ class AiRecipeRepository {
 
   /// 画像からキッチンアイテムを識別する
   Future<List<String>> identifyKitchenItems(Uint8List imageBytes, {String? mimeType}) async {
-    const prompt = AiPrompts.identifyKitchenItems;
+    const prompt = 'Identify all kitchen items in this photo.';
 
     final finalMimeType = mimeType ?? 'image/jpeg';
 
@@ -386,7 +409,10 @@ class AiRecipeRepository {
     ];
 
     try {
-      final response = await _model.generateContent(content);
+      final model = _createModel(
+        systemInstruction: Content.system(AiPrompts.identifyKitchenItemsSystem),
+      );
+      final response = await model.generateContent(content);
 
       // Log token usage
       await AiTokenLogger.logUsage(
@@ -422,12 +448,15 @@ class AiRecipeRepository {
 
   /// アイテムリストから複数のレシピを提案する
   Future<List<AiRecipeSuggestion>> suggestRecipesFromItems(List<String> items) async {
-    final prompt = 'ここにアイテムのリストがあります: ${json.encode(items)}\n${AiPrompts.suggestRecipesFromItems}';
+    final prompt = 'ここにアイテムのリストがあります: ${json.encode(items)}';
 
     final content = [Content.text(prompt)];
 
     try {
-      final response = await _model.generateContent(content);
+      final model = _createModel(
+        systemInstruction: Content.system(AiPrompts.suggestRecipesFromItemsSystem),
+      );
+      final response = await model.generateContent(content);
 
       // Log token usage
       await AiTokenLogger.logUsage(
@@ -471,33 +500,7 @@ class AiRecipeRepository {
 
   /// 料理の画像を解析してカロリーとPFCバランスを推定する
   Future<FoodAnalysisResult> analyzeFoodImage(Uint8List imageBytes, {String? mimeType}) async {
-//     final prompt = '''
-// この料理の写真を分析して、カロリーとPFCバランス（タンパク質、脂質、炭水化物）を推定してください。
-// また、内訳として各食材の概算も出してください。
-
-// 出力は以下のJSON形式のみを返してください。Markdownのコードブロックを含めないでください。
-
-// {
-//   "total_calories": 420,
-//   "pfc": {
-//     "p": 28.0,
-//     "f": 18.0,
-//     "c": 36.0
-//   },
-//   "breakdown": [
-//     {
-//       "name": "料理名",
-//       "calories": 420,
-//       "ingredients": [
-//          {"name": "材料名", "amount": "150g", "comment": "解説"},
-//          {"name": "材料名", "amount": "ひとつかみ", "comment": "解説"}
-//       ]
-//     }
-//   ],
-//   "comment": "分析コメント"
-// }
-// ''';
-    const prompt = AiPrompts.analyzeFoodImage;
+    const prompt = 'Analyze this food photo for calories and PFC balance.';
 
     final finalMimeType = mimeType ?? 'image/jpeg';
 
@@ -509,7 +512,10 @@ class AiRecipeRepository {
     ];
 
     try {
-      final response = await _model.generateContent(content);
+      final model = _createModel(
+        systemInstruction: Content.system(AiPrompts.analyzeFoodImageSystem),
+      );
+      final response = await model.generateContent(content);
 
       // Log token usage
       await AiTokenLogger.logUsage(
@@ -564,7 +570,6 @@ class AiRecipeRepository {
     required List<String> shoppingListItems,
   }) async {
     final prompt = '''
-${AiPrompts.suggestMenuPlan.split('【依頼】')[0]}
 ${targetDate.month}月${targetDate.day}日の「$mealType」の献立を提案してください。
 
 【コンテキスト】
@@ -574,15 +579,15 @@ $surroundingMeals
 【今の状況】
 - 冷蔵庫にあるもの（在庫）: ${stockItems.join(', ')}
 - 買い物リストにあるもの: ${shoppingListItems.join(', ')}
-
-【依頼】
-${AiPrompts.suggestMenuPlan.split('【依頼】')[1]}
 ''';
 
   final content = [Content.text(prompt)];
 
     try {
-      final response = await _model.generateContent(content);
+      final model = _createModel(
+        systemInstruction: Content.system(AiPrompts.suggestMenuPlanSystem),
+      );
+      final response = await model.generateContent(content);
 
       // Log token usage
       await AiTokenLogger.logUsage(
@@ -665,6 +670,5 @@ class FoodAnalysisResult {
 @Riverpod(keepAlive: true)
 AiRecipeRepository aiRecipeRepository(AiRecipeRepositoryRef ref) {
   final apiKey = dotenv.env['GEMINI_API_KEY'] ?? '';
-  final model = GenerativeModel(model: AppConstants.geminiModel, apiKey: apiKey);
-  return AiRecipeRepository(model);
+  return AiRecipeRepository(apiKey: apiKey);
 }

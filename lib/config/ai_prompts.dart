@@ -1,9 +1,12 @@
 class AiPrompts {
-  /// レシピ抽出プロンプト
-  static const String extractIngredients = '''
-以下のレシピ情報のテキストから材料と分量を抽出して、JSON形式で返してください。
+  // --- Common Instructions ---
+  static const String jsonOnlyBase = '回答はJSON形式のみとし、Markdownのコードブロック(```json ... ```)や余計な解説、テキストは一切含めないでください。';
+
+  // --- Extract Ingredients ---
+  static const String extractIngredientsSystem = '''
+あなたはレシピ解析の専門家です。入力されたテキストから材料と分量を抽出し、以下のJSON形式で返してください。
 「家にある」かどうかは推測せず、statusは "toBuy" (買うべき) にしてください。
-分量はできるだけ数値と単位に分解したいですが、難しい場合は文字列のままでも構いません。
+分量はできるだけ数値と単位に分解してください。
 
 出力形式:
 [
@@ -15,36 +18,27 @@ class AiPrompts {
     "status": "toBuy"
   }
 ]
-
-テキスト:
+$jsonOnlyBase
 ''';
 
-  /// 買い物リスト解析プロンプト
-  static const String parseShoppingList = '''
+  // --- Parse Shopping List ---
+  static const String parseShoppingListSystem = '''
 役割: あなたは入力された商品名から、その商品の性質を分析し、最適なカテゴリに分類する専門家です。
-
-以下のテキストは、アプリのリスト（買い物リストまたは在庫リスト）に追加したいアイテムのメモ、または音声認識の結果です。
-ここから商品名、数量、単位を抽出し、適切なカテゴリを推測してJSON形式で返してください。
+入力されたテキスト（メモや音声認識結果）から商品名、数量、単位を抽出し、適切なカテゴリを推測してJSON形式で返してください。
 
 【ルール】
-1. テキストには「〜を追加して」「〜も買う」「〜がある」などの余計な言葉が含まれる場合がありますが、商品名のみを抽出してください。
-2. 数量や単位が明示されていない場合は、amount: 1, unit: "個" としてください。数量は必ず数値型として出力してください。
-3. 詳細カテゴリリスト（detailed_category）は次の文字列のいずれか1つを返してください: [freshVegetables, freshFruits, frozenVegetables, freshMeat, frozenMeat, processedMeat, freshFish, frozenFish, milkBeverage, dairyProducts, tofuNatto, chilledNoodle, dryNoodle, seasoningLiquid, seasoningPowder, cannedFood, snacks, petBottleBeverage, householdGoods]
-4. 複数のアイテムが含まれている場合は、すべてリストアップしてください（例：「豚肉とキャベツ」→ リスト2件）。
-5. **食料品の場合**は、購入後のおおよその賞味期限（日数）を `shelf_life_days` プロパティに数値で入れてください。
-   - 例: 牛乳なら 7, 豚肉なら 3, キャベツなら 10 など。
-   - 適切な場所で保存した際の一般的な保存期間で構いません。
-6. 日用品など、**食料品以外**や賞味期限を管理する必要がないものの場合は、`shelf_life_days` を `null` にしてください。
+1. テキストから商品名のみを抽出してください。
+2. 数量や単位が不明な場合は、amount: 1, unit: "個" としてください。数量は数値型で出力してください。
+3. 詳細カテゴリリスト（detailed_category）は次の中から選択してください: [freshVegetables, freshFruits, frozenVegetables, freshMeat, frozenMeat, processedMeat, freshFish, frozenFish, milkBeverage, dairyProducts, tofuNatto, chilledNoodle, dryNoodle, seasoningLiquid, seasoningPowder, cannedFood, snacks, petBottleBeverage, householdGoods]
+4. 複数のアイテムが含まれている場合は、すべてリストアップしてください。
+5. 食料品の場合は、一般的な賞味期限（日数）を `shelf_life_days` (数値) に、それ以外は `null` にしてください。
 
 詳細カテゴリ分類の優先ルール:
-1. 最優先: 商品名に「冷凍」という言葉が含まれる場合、または、うどん・パスタ・餃子・炒飯・カット野菜など、明らかに冷凍食品として販売されている形態の場合は、必ず frozen で始まるカテゴリ（frozenVegetables, frozenMeat, frozenFish など。どれにも当てはまらない場合は、最も性質の近い frozen カテゴリ）を選択してください。
-2. 牛乳や紙パックのジュースは milkBeverage、ペットボトルや缶の飲料は petBottleBeverage に分類してください。
-3. 麺類について：
-  - 冷凍の麺であれば、必ず frozen 系のカテゴリに。
-  - 生麺・ゆで麺（冷蔵）なら chilledNoodle。
-  - カップ麺・袋入りの乾麺（常温）なら dryNoodle。
+1. 「冷凍」が含まれる、または明らかに冷凍食品の場合は frozen で始まるカテゴリを選択してください。
+2. 紙パック飲料は milkBeverage、ペットボトルや缶は petBottleBeverage。
+3. 麺類：冷凍は frozen、生・ゆで（冷蔵）は chilledNoodle、乾麺・カップ麺（常温）は dryNoodle。
 
-出力形式: マークダウンのコードブロック（```json）などは使用せず、返答は必ず以下のJSON形式（リスト）の純粋な文字列のみとし、余計な解説は一切含めないでください。
+出力形式:
 [
   {
     "name": "商品名",
@@ -54,39 +48,34 @@ class AiPrompts {
     "shelf_life_days": 数値またはnull
   }
 ]
-
-テキスト:
+$jsonOnlyBase
 ''';
 
-  /// 在庫画像解析プロンプト
-  static const String analyzeStockImage = '''
-を撮影した画像です。写真で確認できる食材や商品の名前を解析してリストアップしてください。
-出力形式は以下のJSON形式のみを返してください。Markdownのコードブロック(```json ... ```)を含まないでください。
-
+  // --- Analyze Stock & Receipt Image ---
+  static const String analyzeStockImageSystem = '''
+画像解析の専門家として、写真で確認できる食材や商品の名前、数量を解析してリストアップしてください。
+出力形式:
 [
   {
     "name": "材料名",
-    "amount": 数値(推測できない場合は1、文字列ではなく数値型で出力してください),
+    "amount": 数値(推測できない場合は1),
     "unit": "単位(個, g, mlなど。推測できない場合は個)",
     "category": "野菜" などのカテゴリ（推測）,
     "status": "stock"
   }
 ]
+$jsonOnlyBase
 ''';
 
-  /// レシート画像解析プロンプト
-  static const String analyzeReceiptImage = '''
-レシートを撮影した画像です。レシートに記載されている購入品の商品名と数量、価格を読み取ってリストアップしてください。
+  static const String analyzeReceiptImageSystem = '''
+レシート解析の専門家として、購入品の商品名と数量、価格を読み取ってリストアップしてください。
 
 【重要な指示】
-1. 画像内のすべての情報（商品名の前後の記号、棚番、カテゴリコード、価格など）をヒントとして活用してください。
-2. レシートの商品名は省略されていることが多いです（例：「ポテトチッ...」「ギュウニュウ 1L」など）。
-   これらをそのまま出力せず、前後のコンテキストや一般的な商品知識を用いて、**ユーザーにとって分かりやすい正式な名称**に推測・補完してください。
-   （例：「ポテトチッ...」→「ポテトチップス」、「ギュウニュウ」→「牛乳」）
-3. 割引や小計、合計、税金などは除外してください。商品のみを抽出してください。
+1. 画像内のすべての情報をヒントとして活用してください。
+2. 商品名は「ポテトチッ...」のような省略形ではなく、一般的な知識を用いて「ポテトチップス」のような正式な名称に補完してください。
+3. 割引、小計、合計、税金などは除外してください。
 
-出力形式は以下のJSON形式のみを返してください。Markdownのコードブロック(```json ... ```)を含まないでください。
-
+出力形式:
 [
   {
     "name": "補完された正式な商品名",
@@ -96,35 +85,29 @@ class AiPrompts {
     "status": "stock"
   }
 ]
+$jsonOnlyBase
 ''';
 
-  /// レシピ提案用の冷蔵庫画像解析プロンプト
-  static const String analyzeImageForRecipe = '''
-冷蔵庫の中身を撮影した画像です。
-1. 画像に写っている食材をリストアップしてください（最大10個程度）。
-2. それらの食材を使って作れるおすすめの料理名を1つだけ提案してください。
-
-出力形式は以下のJSON形式のみを返してください。Markdownのコードブロック(```json ... ```)を含まないでください。
-
+  // --- Recipe Analysis & Suggestions ---
+  static const String analyzeImageForRecipeSystem = '''
+冷蔵庫の画像解析を行い、食材のリストアップとおすすめ料理を1つ提案してください。
+出力形式:
 {
   "ingredients": ["食材1", "食材2", "食材3"...],
   "recommended_recipe": "料理名"
 }
+$jsonOnlyBase
 ''';
 
-  /// キッチンアイテム識別プロンプト
-  static const String identifyKitchenItems = '''
-この写真に写っているすべてのアイテム（食品、調味料、キッチン用品など）をリストアップしてください。
-出力は文字列のJSON配列 `["アイテム1", "アイテム2", ...]` のみで返してください。
-Markdownのコードブロックを含めないでください。
+  static const String identifyKitchenItemsSystem = '''
+写真に写っているすべてのアイテム（食品、用品など）をリストアップしてください。
+出力形式: ["アイテム1", "アイテム2", ...]
+$jsonOnlyBase
 ''';
 
-  /// アイテムリストからのレシピ提案プロンプト
-  static const String suggestRecipesFromItems = '''
-このリストから料理に使える**食品のみ**を正確にフィルタリングしてください（洗剤やスポンジなどは除外）。
-その後、それらの食品を主に使用して作れるおすすめの料理を**5つ**提案してください。
-出力は以下のJSON形式のみを返してください。Markdownのコードブロックを含めないでください。
-
+  static const String suggestRecipesFromItemsSystem = '''
+提供されたリストから料理に使える食品のみを抽出し、それらを使ったおすすめ料理を5つ提案してください。
+出力形式:
 [
   {
     "name": "料理名",
@@ -132,20 +115,16 @@ Markdownのコードブロックを含めないでください。
     "usedIngredients": ["使用する食材1", "使用する食材2"]
   }
 ]
+$jsonOnlyBase
 ''';
 
-  /// 料理画像解析プロンプト（栄養素推定）
-  static const String analyzeFoodImage = '''
-この料理の写真を分析して、カロリーとPFCバランス（タンパク質、脂質、炭水化物）を推定してください。
+  // --- Food Analysis (Nutrition) ---
+  static const String analyzeFoodImageSystem = '''
+料理写真からカロリーとPFC（タンパク質、脂質、炭水化物）を推定してください。
+料理でない場合は、カロリー等を0/nullにし、display_textに「🫶」を交えた感想を入れてください。
 
-【重要な指示】
-もし写真が料理や食材でない場合、または分析が不可能な場合は、カロリーやPFCは0またはnullにし、
-`display_text` には「具体的な料理や食材を特定することはできませんが、この画像は[画像を客観的に見た感想]ですね🫶」という形式で、文末に「🫶」をつけた親しみやすい感想を入れてください。硬い表現は避けてください。
-
-料理の場合は、以下のMarkdown形式のテキストを `display_text` に生成してください。
-
+料理の場合は、以下のMarkdown形式を `display_text` に含めてください。
 ## 推定栄養素（1食分）
-
 | 項目 | 推定値 |
 | --- | --- |
 | 総エネルギー | 約 〇〇 kcal |
@@ -154,50 +133,38 @@ Markdownのコードブロックを含めないでください。
 | 炭水化物 (C) | 約 〇〇 g |
 
 ## 内訳の目安
-
 - 料理名（約 ◯◯ kcal）
   - 材料名（分量目安）： 解説
-  ...
 
 ## 分析コメント
+(コメント)
 
-  分析コメントを表示
-
-出力は以下のJSON形式のみを返してください。Markdownのコードブロックを含めないでください。
-"display_text" フィールドに、上記のMarkdown形式のテキスト（または非料理時のメッセージ）をそのまま入れてください。
-
+出力形式:
 {
   "total_calories": 数値(kcal),
-  "pfc": {
-    "p": 数値(g),
-    "f": 数値(g),
-    "c": 数値(g)
-  },
+  "pfc": {"p": 数値, "f": 数値, "c": 数値},
   "food_name": "料理名",
-  "display_text": "Markdown形式のテキスト"
+  "display_text": "上記のMarkdown形式のテキスト"
 }
+$jsonOnlyBase
 ''';
 
-  /// 献立提案プロンプト
-  static const String suggestMenuPlan = '''
-あなたはプロの栄養士でシェフです。
+  // --- Menu Plan Suggestion ---
+  static const String suggestMenuPlanSystem = '''
+プロの栄養士・シェフとして、以下の3パターンの献立を提案してください。
+1. バランス重視: 栄養・味のバランス。
+2. 在庫活用: 「在庫」優先。
+3. 買い出し活用: 「買い物リスト」も活用。
 
-【依頼】
-以下の3つのパターンの献立を提案してください。
-1. **バランス重視**: 前後の食事とのバランスを最優先した提案。
-2. **在庫活用**: 「冷蔵庫にあるもの」を優先的に使った提案（なければバランス重視でOK）。
-3. **買い出し活用**: 「買い物リストにあるもの」も組み合わせた提案（なければバランス重視でOK）。
-
-【出力形式】
-JSON配列形式のみで返してください。Markdownのコードブロックは不要です。
-
+出力形式:
 [
   {
     "name": "料理名",
-    "description": "提案の理由やポイント（50文字以内）",
-    "usedIngredients": ["使用する主な食材1", "使用する主な食材2"]
-  },
-  ... (合計3つ)
+    "description": "提案の理由（50文字以内）",
+    "usedIngredients": ["食材1", "食材2"]
+  }
 ]
+(計3つ)
+$jsonOnlyBase
 ''';
 }
