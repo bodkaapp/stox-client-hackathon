@@ -1047,6 +1047,21 @@ class AppLocalizationsJa extends AppLocalizations {
   String get actionFinish => '終了する';
 
   @override
+  String get actionFinishShort => '終了';
+
+  @override
+  String get actionScreenshot => 'スクショする';
+
+  @override
+  String get actionFinishCookingMode => '調理モードを終了する';
+
+  @override
+  String get actionCreateIngredientSticker => '材料を付箋にする';
+
+  @override
+  String get pipProcessing => '材料付箋を作成中...';
+
+  @override
   String get titleCookingMode => '調理モード';
 
   @override

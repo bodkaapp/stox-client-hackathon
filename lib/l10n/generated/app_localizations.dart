@@ -2018,6 +2018,36 @@ abstract class AppLocalizations {
   /// **'終了する'**
   String get actionFinish;
 
+  /// No description provided for @actionFinishShort.
+  ///
+  /// In ja, this message translates to:
+  /// **'終了'**
+  String get actionFinishShort;
+
+  /// No description provided for @actionScreenshot.
+  ///
+  /// In ja, this message translates to:
+  /// **'スクショする'**
+  String get actionScreenshot;
+
+  /// No description provided for @actionFinishCookingMode.
+  ///
+  /// In ja, this message translates to:
+  /// **'調理モードを終了する'**
+  String get actionFinishCookingMode;
+
+  /// No description provided for @actionCreateIngredientSticker.
+  ///
+  /// In ja, this message translates to:
+  /// **'材料を付箋にする'**
+  String get actionCreateIngredientSticker;
+
+  /// No description provided for @pipProcessing.
+  ///
+  /// In ja, this message translates to:
+  /// **'材料付箋を作成中...'**
+  String get pipProcessing;
+
   /// No description provided for @titleCookingMode.
   ///
   /// In ja, this message translates to:

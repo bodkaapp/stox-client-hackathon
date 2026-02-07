@@ -1,10 +1,18 @@
+import 'dart:typed_data';
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+import 'package:image/image.dart' as img;
 import '../../domain/models/recipe.dart';
 import '../../l10n/generated/app_localizations.dart';
 import '../../config/app_colors.dart';
+import '../../infrastructure/services/cooking_mode_service.dart';
+import '../widgets/ingredient_pip_view.dart';
+import '../widgets/crop_selection_overlay.dart';
 
-class CookingModeScreen extends StatefulWidget {
+class CookingModeScreen extends ConsumerStatefulWidget {
   final List<Recipe> recipes;
   final int initialIndex;
 
@@ -15,12 +23,22 @@ class CookingModeScreen extends StatefulWidget {
   });
 
   @override
-  State<CookingModeScreen> createState() => _CookingModeScreenState();
+  ConsumerState<CookingModeScreen> createState() => _CookingModeScreenState();
 }
 
-class _CookingModeScreenState extends State<CookingModeScreen> with TickerProviderStateMixin {
+class _CookingModeScreenState extends ConsumerState<CookingModeScreen> with TickerProviderStateMixin {
   late TabController _tabController;
   late PageController _pageController;
+  late AnimationController _headerController;
+  late Animation<Offset> _headerOffsetAnimation;
+  
+  Uint8List? _pipImageData;
+  Uint8List? _pipThumbnailData;
+  bool _isProcessing = false;
+  bool _isSelectingArea = false;
+  Uint8List? _fullScreenshotData;
+  double _lastScrollY = 0;
+  late List<GlobalKey<_RecipeWebViewState>> _recipeWebViewKeys;
 
   @override
   void initState() {
@@ -33,8 +51,29 @@ class _CookingModeScreenState extends State<CookingModeScreen> with TickerProvid
     _pageController = PageController(
       initialPage: widget.initialIndex ~/ 3,
     );
+    _headerController = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
+    _headerOffsetAnimation = Tween<Offset>(
+      begin: Offset.zero,
+      end: const Offset(0, -1.2),
+    ).animate(CurvedAnimation(
+      parent: _headerController,
+      curve: Curves.easeInOut,
+    ));
+
+    _recipeWebViewKeys = List.generate(
+      widget.recipes.length,
+      (index) => GlobalKey<_RecipeWebViewState>(),
+    );
 
     _tabController.addListener(_handleTabSelection);
+    
+    // Set initial state for cooking mode
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(cookingModeServiceProvider.notifier).setCookingMode(true);
+    });
   }
 
   @override
@@ -42,11 +81,11 @@ class _CookingModeScreenState extends State<CookingModeScreen> with TickerProvid
     _tabController.removeListener(_handleTabSelection);
     _tabController.dispose();
     _pageController.dispose();
+    _headerController.dispose();
     super.dispose();
   }
 
   void _handleTabSelection() {
-    // Tablet layout sync logic
     if (MediaQuery.of(context).size.width >= 600) {
       if (_tabController.indexIsChanging) {
         final targetPage = _tabController.index ~/ 3;
@@ -70,23 +109,21 @@ class _CookingModeScreenState extends State<CookingModeScreen> with TickerProvid
     return '${title.substring(0, 10)}...${title.substring(title.length - 10)}';
   }
 
-  Future<void> _onPopInvoked(bool didPop) async {
-    if (didPop) return;
-
+  Future<void> _exitCookingMode() async {
     final shouldPop = await showDialog<bool>(
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text(AppLocalizations.of(context)!.cookingModeExitConfirm), // 調理モードを終了しますか？
-          content: Text(AppLocalizations.of(context)!.cookingModeExitDescription), // 調理モードを終了して前の画面に戻ります。
+          title: Text(AppLocalizations.of(context)!.cookingModeExitConfirm),
+          content: Text(AppLocalizations.of(context)!.cookingModeExitDescription),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
-              child: Text(AppLocalizations.of(context)!.actionCancel), // キャンセル
+              child: Text(AppLocalizations.of(context)!.actionCancel),
             ),
             TextButton(
               onPressed: () => Navigator.of(context).pop(true),
-              child: Text(AppLocalizations.of(context)!.actionFinish, style: const TextStyle(color: Colors.red)), // 終了する
+              child: Text(AppLocalizations.of(context)!.actionFinish, style: const TextStyle(color: Colors.red)),
             ),
           ],
         );
@@ -94,11 +131,75 @@ class _CookingModeScreenState extends State<CookingModeScreen> with TickerProvid
     );
 
     if (shouldPop == true && mounted) {
+      await ref.read(cookingModeServiceProvider.notifier).setCookingMode(false);
       setState(() {
         _shouldPop = true;
       });
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        Navigator.of(context).pop();
+        Navigator.pop(context);
+      });
+    }
+  }
+
+  void _onScroll(int x, int y) {
+    // Webview reports scroll position in pixels. 
+    // Swipe up (scroll down) -> Close header
+    // Swipe down (scroll up) -> Open header
+    final delta = y - _lastScrollY;
+    
+    if (delta > 10) { // Scrolling down significantly
+      if (!_headerController.isAnimating && _headerController.value == 0) {
+        _headerController.forward();
+      }
+    } else if (delta < -10 || y <= 0) { // Scrolling up significantly or reached top
+      if (!_headerController.isAnimating && _headerController.value == 1) {
+        _headerController.reverse();
+      }
+    }
+    _lastScrollY = y.toDouble();
+  }
+
+  void _handleCropSelection(Rect rect) async {
+    if (_fullScreenshotData == null) return;
+    
+    setState(() {
+      _isSelectingArea = false;
+      _isProcessing = true;
+    });
+
+    try {
+      final img.Image? decoded = img.decodeImage(_fullScreenshotData!);
+      if (decoded == null) return;
+
+      // The rect is in logical pixels. We need to map it to the screenshot pixels.
+      // RepaintBoundary was captured with pixelRatio: 3.0
+      const double captureRatio = 3.0;
+      
+      final int x = (rect.left * captureRatio).toInt().clamp(0, decoded.width);
+      final int y = (rect.top * captureRatio).toInt().clamp(0, decoded.height);
+      final int w = (rect.width * captureRatio).toInt().clamp(0, decoded.width - x);
+      final int h = (rect.height * captureRatio).toInt().clamp(0, decoded.height - y);
+
+      if (w <= 10 || h <= 10) return;
+
+      final img.Image cropped = img.copyCrop(decoded, x: x, y: y, width: w, height: h);
+      
+      // Memory management: Resize if too large
+      img.Image resized = cropped;
+      if (cropped.width > 800) {
+        resized = img.copyResize(cropped, width: 800);
+      }
+      
+      final Uint8List croppedBytes = Uint8List.fromList(img.encodePng(resized));
+      setState(() {
+        _pipImageData = croppedBytes;
+      });
+    } catch (e) {
+      debugPrint('Error cropping manual selection: $e');
+    } finally {
+      setState(() {
+        _isProcessing = false;
+        _fullScreenshotData = null;
       });
     }
   }
@@ -107,56 +208,155 @@ class _CookingModeScreenState extends State<CookingModeScreen> with TickerProvid
   Widget build(BuildContext context) {
     return PopScope(
       canPop: _shouldPop,
-      onPopInvoked: _onPopInvoked,
+      onPopInvoked: (didPop) {
+        if (didPop) return;
+        _exitCookingMode();
+      },
       child: Scaffold(
-        appBar: AppBar(
-          automaticallyImplyLeading: false, // Hide default back button
-          title: Text(
-            AppLocalizations.of(context)!.titleCookingMode, // 調理モード
-            style: const TextStyle(color: AppColors.stoxText, fontWeight: FontWeight.bold),
-          ),
-          leading: IconButton(
-            icon: const Icon(Icons.close),
-            onPressed: () {
-               if (_shouldPop) {
-                 Navigator.of(context).pop();
-               } else {
-                 _onPopInvoked(false);
-               }
-            },
-          ),
-          backgroundColor: Colors.white,
-          elevation: 0,
-          iconTheme: const IconThemeData(color: AppColors.stoxText),
-        ),
-        body: Column(
+        body: Stack(
           children: [
-            if (widget.recipes.length > 1)
-              Container(
-                decoration: const BoxDecoration(
-                  color: Colors.white,
-                  border: Border(bottom: BorderSide(color: AppColors.stoxBorder)),
+            Column(
+              children: [
+                SizedBox(height: widget.recipes.length > 1 ? kToolbarHeight + 48 : kToolbarHeight),
+                Expanded(
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      if (constraints.maxWidth >= 600) {
+                        return _buildTabletLayout();
+                      } else {
+                        return _buildMobileLayout();
+                      }
+                    },
+                  ),
                 ),
-                child: TabBar(
-                  controller: _tabController,
-                  isScrollable: true,
-                  labelColor: AppColors.stoxPrimary,
-                  unselectedLabelColor: AppColors.stoxSubText,
-                  indicatorColor: AppColors.stoxPrimary,
-                  tabs: widget.recipes.map((r) => Tab(text: _truncateTitle(r.title))).toList(),
+              ],
+            ),
+            if (!_isSelectingArea)
+              SlideTransition(
+                position: _headerOffsetAnimation,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    AppBar(
+                      automaticallyImplyLeading: false,
+                      title: null,
+                      actions: [
+                        if (_pipThumbnailData != null || _pipImageData != null)
+                          Padding(
+                            padding: const EdgeInsets.only(right: 8.0),
+                            child: GestureDetector(
+                              onTap: () {
+                                if (_pipThumbnailData != null) {
+                                  setState(() {
+                                    _pipImageData = _pipThumbnailData;
+                                    _pipThumbnailData = null;
+                                  });
+                                }
+                              },
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(4),
+                                child: Container(
+                                  width: 40,
+                                  height: 40,
+                                  decoration: BoxDecoration(
+                                    border: Border.all(color: AppColors.stoxBorder),
+                                    color: Colors.grey[200],
+                                  ),
+                                  child: Image.memory(
+                                    (_pipThumbnailData ?? _pipImageData)!,
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          )
+                        else
+                          IconButton(
+                            icon: const Icon(Icons.sticky_note_2),
+                            onPressed: () {
+                              final currentIndex = _tabController.index;
+                              _recipeWebViewKeys[currentIndex].currentState?.initManualSelection();
+                            },
+                          ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
+                          child: OutlinedButton(
+                            onPressed: _exitCookingMode,
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: Colors.red,
+                              side: const BorderSide(color: Colors.red),
+                              padding: const EdgeInsets.symmetric(horizontal: 16),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                            ),
+                            child: Text(
+                              AppLocalizations.of(context)!.actionFinishShort,
+                              style: const TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                        ),
+                      ],
+                      backgroundColor: Colors.white,
+                      elevation: 0,
+                      iconTheme: const IconThemeData(color: AppColors.stoxText),
+                      shape: const Border(bottom: BorderSide(color: AppColors.stoxBorder)),
+                    ),
+                    if (widget.recipes.length > 1)
+                      Container(
+                        decoration: const BoxDecoration(
+                          color: Colors.white,
+                          border: Border(bottom: BorderSide(color: AppColors.stoxBorder)),
+                        ),
+                        child: TabBar(
+                          controller: _tabController,
+                          isScrollable: true,
+                          labelColor: AppColors.stoxPrimary,
+                          unselectedLabelColor: AppColors.stoxSubText,
+                          indicatorColor: AppColors.stoxPrimary,
+                          tabs: widget.recipes.map((r) => Tab(text: _truncateTitle(r.title))).toList(),
+                        ),
+                      ),
+                  ],
                 ),
               ),
-            Expanded(
-              child: LayoutBuilder(
-                builder: (context, constraints) {
-                  if (constraints.maxWidth >= 600) {
-                    return _buildTabletLayout();
-                  } else {
-                    return _buildMobileLayout();
-                  }
+            if (_pipImageData != null)
+              IngredientPipView(
+                imageData: _pipImageData!,
+                onClose: () {
+                  setState(() {
+                    _pipThumbnailData = _pipImageData;
+                    _pipImageData = null;
+                  });
                 },
               ),
-            ),
+            if (_isSelectingArea)
+              CropSelectionOverlay(
+                onCancel: () => setState(() {
+                  _isSelectingArea = false;
+                  _fullScreenshotData = null;
+                }),
+                onConfirm: _handleCropSelection,
+              ),
+            if (_isProcessing)
+              Container(
+                color: Colors.black26,
+                child: Center(
+                  child: Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(20.0),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const CircularProgressIndicator(),
+                          const SizedBox(height: 16),
+                          Text(AppLocalizations.of(context)!.pipProcessing),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
           ],
         ),
       ),
@@ -167,7 +367,20 @@ class _CookingModeScreenState extends State<CookingModeScreen> with TickerProvid
     return TabBarView(
       physics: const NeverScrollableScrollPhysics(),
       controller: _tabController,
-      children: widget.recipes.map((recipe) => _RecipeWebView(recipe: recipe)).toList(),
+      children: widget.recipes.asMap().entries.map<Widget>((entry) {
+        final index = entry.key;
+        final recipe = entry.value;
+        return _RecipeWebView(
+          key: _recipeWebViewKeys[index],
+          recipe: recipe,
+          onScroll: _onScroll,
+          onStartSelection: (data) => setState(() {
+            _fullScreenshotData = data;
+            _isSelectingArea = true;
+          }),
+          onProcessing: (val) => setState(() => _isProcessing = val),
+        );
+      }).toList(),
     );
   }
 
@@ -197,7 +410,7 @@ class _CookingModeScreenState extends State<CookingModeScreen> with TickerProvid
         return Row(
           children: chunk.map((recipe) => Expanded(
             child: Container(
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 border: Border(
                   right: BorderSide(color: AppColors.stoxBorder),
                 ),
@@ -207,7 +420,7 @@ class _CookingModeScreenState extends State<CookingModeScreen> with TickerProvid
                   Container(
                     width: double.infinity,
                     padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-                    color: AppColors.stoxBannerBg, // stone-100
+                    color: AppColors.stoxBannerBg,
                     child: Text(
                       recipe.title,
                       style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppColors.stoxText),
@@ -216,7 +429,16 @@ class _CookingModeScreenState extends State<CookingModeScreen> with TickerProvid
                       textAlign: TextAlign.center,
                     ),
                   ),
-                  Expanded(child: _RecipeWebView(recipe: recipe)),
+                  Expanded(child: _RecipeWebView(
+                    key: _recipeWebViewKeys[widget.recipes.indexOf(recipe)],
+                    recipe: recipe,
+                    onScroll: _onScroll,
+                    onStartSelection: (data) => setState(() {
+                      _fullScreenshotData = data;
+                      _isSelectingArea = true;
+                    }),
+                    onProcessing: (val) => setState(() => _isProcessing = val),
+                  )),
                 ],
               ),
             ),
@@ -229,8 +451,17 @@ class _CookingModeScreenState extends State<CookingModeScreen> with TickerProvid
 
 class _RecipeWebView extends StatefulWidget {
   final Recipe recipe;
+  final Function(int, int) onScroll;
+  final Function(Uint8List) onStartSelection;
+  final Function(bool) onProcessing;
 
-  const _RecipeWebView({required this.recipe});
+  const _RecipeWebView({
+    super.key,
+    required this.recipe,
+    required this.onScroll,
+    required this.onStartSelection,
+    required this.onProcessing,
+  });
 
   @override
   State<_RecipeWebView> createState() => _RecipeWebViewState();
@@ -239,6 +470,7 @@ class _RecipeWebView extends StatefulWidget {
 class _RecipeWebViewState extends State<_RecipeWebView> with AutomaticKeepAliveClientMixin {
   late final WebViewController _controller;
   bool _isLoading = true;
+  final GlobalKey _globalKey = GlobalKey();
 
   @override
   void initState() {
@@ -254,7 +486,34 @@ class _RecipeWebViewState extends State<_RecipeWebView> with AutomaticKeepAliveC
           },
         ),
       )
+      ..setOnScrollPositionChange((change) {
+         widget.onScroll(change.x.toInt(), change.y.toInt());
+      })
       ..loadRequest(Uri.parse(widget.recipe.pageUrl));
+  }
+
+  Future<void> initManualSelection() async {
+    widget.onProcessing(true);
+    try {
+      // Take screenshot of the entire WebView area using RepaintBoundary
+      final RenderRepaintBoundary? boundary = _globalKey.currentContext?.findRenderObject() as RenderRepaintBoundary?;
+      if (boundary == null) {
+        widget.onProcessing(false);
+        return;
+      }
+      
+      final ui.Image image = await boundary.toImage(pixelRatio: 3.0);
+      final ByteData? byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+      final Uint8List? fullImage = byteData?.buffer.asUint8List();
+      
+      if (fullImage != null) {
+        widget.onStartSelection(fullImage);
+      }
+    } catch (e) {
+      debugPrint('Error initiating manual selection: $e');
+    } finally {
+      widget.onProcessing(false);
+    }
   }
 
   @override
@@ -265,7 +524,10 @@ class _RecipeWebViewState extends State<_RecipeWebView> with AutomaticKeepAliveC
     super.build(context);
     return Stack(
       children: [
-        WebViewWidget(controller: _controller),
+        RepaintBoundary(
+          key: _globalKey,
+          child: WebViewWidget(controller: _controller),
+        ),
         if (_isLoading)
           const Center(child: CircularProgressIndicator()),
       ],

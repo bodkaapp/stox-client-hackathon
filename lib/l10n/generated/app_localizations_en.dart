@@ -1057,6 +1057,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String get actionFinish => 'Finish';
 
   @override
+  String get actionFinishShort => 'Finish';
+
+  @override
+  String get actionScreenshot => 'Take Screenshot';
+
+  @override
+  String get actionFinishCookingMode => 'Finish Cooking Mode';
+
+  @override
+  String get actionCreateIngredientSticker => 'Create Ingredient Sticker';
+
+  @override
+  String get pipProcessing => 'Creating Ingredient Sticker...';
+
+  @override
   String get titleCookingMode => 'Cooking Mode';
 
   @override
