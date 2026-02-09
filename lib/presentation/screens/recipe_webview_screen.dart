@@ -13,6 +13,7 @@ import '../../infrastructure/repositories/drift_recipe_repository.dart';
 import 'ai_ingredient_list_screen.dart';
 import 'recipe_schedule_screen.dart';
 import '../mixins/ad_manager_mixin.dart';
+import '../../infrastructure/services/recipe_monitoring_service.dart';
 import '../../domain/models/meal_plan.dart';
 import '../../domain/models/challenge_stamp.dart'; // [NEW]
 import '../viewmodels/challenge_stamp_viewmodel.dart'; // [NEW]
@@ -241,6 +242,9 @@ class _RecipeWebViewScreenState extends ConsumerState<RecipeWebViewScreen> with 
         createdAt: DateTime.now(),
       );
       await repo.save(recipe);
+      
+      // Track registration
+      ref.read(recipeMonitoringServiceProvider).trackRecipeRegistration(urlToSave);
       
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

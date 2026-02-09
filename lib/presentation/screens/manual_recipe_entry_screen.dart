@@ -8,6 +8,7 @@ import '../../domain/models/meal_plan.dart';
 import '../../domain/repositories/recipe_repository.dart';
 import '../../infrastructure/repositories/drift_recipe_repository.dart';
 import 'recipe_schedule_screen.dart';
+import '../../infrastructure/services/recipe_monitoring_service.dart';
 
 class ManualRecipeEntryScreen extends ConsumerStatefulWidget {
   final DateTime? initialDate;
@@ -100,6 +101,9 @@ class _ManualRecipeEntryScreenState extends ConsumerState<ManualRecipeEntryScree
 
     try {
       await repo.save(recipe);
+
+      // Track registration (Manual entry has no URL, but we track the event)
+      ref.read(recipeMonitoringServiceProvider).trackRecipeRegistration('manual');
 
       if (mounted) {
         // Navigate to Schedule Screen with saved recipe details (or just basics)

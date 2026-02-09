@@ -1,28 +1,30 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'ai_recipe_repository.dart';
+part of 'recipe_monitoring_service.dart';
 
 // **************************************************************************
 // RiverpodGenerator
 // **************************************************************************
 
-String _$aiRecipeRepositoryHash() =>
-    r'0e7b0446a616e1b1695b899c8275e5e6bb5aa28e';
+String _$recipeMonitoringServiceHash() =>
+    r'16df313add6e54785240e851efa13811479e9ea5';
 
-/// See also [aiRecipeRepository].
-@ProviderFor(aiRecipeRepository)
-final aiRecipeRepositoryProvider = Provider<AiRecipeRepository>.internal(
-  aiRecipeRepository,
-  name: r'aiRecipeRepositoryProvider',
+/// See also [recipeMonitoringService].
+@ProviderFor(recipeMonitoringService)
+final recipeMonitoringServiceProvider =
+    AutoDisposeProvider<RecipeMonitoringService>.internal(
+  recipeMonitoringService,
+  name: r'recipeMonitoringServiceProvider',
   debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
       ? null
-      : _$aiRecipeRepositoryHash,
+      : _$recipeMonitoringServiceHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
 
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
-typedef AiRecipeRepositoryRef = ProviderRef<AiRecipeRepository>;
+typedef RecipeMonitoringServiceRef
+    = AutoDisposeProviderRef<RecipeMonitoringService>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

@@ -11,6 +11,7 @@ import '../../infrastructure/repositories/drift_recipe_repository.dart';
 import '../../infrastructure/repositories/drift_meal_plan_repository.dart';
 import '../widgets/calendar/weekly_calendar_strip.dart';
 import '../widgets/calendar/monthly_calendar_view.dart';
+import '../../infrastructure/services/recipe_monitoring_service.dart';
 
 class RecipeScheduleScreen extends ConsumerStatefulWidget {
   final String title;
@@ -130,6 +131,9 @@ class _RecipeScheduleScreenState extends ConsumerState<RecipeScheduleScreen> {
           memo: _memoController.text, 
         );
         recipeId = await recipeRepo.save(recipe);
+        
+        // Track registration
+        ref.read(recipeMonitoringServiceProvider).trackRecipeRegistration(widget.url);
       } else {
         // Handle existing recipe (manual entry or from search/history)
         final existing = await recipeRepo.getById(recipeId);
@@ -141,6 +145,9 @@ class _RecipeScheduleScreenState extends ConsumerState<RecipeScheduleScreen> {
                 isTemporary: false,
                 memo: _memoController.text
               ));
+              
+              // Track registration (converting from temporary to saved)
+              ref.read(recipeMonitoringServiceProvider).trackRecipeRegistration(widget.url);
            }
         }
       }
