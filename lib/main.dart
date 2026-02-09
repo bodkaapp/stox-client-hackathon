@@ -12,10 +12,13 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   await dotenv.load(fileName: ".env");
   MobileAds.instance.initialize();
   await initializeDateFormatting('ja');
@@ -42,12 +45,12 @@ class _MyAppState extends ConsumerState<MyApp> {
       if (shortcutType == 'add_shopping_item') {
         // Navigate to shopping screen with action=add
         Future.delayed(const Duration(milliseconds: 500), () {
-             ref.read(routerProvider).go('/shopping?action=add');
+          ref.read(routerProvider).go('/shopping?action=add');
         });
       } else if (shortcutType == 'take_photo') {
         // Navigate to food camera
-         Future.delayed(const Duration(milliseconds: 500), () {
-             ref.read(routerProvider).go('/food_camera');
+        Future.delayed(const Duration(milliseconds: 500), () {
+          ref.read(routerProvider).go('/food_camera');
         });
       }
     });
