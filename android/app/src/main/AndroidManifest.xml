@@ -2,6 +2,9 @@
     <uses-permission android:name="android.permission.RECORD_AUDIO"/>
     <uses-permission android:name="android.permission.CAMERA"/>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="29" tools:replace="android:maxSdkVersion" />
+
+    <!-- ARCoreを必須としない設定 -->
+    <uses-feature android:name="android.hardware.camera.ar" android:required="false" />
     <application
         android:label="STOX"
         android:name="${applicationName}"
@@ -42,6 +45,10 @@
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="YOUR_API_KEY_HERE"/>
+
+        <!-- ARCoreをオプション(任意)に設定 -->
+        <meta-data android:name="com.google.ar.core" android:value="optional" />
+        <meta-data android:name="com.google.ar.core.min_apk_version" android:value="210330000" />
     </application>
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and
