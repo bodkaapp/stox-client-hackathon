@@ -52,7 +52,7 @@ class AiRecipeIntroScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFFF9F0),
+      backgroundColor: Colors.white,
       body: SafeArea(
         child: Column(
           children: [
@@ -83,33 +83,33 @@ class AiRecipeIntroScreen extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                    // Illustration
-                   Container(
-                     width: 280,
-                     height: 280,
-                     decoration: const BoxDecoration(
-                       shape: BoxShape.circle,
-                       color: Color(0xFFFFF2E0),
-                     ),
-                     child: ClipOval(
-                       child: Image.asset(
-                         'assets/images/tutorial-illustration.png',
-                         fit: BoxFit.cover,
-                       ),
-                     ),
-                   ),
+                    Container(
+                      width: 280,
+                      height: 280,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: const Color(0xFFFF007F).withOpacity(0.1),
+                      ),
+                      child: ClipOval(
+                        child: Image.asset(
+                          'assets/images/photo-fridge.jpg',
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                    ),
                    const SizedBox(height: 48),
                    
                    // Title
-                   Text(
-                     AppLocalizations.of(context)!.tutorialTitle, // 冷蔵庫の中を\n撮影しましょう
-                     textAlign: TextAlign.center,
-                     style: GoogleFonts.outfit(
-                       fontSize: 24,
-                       fontWeight: FontWeight.bold,
-                       color: const Color(0xFF333333),
-                       height: 1.4,
-                     ),
-                   ),
+                    Text(
+                      AppLocalizations.of(context)!.tutorialTitle, // 冷蔵庫の中を\n撮影しましょう
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.outfit(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black,
+                        height: 1.4,
+                      ),
+                    ),
                    const SizedBox(height: 16),
                    
                    // Description
@@ -144,10 +144,10 @@ class AiRecipeIntroScreen extends StatelessWidget {
                       ),
                     ),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFEF9F27),
+                      backgroundColor: const Color(0xFFFF007F),
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30),
+                        borderRadius: BorderRadius.circular(12),
                       ),
                       elevation: 0,
                     ),
@@ -160,7 +160,7 @@ class AiRecipeIntroScreen extends StatelessWidget {
                       style: const TextStyle(
                          fontSize: 14,
                          fontWeight: FontWeight.bold,
-                         color: Color(0xFF8D6E63),
+                         color: Color(0xFFFF007F),
                       ),
                     ),
                   ),
