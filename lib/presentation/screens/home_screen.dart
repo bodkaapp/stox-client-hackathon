@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../l10n/generated/app_localizations.dart';
+import '../../core/extensions/context_extension.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../config/app_colors.dart';
 import '../widgets/home_widgets.dart';
@@ -31,6 +32,19 @@ class HomeScreen extends ConsumerWidget {
     return CustomScrollView(
       slivers: [
         const SliverToBoxAdapter(child: HomeHeader()),
+        if (context.isEnglish)
+          const SliverToBoxAdapter(
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+              child: Text(
+                'This app helps you search for Japanese recipe websites and suggests Japanese dishes you can make with ingredients in your fridge.',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: AppColors.stoxText,
+                ),
+              ),
+            ),
+          ),
         SliverToBoxAdapter(
           child: DateHeaderWidget(
             date: DateTime.now(),
@@ -51,6 +65,17 @@ class HomeScreen extends ConsumerWidget {
     return Column(
       children: [
         const HomeHeader(),
+        if (context.isEnglish)
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            child: Text(
+              'This app helps you search for Japanese recipe websites and suggests Japanese dishes you can make with ingredients in your fridge.',
+              style: TextStyle(
+                fontSize: 14,
+                color: AppColors.stoxText,
+              ),
+            ),
+          ),
         DateHeaderWidget(
           date: DateTime.now(),
           showRelativeDate: false,
