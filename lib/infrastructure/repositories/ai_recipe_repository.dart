@@ -578,6 +578,7 @@ $surroundingMeals
 
 【今の状況】
 - 冷蔵庫にあるもの（在庫）: ${stockItems.join(', ')}
+  ※(期限切れ)や(期限間近)の食材は優先的に使ってください。
 - 買い物リストにあるもの: ${shoppingListItems.join(', ')}
 ''';
 

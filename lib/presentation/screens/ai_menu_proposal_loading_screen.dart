@@ -94,7 +94,23 @@ class _AiMenuProposalLoadingScreenState extends ConsumerState<AiMenuProposalLoad
       // Simple filter
       final stockItems = stockIngredients
           .where((i) => i.status == IngredientStatus.stock)
-          .map((i) => i.name)
+          .map((i) {
+            String info = i.name;
+            if (i.expiryDate != null) {
+              final now = DateTime.now();
+              // 時間部分を無視して日付だけで比較
+              final today = DateTime(now.year, now.month, now.day);
+              final expiry = DateTime(i.expiryDate!.year, i.expiryDate!.month, i.expiryDate!.day);
+              final days = expiry.difference(today).inDays;
+
+              if (days < 0) {
+                info += '(期限切れ)';
+              } else if (days <= 3) {
+                info += '(期限間近:あと${days}日)';
+              }
+            }
+            return info;
+          })
           .toList();
       
       final shoppingListItems = stockIngredients

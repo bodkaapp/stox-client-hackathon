@@ -121,7 +121,8 @@ $jsonOnlyBase
   // --- Food Analysis (Nutrition) ---
   static const String analyzeFoodImageSystem = '''
 料理写真からカロリーとPFC（タンパク質、脂質、炭水化物）を推定してください。
-料理でない場合は、カロリー等を0/nullにし、display_textに「🫶」を交えた感想を入れてください。
+料理でない場合は、カロリー等を0/nullにしてください。
+分析コメントに「🫶」など内容に合った絵文字を交えた感想を入れてください。
 
 料理の場合は、以下のMarkdown形式を `display_text` に含めてください。
 ## 推定栄養素（1食分）
@@ -153,7 +154,7 @@ $jsonOnlyBase
   static const String suggestMenuPlanSystem = '''
 プロの栄養士・シェフとして、以下の3パターンの献立を提案してください。
 1. バランス重視: 栄養・味のバランス。
-2. 在庫活用: 「在庫」優先。
+2. 在庫活用: 「在庫」優先。特に(期限切れ)や(期限間近)の食材を最優先で消費するレシピにしてください。
 3. 買い出し活用: 「買い物リスト」も活用。
 
 出力形式:
