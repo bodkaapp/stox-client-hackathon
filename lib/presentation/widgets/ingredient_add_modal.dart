@@ -80,65 +80,19 @@ class _IngredientAddModalState extends ConsumerState<IngredientAddModal> {
     if (text.isEmpty) return;
 
     setState(() {
-      _isAnalyzing = true;
+      _addedItems.add(AddedIngredientItem(
+        name: text,
+        quantity: _quantity,
+        category: _categoryController.text.trim(),
+      ));
+      // Reset inputs
+      _nameController.clear();
+      _categoryController.clear();
+      _quantity = 1.0;
     });
 
-    try {
-      final aiRepo = ref.read(aiRecipeRepositoryProvider);
-      final ingredients = await aiRepo.parseShoppingList(text);
-
-      if (ingredients.isNotEmpty) {
-        setState(() {
-          for (final item in ingredients) {
-            _addedItems.add(AddedIngredientItem(
-              name: item.name,
-              quantity: item.amount,
-              category: item.category,
-              expiryDate: item.expiryDate,
-            ));
-          }
-          // Reset inputs
-          _nameController.clear();
-          _categoryController.clear();
-          _quantity = 1.0;
-        });
-      } else {
-        // AI returned empty, fallback to manual add
-        setState(() {
-          _addedItems.add(AddedIngredientItem(
-            name: text,
-            quantity: _quantity,
-            category: _categoryController.text.trim(),
-          ));
-          // Reset inputs
-          _nameController.clear();
-          _categoryController.clear();
-          _quantity = 1.0;
-        });
-      }
-    } catch (e) {
-      debugPrint("AI Add Error: $e");
-      // Fallback on error
-      setState(() {
-        _addedItems.add(AddedIngredientItem(
-          name: text,
-          quantity: _quantity,
-          category: _categoryController.text.trim(),
-        ));
-        // Reset inputs
-        _nameController.clear();
-        _categoryController.clear();
-        _quantity = 1.0;
-      });
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isAnalyzing = false;
-        });
-        // Re-focus for next input
-        _nameFocusNode.requestFocus();
-      }
-    }
+    // Re-focus for next input
+    _nameFocusNode.requestFocus();
   }
 
   // Remove _addWithAi as it is now integrated into _addItem
@@ -151,31 +105,62 @@ class _IngredientAddModalState extends ConsumerState<IngredientAddModal> {
   Future<void> _saveItems() async {
     if (_addedItems.isEmpty) return;
 
-    try {
-      final repo = await ref.read(ingredientRepositoryProvider.future);
-      
-      final newIngredients = _addedItems.map((item) {
-        // Simple ID generation using timestamp + random suffix/index to avoid collision
-        final id = '${DateTime.now().millisecondsSinceEpoch}_${_addedItems.indexOf(item)}';
-        
-        return Ingredient(
-          id: id,
-          name: item.name,
-          standardName: item.name, // Use same for now
-          category: item.category.isNotEmpty ? item.category : 'unknown', // internal name for Uncategorized
-          unit: AppLocalizations.of(context)!.unitItem, // 個
-          amount: item.quantity,
-          status: widget.targetStatus, 
-          storageType: StorageType.fridge, // Default to fridge
-          purchaseDate: DateTime.now(),
-          expiryDate: item.expiryDate ?? DateTime.now().add(const Duration(days: 7)), // Use AI estimated or default +7 days
-        );
-      }).toList();
+    setState(() {
+      _isAnalyzing = true;
+    });
 
-      await repo.saveAll(newIngredients);
+    try {
+      final aiRepo = ref.read(aiRecipeRepositoryProvider);
+      final repo = await ref.read(ingredientRepositoryProvider.future);
+
+      // Batch analyze items
+      final input = _addedItems.map((item) {
+        String s = item.name;
+        if (item.quantity > 1) s += ' ${item.quantity.toInt()}個';
+        if (item.category.isNotEmpty) s += ' (${item.category})';
+        return s;
+      }).join('\n');
+
+      final aiIngredients = await aiRepo.parseShoppingList(input);
+
+      List<Ingredient> finalIngredients = [];
+
+      if (aiIngredients.isNotEmpty) {
+        // Map AI results to Ingredient objects
+        finalIngredients = aiIngredients.map((item) {
+          final id = '${DateTime.now().millisecondsSinceEpoch}_${aiIngredients.indexOf(item)}';
+          return item.copyWith(
+            id: id,
+            status: widget.targetStatus,
+            storageType: StorageType.fridge,
+            purchaseDate: DateTime.now(),
+            // AI returns expiryDate if shelf_life_days was provided
+            expiryDate: item.expiryDate ?? DateTime.now().add(const Duration(days: 7)),
+          );
+        }).toList();
+      } else {
+        // Fallback to manual items if AI fails or returns empty
+        finalIngredients = _addedItems.map((item) {
+          final id = '${DateTime.now().millisecondsSinceEpoch}_${_addedItems.indexOf(item)}';
+          return Ingredient(
+            id: id,
+            name: item.name,
+            standardName: item.name,
+            category: item.category.isNotEmpty ? item.category : 'unknown',
+            unit: AppLocalizations.of(context)!.unitItem,
+            amount: item.quantity,
+            status: widget.targetStatus,
+            storageType: StorageType.fridge,
+            purchaseDate: DateTime.now(),
+            expiryDate: DateTime.now().add(const Duration(days: 7)),
+          );
+        }).toList();
+      }
+
+      await repo.saveAll(finalIngredients);
       
       // Update usage history
-      for (final item in _addedItems) {
+      for (final item in finalIngredients) {
         await repo.incrementInfoUsageCount(item.name);
       }
       
@@ -186,10 +171,17 @@ class _IngredientAddModalState extends ConsumerState<IngredientAddModal> {
         Navigator.of(context).pop();
       }
     } catch (e) {
+      debugPrint("Save/AI Error: $e");
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(AppLocalizations.of(context)!.addModalSaveError(e.toString()))),
         );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isAnalyzing = false;
+        });
       }
     }
   }
