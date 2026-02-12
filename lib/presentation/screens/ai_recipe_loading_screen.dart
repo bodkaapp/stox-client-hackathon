@@ -242,7 +242,7 @@ class _AiRecipeLoadingScreenState extends ConsumerState<AiRecipeLoadingScreen> {
   
   Widget _buildErrorView() {
     return Scaffold(
-      backgroundColor: const Color(0xFFFFF9F0),
+      backgroundColor: Colors.white,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(24.0),
@@ -250,7 +250,7 @@ class _AiRecipeLoadingScreenState extends ConsumerState<AiRecipeLoadingScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-               const Icon(Icons.error_outline, size: 64, color: Color(0xFFEF9F27)),
+               const Icon(Icons.error_outline, size: 64, color: Color(0xFFFF007F)),
                const SizedBox(height: 24),
                Text(
                  AppLocalizations.of(context)!.aiRecipeNoItemsFound, // 商品が見つかりませんでした
@@ -258,7 +258,7 @@ class _AiRecipeLoadingScreenState extends ConsumerState<AiRecipeLoadingScreen> {
                  style: GoogleFonts.outfit(
                    fontSize: 22,
                    fontWeight: FontWeight.bold,
-                   color: const Color(0xFF333333),
+                   color: Colors.black,
                  ),
                ),
                const SizedBox(height: 16),
@@ -266,7 +266,7 @@ class _AiRecipeLoadingScreenState extends ConsumerState<AiRecipeLoadingScreen> {
                  AppLocalizations.of(context)!.aiRecipeNoIdentification, // 写真から食材を特定できませんでした。\nもう一度撮影するか、レシピを検索してください。
                  textAlign: TextAlign.center,
                  style: const TextStyle(
-                   color: Color(0xFF666666),
+                   color: Color(0xFF8A8A8A),
                    height: 1.5,
                  ),
                ),
@@ -278,7 +278,7 @@ class _AiRecipeLoadingScreenState extends ConsumerState<AiRecipeLoadingScreen> {
                    icon: const Icon(Icons.camera_alt, color: Colors.white),
                    label: Text(AppLocalizations.of(context)!.actionRetakePhoto, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)), // もう一度撮影する
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFEF9F27),
+                    backgroundColor: const Color(0xFFFF007F),
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
                   ),
@@ -288,11 +288,11 @@ class _AiRecipeLoadingScreenState extends ConsumerState<AiRecipeLoadingScreen> {
                // Search Button
                OutlinedButton.icon(
                   onPressed: _onErrorSearchAction,
-                   icon: const Icon(Icons.search, color: Color(0xFFEF9F27)),
-                   label: Text(AppLocalizations.of(context)!.actionSearchRecipe, style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFFEF9F27))), // レシピを検索する
+                   icon: const Icon(Icons.search, color: Color(0xFFFF007F)),
+                   label: Text(AppLocalizations.of(context)!.actionSearchRecipe, style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFFFF007F))), // レシピを検索する
                   style: OutlinedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 16),
-                    side: const BorderSide(color: Color(0xFFEF9F27)),
+                    side: const BorderSide(color: Color(0xFFFF007F)),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
                   ),
                ),

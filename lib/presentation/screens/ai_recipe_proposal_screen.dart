@@ -15,18 +15,18 @@ class AiRecipeProposalScreen extends StatelessWidget {
     final recipeSuggestions = suggestions.cast<AiRecipeSuggestion>();
 
     return Scaffold(
-      backgroundColor: const Color(0xFFFFF9F0),
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: const Color(0xFFFFF9F0),
+        backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFF333333)),
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () => Navigator.of(context).pop(),
         ),
         title: Text(
           AppLocalizations.of(context)!.aiRecipeProposalTitle, // こんなレシピはいかがですか？
           style: GoogleFonts.outfit(
-            color: const Color(0xFF333333),
+            color: Colors.black,
             fontWeight: FontWeight.bold,
             fontSize: 18,
           ),
@@ -66,7 +66,7 @@ class AiRecipeProposalScreen extends StatelessWidget {
                       style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: Color(0xFF333333),
+                        color: Colors.black,
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -74,7 +74,7 @@ class AiRecipeProposalScreen extends StatelessWidget {
                       suggestion.description,
                       style: const TextStyle(
                         fontSize: 14,
-                        color: Color(0xFF666666),
+                        color: Color(0xFF8A8A8A),
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -85,14 +85,14 @@ class AiRecipeProposalScreen extends StatelessWidget {
                         return Container(
                           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFFFF2E0),
+                            color: const Color(0xFFFF007F).withOpacity(0.1),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Text(
                             ingredient,
                             style: const TextStyle(
                               fontSize: 12,
-                              color: Color(0xFFCC8500),
+                              color: const Color(0xFFFF007F),
                               fontWeight: FontWeight.w500,
                             ),
                           ),
