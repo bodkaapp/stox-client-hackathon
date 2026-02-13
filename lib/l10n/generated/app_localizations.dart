@@ -2917,6 +2917,66 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'冷蔵庫を撮影してAIが提案する'**
   String get actionTakeRefrigeratorPhotoAndAiSuggest;
+
+  /// No description provided for @shoppingSectionProduce.
+  ///
+  /// In ja, this message translates to:
+  /// **'青果'**
+  String get shoppingSectionProduce;
+
+  /// No description provided for @shoppingSectionFish.
+  ///
+  /// In ja, this message translates to:
+  /// **'鮮魚'**
+  String get shoppingSectionFish;
+
+  /// No description provided for @shoppingSectionMeat.
+  ///
+  /// In ja, this message translates to:
+  /// **'精肉・ハム'**
+  String get shoppingSectionMeat;
+
+  /// No description provided for @shoppingSectionDairy.
+  ///
+  /// In ja, this message translates to:
+  /// **'乳製品・豆腐・日配'**
+  String get shoppingSectionDairy;
+
+  /// No description provided for @shoppingSectionProcessedFood.
+  ///
+  /// In ja, this message translates to:
+  /// **'加工食品・調味料'**
+  String get shoppingSectionProcessedFood;
+
+  /// No description provided for @shoppingSectionFrozen.
+  ///
+  /// In ja, this message translates to:
+  /// **'冷凍食品'**
+  String get shoppingSectionFrozen;
+
+  /// No description provided for @shoppingSectionBeverage.
+  ///
+  /// In ja, this message translates to:
+  /// **'飲料・お酒'**
+  String get shoppingSectionBeverage;
+
+  /// No description provided for @shoppingSectionSnacks.
+  ///
+  /// In ja, this message translates to:
+  /// **'お菓子'**
+  String get shoppingSectionSnacks;
+
+  /// No description provided for @shoppingSectionDailyGoods.
+  ///
+  /// In ja, this message translates to:
+  /// **'日用品'**
+  String get shoppingSectionDailyGoods;
+
+  /// No description provided for @shoppingSectionOthers.
+  ///
+  /// In ja, this message translates to:
+  /// **'その他'**
+  String get shoppingSectionOthers;
 }
 
 class _AppLocalizationsDelegate

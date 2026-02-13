@@ -1538,4 +1538,34 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get actionTakeRefrigeratorPhotoAndAiSuggest =>
       'Take a fridge photo and suggest by AI';
+
+  @override
+  String get shoppingSectionProduce => 'Produce';
+
+  @override
+  String get shoppingSectionFish => 'Fish';
+
+  @override
+  String get shoppingSectionMeat => 'Meat & Ham';
+
+  @override
+  String get shoppingSectionDairy => 'Dairy, Tofu & Daily';
+
+  @override
+  String get shoppingSectionProcessedFood => 'Processed Food & Seasonings';
+
+  @override
+  String get shoppingSectionFrozen => 'Frozen Foods';
+
+  @override
+  String get shoppingSectionBeverage => 'Beverages & Alcohol';
+
+  @override
+  String get shoppingSectionSnacks => 'Snacks';
+
+  @override
+  String get shoppingSectionDailyGoods => 'Daily Goods';
+
+  @override
+  String get shoppingSectionOthers => 'Others';
 }

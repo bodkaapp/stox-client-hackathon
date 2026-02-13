@@ -1519,4 +1519,34 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get actionTakeRefrigeratorPhotoAndAiSuggest => '冷蔵庫を撮影してAIが提案する';
+
+  @override
+  String get shoppingSectionProduce => '青果';
+
+  @override
+  String get shoppingSectionFish => '鮮魚';
+
+  @override
+  String get shoppingSectionMeat => '精肉・ハム';
+
+  @override
+  String get shoppingSectionDairy => '乳製品・豆腐・日配';
+
+  @override
+  String get shoppingSectionProcessedFood => '加工食品・調味料';
+
+  @override
+  String get shoppingSectionFrozen => '冷凍食品';
+
+  @override
+  String get shoppingSectionBeverage => '飲料・お酒';
+
+  @override
+  String get shoppingSectionSnacks => 'お菓子';
+
+  @override
+  String get shoppingSectionDailyGoods => '日用品';
+
+  @override
+  String get shoppingSectionOthers => 'その他';
 }

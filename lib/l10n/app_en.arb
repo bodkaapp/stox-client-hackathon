@@ -762,5 +762,15 @@
   "nutritionAverage": "Avg",
   "nutritionAnalysisData": "Nutrition Data",
   "nutritionPfcBalance": "PFC Balance",
-  "actionTakeRefrigeratorPhotoAndAiSuggest": "Take a fridge photo and suggest by AI"
+  "actionTakeRefrigeratorPhotoAndAiSuggest": "Take a fridge photo and suggest by AI",
+  "shoppingSectionProduce": "Produce",
+  "shoppingSectionFish": "Fish",
+  "shoppingSectionMeat": "Meat & Ham",
+  "shoppingSectionDairy": "Dairy, Tofu & Daily",
+  "shoppingSectionProcessedFood": "Processed Food & Seasonings",
+  "shoppingSectionFrozen": "Frozen Foods",
+  "shoppingSectionBeverage": "Beverages & Alcohol",
+  "shoppingSectionSnacks": "Snacks",
+  "shoppingSectionDailyGoods": "Daily Goods",
+  "shoppingSectionOthers": "Others"
 }

@@ -764,45 +764,89 @@ class _ShoppingScreenState extends ConsumerState<ShoppingScreen> with AdManagerM
   List<Widget> _buildCategorizedItems(WidgetRef ref, List<Ingredient> items) {
     final Map<String, List<Ingredient>> categorized = {};
     for (var item in items) {
-      // Use CategoryMapper to group by shopping section
+      // CategoryMapper を使用して買い物セクションごとにグループ化
       final detailed = DetailedCategory.fromString(item.category);
       final section = CategoryMapper.toShoppingSection(detailed);
       categorized.putIfAbsent(section, () => []).add(item);
     }
 
+    // カテゴリの表示優先順位を定義 (i10n キーを使用)
+    const categoryOrder = [
+      'shoppingSectionProduce',
+      'shoppingSectionFish',
+      'shoppingSectionMeat',
+      'shoppingSectionDairy',
+      'shoppingSectionProcessedFood',
+      'shoppingSectionFrozen',
+      'shoppingSectionBeverage',
+      'shoppingSectionSnacks',
+      'shoppingSectionDailyGoods',
+      'shoppingSectionOthers',
+    ];
+
+    final sortedSections = categorized.keys.toList()
+      ..sort((a, b) {
+        final indexA = categoryOrder.indexOf(a);
+        final indexB = categoryOrder.indexOf(b);
+        // 定義されていないカテゴリは最後に配置
+        if (indexA == -1 && indexB == -1) return a.compareTo(b);
+        if (indexA == -1) return 1;
+        if (indexB == -1) return -1;
+        return indexA.compareTo(indexB);
+      });
+
     final List<Widget> widgets = [];
-    // Sort sections or keep a specific order? For now just as they come.
-    categorized.forEach((category, catItems) {
-      widgets.add(_buildCategorySection(ref, category, catItems));
-    });
+    for (var section in sortedSections) {
+      widgets.add(_buildCategorySection(ref, section, categorized[section]!));
+    }
     
     return widgets;
   }
 
-  Widget _buildCategorySection(WidgetRef ref, String title, List<Ingredient> items) {
+  Widget _buildCategorySection(WidgetRef ref, String titleKey, List<Ingredient> items) {
+    // i10n キーから表示名を展開
+    final l10n = AppLocalizations.of(context)!;
+    String displayTitle;
+    switch (titleKey) {
+      case 'shoppingSectionProduce': displayTitle = l10n.shoppingSectionProduce; break;
+      case 'shoppingSectionFish': displayTitle = l10n.shoppingSectionFish; break;
+      case 'shoppingSectionMeat': displayTitle = l10n.shoppingSectionMeat; break;
+      case 'shoppingSectionDairy': displayTitle = l10n.shoppingSectionDairy; break;
+      case 'shoppingSectionProcessedFood': displayTitle = l10n.shoppingSectionProcessedFood; break;
+      case 'shoppingSectionFrozen': displayTitle = l10n.shoppingSectionFrozen; break;
+      case 'shoppingSectionBeverage': displayTitle = l10n.shoppingSectionBeverage; break;
+      case 'shoppingSectionSnacks': displayTitle = l10n.shoppingSectionSnacks; break;
+      case 'shoppingSectionDailyGoods': displayTitle = l10n.shoppingSectionDailyGoods; break;
+      case 'shoppingSectionOthers': displayTitle = l10n.shoppingSectionOthers; break;
+      default: displayTitle = titleKey;
+    }
+
     Color barColor;
-    switch (title) {
-      case '青果':
+    switch (titleKey) {
+      case 'shoppingSectionProduce':
         barColor = Colors.green;
         break;
-      case '精肉・ハム':
-      case '鮮魚':
+      case 'shoppingSectionMeat':
+      case 'shoppingSectionFish':
         barColor = Colors.redAccent;
         break;
-      case '加工食品・調味料':
+      case 'shoppingSectionProcessedFood':
         barColor = Colors.amber.shade700;
         break;
-      case '飲料・お酒':
+      case 'shoppingSectionBeverage':
         barColor = Colors.blue;
         break;
-      case '冷凍食品':
+      case 'shoppingSectionFrozen':
         barColor = Colors.cyan;
         break;
-      case '乳製品・豆腐・日配':
+      case 'shoppingSectionSnacks':
         barColor = Colors.orange;
         break;
+      case 'shoppingSectionDailyGoods':
+        barColor = Colors.purple;
+        break;
       default:
-        barColor = AppColors.stoxPrimary;
+        barColor = Colors.grey;
     }
 
     final checkedCount = items.where((i) => i.status == IngredientStatus.inCart).length;
@@ -823,7 +867,7 @@ class _ShoppingScreenState extends ConsumerState<ShoppingScreen> with AdManagerM
               ),
               const SizedBox(width: 8),
               Text(
-                _getLocalizedCategory(context, title),
+                displayTitle,
                 style: const TextStyle(
                   color: AppColors.stoxText,
                   fontSize: 14,

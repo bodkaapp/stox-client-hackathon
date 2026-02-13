@@ -9,33 +9,33 @@ class CategoryMapper {
       case DetailedCategory.frozenVegetables:
       case DetailedCategory.frozenMeat:
       case DetailedCategory.frozenFish:
-        return '冷凍食品';
+        return 'shoppingSectionFrozen';
       case DetailedCategory.freshVegetables:
       case DetailedCategory.freshFruits:
-        return '青果';
+        return 'shoppingSectionProduce';
       case DetailedCategory.freshMeat:
       case DetailedCategory.processedMeat:
-        return '精肉・ハム';
+        return 'shoppingSectionMeat';
       case DetailedCategory.freshFish:
-        return '鮮魚';
+        return 'shoppingSectionFish';
       case DetailedCategory.milkBeverage:
       case DetailedCategory.dairyProducts:
       case DetailedCategory.tofuNatto:
       case DetailedCategory.chilledNoodle:
-        return '乳製品・豆腐・日配';
+        return 'shoppingSectionDairy';
       case DetailedCategory.dryNoodle:
       case DetailedCategory.cannedFood:
       case DetailedCategory.seasoningLiquid:
       case DetailedCategory.seasoningPowder:
-        return '加工食品・調味料';
+        return 'shoppingSectionProcessedFood';
       case DetailedCategory.snacks:
-        return 'お菓子';
+        return 'shoppingSectionSnacks';
       case DetailedCategory.petBottleBeverage:
-        return '飲料・お酒';
+        return 'shoppingSectionBeverage';
       case DetailedCategory.householdGoods:
-        return '日用品';
+        return 'shoppingSectionDailyGoods';
       case DetailedCategory.unknown:
-        return 'その他';
+        return 'shoppingSectionOthers';
     }
   }
 

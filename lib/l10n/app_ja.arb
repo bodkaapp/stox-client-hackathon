@@ -770,5 +770,15 @@
   "nutritionAverage": "平均",
   "nutritionAnalysisData": "栄養価データ",
   "nutritionPfcBalance": "PFCバランス",
-  "actionTakeRefrigeratorPhotoAndAiSuggest": "冷蔵庫を撮影してAIが提案する"
+  "actionTakeRefrigeratorPhotoAndAiSuggest": "冷蔵庫を撮影してAIが提案する",
+  "shoppingSectionProduce": "青果",
+  "shoppingSectionFish": "鮮魚",
+  "shoppingSectionMeat": "精肉・ハム",
+  "shoppingSectionDairy": "乳製品・豆腐・日配",
+  "shoppingSectionProcessedFood": "加工食品・調味料",
+  "shoppingSectionFrozen": "冷凍食品",
+  "shoppingSectionBeverage": "飲料・お酒",
+  "shoppingSectionSnacks": "お菓子",
+  "shoppingSectionDailyGoods": "日用品",
+  "shoppingSectionOthers": "その他"
 }
