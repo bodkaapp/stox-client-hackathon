@@ -12,7 +12,15 @@ RecipeMonitoringService recipeMonitoringService(RecipeMonitoringServiceRef ref) 
 }
 
 class RecipeMonitoringService {
-  static const String _endpoint = 'http://localhost:18787/recipes';
+  static String get _endpoint {
+    if (kReleaseMode) {
+      return 'https://stox-app-882140138724.asia-northeast1.run.app/recipes';
+    }
+    // デバッグモード時
+    // Androidエミュレータからはホストのlocalhostに10.0.2.2でアクセス可能
+    final host = defaultTargetPlatform == TargetPlatform.android ? '10.0.2.2' : 'localhost';
+    return 'http://$host:18787/recipes';
+  }
 
   /// レシピ登録をトラッキングする
   Future<void> trackRecipeRegistration(String url) async {
