@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../../l10n/generated/app_localizations.dart';
 import 'package:http/http.dart' as http;
 import '../../config/app_colors.dart';
@@ -29,8 +30,8 @@ class RecipeSearchResultsScreen extends StatefulWidget {
 
 class _RecipeSearchResultsScreenState extends State<RecipeSearchResultsScreen> {
   // TODO: 本番運用時は環境変数やSecret Managerから取得する
-  final String _apiKey = 'AIzaSyB3wT4qTq3bVFbetWMkUHO6Y2ie_ijU6TE';
-  final String _cx = '3718d8ce8782745bf';
+  final String _apiKey = dotenv.env['GOOGLE_SEARCH_API_KEY'] ?? '';
+  final String _cx = dotenv.env['GOOGLE_SEARCH_CX'] ?? '';
 
   bool _isLoading = true;
   List<dynamic> _webResults = [];
