@@ -1549,4 +1549,10 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get shoppingSectionOthers => 'その他';
+
+  @override
+  String get receiptExpirationEstimated => '賞味期限（推定）';
+
+  @override
+  String get receiptWaitSeconds => '５～１０秒お待ちください';
 }

@@ -780,5 +780,7 @@
   "shoppingSectionBeverage": "飲料・お酒",
   "shoppingSectionSnacks": "お菓子",
   "shoppingSectionDailyGoods": "日用品",
-  "shoppingSectionOthers": "その他"
+  "shoppingSectionOthers": "その他",
+  "receiptExpirationEstimated": "賞味期限（推定）",
+  "receiptWaitSeconds": "５～１０秒お待ちください"
 }

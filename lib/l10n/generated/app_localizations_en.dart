@@ -1568,4 +1568,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get shoppingSectionOthers => 'Others';
+
+  @override
+  String get receiptExpirationEstimated => 'Est. Expiration';
+
+  @override
+  String get receiptWaitSeconds => 'Please wait 5-10 seconds';
 }

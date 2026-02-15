@@ -312,6 +312,12 @@ class AiRecipeRepository {
 
       final List<dynamic> jsonList = json.decode(cleanJson);
       return jsonList.map((e) {
+          final shelfLifeDays = e['shelf_life_days'] as num?;
+          final now = DateTime.now();
+          final expiryDate = shelfLifeDays != null 
+             ? DateTime(now.year, now.month, now.day).add(Duration(days: shelfLifeDays.toInt()))
+             : null;
+
           final category = e['detailed_category'] ?? e['category'] ?? 'unknown';
           return Ingredient(
             id: DateTime.now().microsecondsSinceEpoch.toString() + (e['name'] ?? ''), 
@@ -323,6 +329,7 @@ class AiRecipeRepository {
             storageType: StorageType.fridge, // Default
             isEssential: false,
             standardName: e['name'] ?? '', 
+            expiryDate: expiryDate,
           );
       }).cast<Ingredient>().toList();
     } catch (e) {

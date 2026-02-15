@@ -7,27 +7,11 @@ import '../../l10n/generated/app_localizations.dart';
 import '../../domain/models/ingredient.dart';
 import '../../infrastructure/repositories/ai_recipe_repository.dart';
 import '../screens/shopping_receipt_result_screen.dart';
+import '../screens/receipt_analysis_loading_screen.dart';
 import 'ad_manager_mixin.dart';
 
 /// Mixin to handle Receipt Scanning Flow
-/// Requires [AdManagerMixin] to be mixed in as well.
 mixin ReceiptScannerMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
-  // Use the AdManagerMixin's method. 
-  // Since we can't easily enforce "on ConsumerState with AdManagerMixin" in Dart type system for mixins
-  // without defining another base class or interface, we assume the host has it.
-  // Ideally, ReceiptScannerMixin implements AdManagerMixin or they are composed.
-  // For simplicity, let's assume methods are available or re-declare abstractly.
-  
-  Future<bool> showAdAndExecute({
-    required BuildContext context,
-    required String preAdTitle,
-    required String preAdContent,
-    String? confirmButtonText,
-    String? postAdMessage,
-    VoidCallback? onConsent,
-  });
-
-
   Future<void> startReceiptScanFlow({
     required List<Ingredient> currentContextList,
   }) async {
@@ -48,72 +32,27 @@ mixin ReceiptScannerMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> 
       await Future.delayed(const Duration(milliseconds: 500));
 
       final imageFile = File(result.images.first);
-      final imageBytes = await imageFile.readAsBytes();
 
       if (!mounted) return;
 
-      // Show Ad
-      final success = await showAdAndExecute(
-        context: context,
-        preAdTitle: AppLocalizations.of(context)!.receiptScanTitle, // レシート解析を開始
-        preAdContent: AppLocalizations.of(context)!.receiptScanMessage, // AIがレシートを読み取ります。\n広告を再生することで、この機能を無料でご利用いただけます。
-        confirmButtonText: AppLocalizations.of(context)!.receiptScanAction, // 広告を見て解析する
-        postAdMessage: null, 
+      // Navigate to Loading Screen
+      // The Loading Screen will handle analysis and then replace itself with Result Screen.
+      // If Result Screen returns 'retake', it will bubble up here.
+      // Use rootNavigator: true to hide the BottomNavigationBar and FAB of the underlying ScaffoldWithNavBar
+      final navResult = await Navigator.of(context, rootNavigator: true).push(
+        MaterialPageRoute(
+          builder: (context) => ReceiptAnalysisLoadingScreen(
+            imageFile: imageFile,
+            currentContextList: currentContextList,
+          ),
+        ),
       );
 
-      if (!success) return;
-
-      // Show Loading
-      if (!mounted) return;
-      
-      // Use a local variable to manage dialog state explicitly
-      bool isDialogShowing = true;
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (context) => const Center(child: CircularProgressIndicator(color: AppColors.stoxPrimary)),
-      ).then((_) {
-         isDialogShowing = false;
-      });
-
-      // Analyze
-      try {
-        final aiRepo = ref.read(aiRecipeRepositoryProvider);
-        
-        final ingredients = await aiRepo.analyzeReceiptImage(imageBytes, mimeType: 'image/jpeg');
-        
-        if (!mounted) return;
-        
-        // Close loading dialog if it's still showing
-        if (isDialogShowing) {
-           Navigator.of(context, rootNavigator: true).pop();
-        }
-
-        // Navigate to Result Screen
-        final navResult = await Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => ShoppingReceiptResultScreen(
-               receiptItems: ingredients,
-               currentShoppingList: currentContextList,
-            ),
-          ),
-        );
-        
-        // Handle retake
-        if (navResult == 'retake' && mounted) {
-           // Small delay to ensure smooth transition
-           await Future.delayed(const Duration(milliseconds: 300));
-           startReceiptScanFlow(currentContextList: currentContextList);
-        }
-
-      } catch (e) {
-        if (mounted) {
-           if (isDialogShowing) {
-             Navigator.of(context, rootNavigator: true).pop();
-           }
-           ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.receiptAnalysisFailed(e)))); // 解析に失敗しました
-        }
+      // Handle retake
+      if (navResult == 'retake' && mounted) {
+          // Small delay to ensure smooth transition
+          await Future.delayed(const Duration(milliseconds: 300));
+          startReceiptScanFlow(currentContextList: currentContextList);
       }
 
     } catch (e) {

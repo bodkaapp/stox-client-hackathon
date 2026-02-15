@@ -772,5 +772,7 @@
   "shoppingSectionBeverage": "Beverages & Alcohol",
   "shoppingSectionSnacks": "Snacks",
   "shoppingSectionDailyGoods": "Daily Goods",
-  "shoppingSectionOthers": "Others"
+  "shoppingSectionOthers": "Others",
+  "receiptExpirationEstimated": "Est. Expiration",
+  "receiptWaitSeconds": "Please wait 5-10 seconds"
 }

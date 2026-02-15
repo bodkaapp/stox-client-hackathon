@@ -2977,6 +2977,18 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'その他'**
   String get shoppingSectionOthers;
+
+  /// No description provided for @receiptExpirationEstimated.
+  ///
+  /// In ja, this message translates to:
+  /// **'賞味期限（推定）'**
+  String get receiptExpirationEstimated;
+
+  /// No description provided for @receiptWaitSeconds.
+  ///
+  /// In ja, this message translates to:
+  /// **'５～１０秒お待ちください'**
+  String get receiptWaitSeconds;
 }
 
 class _AppLocalizationsDelegate

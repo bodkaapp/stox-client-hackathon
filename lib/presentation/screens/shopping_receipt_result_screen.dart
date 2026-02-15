@@ -293,7 +293,9 @@ class _ShoppingReceiptResultScreenState extends ConsumerState<ShoppingReceiptRes
                       });
                     },
                     title: Text(item.name, style: const TextStyle(fontWeight: FontWeight.bold)),
-                    subtitle: Text('${item.amount}${item.unit}'),
+                    subtitle: Text(
+                      '${item.expiryDate != null ? "${AppLocalizations.of(context)!.receiptExpirationEstimated}: ${item.expiryDate!.month}/${item.expiryDate!.day}" : ""}',
+                    ),
                     activeColor: AppColors.stoxPrimary,
                     controlAffinity: ListTileControlAffinity.leading,
                     secondary: isUnpurchased 

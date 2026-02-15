@@ -74,6 +74,13 @@ $jsonOnlyBase
 1. 画像内のすべての情報をヒントとして活用してください。
 2. 商品名は「ポテトチッ...」のような省略形ではなく、一般的な知識を用いて「ポテトチップス」のような正式な名称に補完してください。
 3. 割引、小計、合計、税金などは除外してください。
+4. 食料品の場合は、一般的な賞味期限（日数）を `shelf_life_days` (数値) に、それ以外は `null` にしてください。
+5. 詳細カテゴリリスト（detailed_category）は次の中から選択してください: [freshVegetables, freshFruits, frozenVegetables, freshMeat, frozenMeat, processedMeat, freshFish, frozenFish, milkBeverage, dairyProducts, tofuNatto, chilledNoodle, dryNoodle, seasoningLiquid, seasoningPowder, cannedFood, snacks, petBottleBeverage, householdGoods]
+
+詳細カテゴリ分類の優先ルール:
+1. 「冷凍」が含まれる、または明らかに冷凍食品の場合は frozen で始まるカテゴリを選択してください。
+2. 紙パック飲料は milkBeverage、ペットボトルや缶は petBottleBeverage。
+3. 麺類：冷凍は frozen、生・ゆで（冷蔵）は chilledNoodle、乾麺・カップ麺（常温）は dryNoodle。
 
 出力形式:
 [
@@ -81,8 +88,9 @@ $jsonOnlyBase
     "name": "補完された正式な商品名",
     "amount": 数値(推測できない場合は1),
     "unit": "単位(個, g, mlなど。推測できない場合は個)",
-    "category": "野菜" などのカテゴリ（推測）,
-    "status": "stock"
+    "detailed_category": "選択したカテゴリ名",
+    "status": "stock",
+    "shelf_life_days": 数値またはnull
   }
 ]
 $jsonOnlyBase
